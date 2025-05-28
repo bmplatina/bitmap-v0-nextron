@@ -3,35 +3,27 @@ import axios from "axios"
 import type { Game } from "../../lib/types"
 import GameCard from "../../components/game-card"
 
-// API에서 대기 중인 게임 데이터를 가져오는 함수
-async function getPendingGames(): Promise<Game[]> {
-    try {
-        const response = await axios.get<Game[]>("https://api.prodbybitmap.com/api/games-pending", {
-            timeout: 10000,
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-        })
-        return response.data
-    } catch (error) {
-        console.error("대기 중인 게임 데이터를 가져오는 중 오류 발생:", error)
-        return []
-    }
-}
-
 export default function PendingGamesPage() {
     const [games, setGames] = useState<Game[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        const fetchGames = async () => {
-            const data = await getPendingGames()
-            setGames(data)
-            setIsLoading(false)
+        const getGamesFromServer = async (uri: string): Promise<Game[]> => {
+            const { electronTools } = window as any;
+            return await electronTools.fetchData(uri);
         }
 
-        fetchGames()
+        getGamesFromServer("https://api.prodbybitmap.com/api/games-pending")
+            .then((result: Game[]) => {
+                setGames(result);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                    console.error("Error:", error);
+                    setIsLoading(false);  // 에러 발생시에도 로딩 상태 업데이트
+                    setGames([]);
+                }
+            );
     }, [])
 
     if (isLoading) {
