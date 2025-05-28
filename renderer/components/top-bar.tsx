@@ -79,6 +79,9 @@ export default function TopBar() {
                         height={32}
                         className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity"
                         priority
+                        style={{
+                            mixBlendMode: "difference",
+                        }}
                     />
                 </Link>
 
