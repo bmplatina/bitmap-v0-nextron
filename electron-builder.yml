@@ -1,0 +1,55 @@
+productName: Bitmap
+appId: com.prodbybitmap.esd
+
+publish:
+  - provider: github
+    repo: bitmap
+    owner: bmplatina
+
+directories:
+  output: dist
+
+dmg:
+  title: Bitmap
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Bitmap
+
+win:
+  icon: assets/AppIcon.ico
+  target:
+    - target: nsis
+      arch: x64
+
+mac:
+  category: public.app-category.utilities
+  target:
+    - target: dmg
+      arch: [universal]
+  icon: assets/AppIcon.icns
+
+linux:
+  target:
+    - snap
+
+files:
+  - from: build/main
+    to: main
+    filter:
+      - '**/*'
+  - from: build/renderer
+    to: renderer
+    filter:
+      - '**/*'
+  - from: src/main/static
+    to: static
+    filter:
+      - '**/*'
+  - '!build'
+  - '!dist'
+  - '!scripts'
+  - '!.idea'
+  - '!.vscode'
