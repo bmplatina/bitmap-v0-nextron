@@ -17,30 +17,36 @@ export default function GameDetailPage() {
     const [game, setGame] = useState<Game | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
+    function openExternal(event: React.MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault()
+        const url = (event.currentTarget as HTMLAnchorElement).href
+
+        // TypeScript 안전성 확보
+        if (window.electronTools && typeof window.electronTools.openExternal === 'function') {
+            window.electronTools.openExternal(url)
+        } else {
+            console.warn('Electron external link function not available')
+        }
+    }
+
     useEffect(() => {
-        async function fetchGame() {
-            if (!id) return
-
-            try {
-                const response = await axios.get<Game[]>("https://api.prodbybitmap.com/api/games", {
-                    timeout: 10000,
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                    },
-                })
-
-                const foundGame = response.data.find((g) => g.gameId.toString() === id)
-                setGame(foundGame || null)
-            } catch (error) {
-                console.error("게임 데이터를 가져오는 중 오류 발생:", error)
-                setGame(null)
-            } finally {
-                setIsLoading(false)
-            }
+        const getGamesFromServer = async (uri: string): Promise<Game[]> => {
+            const { electronTools } = window as any;
+            return await electronTools.fetchData(uri);
         }
 
-        fetchGame()
+        getGamesFromServer("https://api.prodbybitmap.com/api/games")
+            .then((result: Game[]) => {
+                const foundGame = result.find((g) => g.gameId.toString() === id);
+                console.log("Found Game: ", foundGame);
+                setGame(foundGame || null);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                setGame(null);
+                setIsLoading(false);  // 에러 발생시에도 로딩 상태 업데이트
+        });
     }, [id])
 
     const formatDate = (dateString: string) => {
@@ -111,7 +117,7 @@ export default function GameDetailPage() {
                         <div className="mt-6 space-y-4">
                             {game.gameWebsite && (
                                 <Button variant="outline" className="w-full" asChild>
-                                    <a href={game.gameWebsite} target="_blank" rel="noopener noreferrer">
+                                    <a href={game.gameWebsite} onClick={openExternal} rel="noopener noreferrer">
                                         <Globe className="mr-2 h-4 w-4" />
                                         웹사이트 방문
                                     </a>
@@ -181,11 +187,12 @@ export default function GameDetailPage() {
                                 <h3 className="text-xl font-semibold mb-4">트레일러</h3>
                                 <Suspense fallback={<div className="aspect-video w-full rounded-lg bg-muted"></div>}>
                                     <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                                        <iframe 
-                                            src={game.gameVideoURL} 
-                                            className="absolute inset-0 w-full h-full" 
+                                        <iframe
+                                            src={`https://www.youtube.com/embed/${game.gameVideoURL}?rel=0&modestbranding=1&playsinline=1`}
+                                            className="absolute inset-0 w-full h-full"
                                             allowFullScreen
-                                        ></iframe>
+                                            referrerPolicy="origin"
+                                        />
                                     </div>
                                 </Suspense>
                             </div>

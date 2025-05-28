@@ -13,6 +13,9 @@ const handler = {
       ipcRenderer.removeListener(channel, subscription)
     }
   },
+};
+
+const deeplink = {
   setWindowIsReady: (isReady: boolean) => {
     ipcRenderer.send('window-is-ready', isReady)
   },
@@ -21,8 +24,21 @@ const handler = {
       callback(url)
     })
   },
-}
+};
 
-contextBridge.exposeInMainWorld('ipc', handler)
+const electronTools = {
+  // Show Directory or File selector
+  showDialog: (options: Electron.OpenDialogOptions) => ipcRenderer.invoke('show-dialog', options),
+
+  // Bypass CORS
+  fetchData: (url: string) => ipcRenderer.invoke('fetch-data', url),
+
+  // Open external link in browser
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+};
+
+contextBridge.exposeInMainWorld('ipc', handler);
+contextBridge.exposeInMainWorld('deeplink', deeplink);
+contextBridge.exposeInMainWorld('electronTools', electronTools);
 
 export type IpcHandler = typeof handler

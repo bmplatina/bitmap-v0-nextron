@@ -1,7 +1,8 @@
 import path from 'path';
-import {app, ipcMain, session} from 'electron';
+import { app, dialog, ipcMain, session, shell } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
+import axios from "axios";
 
 const bIsProd = process.env.NODE_ENV === 'production';
 
@@ -57,10 +58,23 @@ const getMainWindowWhenReady = async () => {
     },
   })
 
+  // CORS 우회 설정
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['Origin'] = '*'; // 모든 요청을 허용하도록 변경
+    details.requestHeaders['Origin'] = 'https://api.prodbybitmap.com';
     callback({ cancel: false, requestHeaders: details.requestHeaders });
   });
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Access-Control-Allow-Origin': ['*'],
+        'Access-Control-Allow-Headers': ['*'],
+        'Access-Control-Allow-Methods': ['*']
+      }
+    });
+  });
+
 
   if (bIsProd) {
     await mainWindow.loadURL('app://./')
@@ -122,3 +136,29 @@ function checkLauncherUrl(getMainWindow) {
 ipcMain.on('message', async (event, arg) => {
   event.reply('message', `${arg} World!`)
 })
+
+// 파일 경로 지정
+ipcMain.handle('show-dialog', async (event, options) => {
+  const result = await dialog.showOpenDialog(mainWindow, options);
+  return result.filePaths[0]; // 사용자가 선택한 파일 경로
+});
+
+ipcMain.handle('fetch-data', async (_, url: string) => {
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error: any) {
+    return { error: error.message };
+  }
+});
+
+ipcMain.handle('open-external', async (_, url: string) => {
+  try {
+    await shell.openExternal(url);
+    return true;
+  }
+  catch (error) {
+    console.error('Failed to open external URL:', error);
+    return false;
+  }
+});

@@ -3,36 +3,28 @@ import type { Game } from "../../lib/types"
 import GameCard from "../../components/game-card"
 import axios from "axios"
 
-// API에서 게임 데이터를 가져오는 함수
-async function getGames(): Promise<Game[]> {
-    try {
-        const response = await axios.get<Game[]>("https://api.prodbybitmap.com/api/games", {
-            timeout: 10000,
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-        })
-        return response.data
-    } catch (error) {
-        console.error("게임 데이터를 가져오는 중 오류 발생:", error)
-        return []
-    }
-}
-
 export default function GamesPage() {
     const [games, setGames] = useState<Game[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        const fetchGames = async () => {
-            const data = await getGames()
-            setGames(data)
-            setIsLoading(false)
+        const getGamesFromServer = async (uri: string): Promise<Game[]> => {
+            const { electronTools } = window as any;
+            return await electronTools.fetchData(uri);
         }
 
-        fetchGames()
-    }, [])
+        getGamesFromServer("https://api.prodbybitmap.com/api/games")
+            .then((result: Game[]) => {
+                setGames(result);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                setIsLoading(false);  // 에러 발생시에도 로딩 상태 업데이트
+                setGames([]);
+            }
+        );
+    }, []);
 
     if (isLoading) {
         return (

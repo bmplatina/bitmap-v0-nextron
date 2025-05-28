@@ -10,27 +10,27 @@ import TopBar from "../components/top-bar";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-    // const [launcherUrl, setLauncherUrl] = React.useState('');
-    // const router = useRouter();
-    //
-    // React.useEffect(() => {
-    //     ;(async () => {
-    //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //         const { api } = window as any;
-    //
-    //         api.onLauncherUrl((url: string) => {
-    //             setLauncherUrl(url);
-    //         })
-    //
-    //         api.setWindowIsReady(true);
-    //     })();
-    //
-    //     if(launcherUrl)
-    //     {
-    //         const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
-    //         router.push(formattedUrl);
-    //     }
-    // }, [launcherUrl, router]);
+    let [launcherUrl, setLauncherUrl] = React.useState('');
+    const router = useRouter();
+
+    React.useEffect(() => {
+        ;(async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { deeplink } = window as any;
+
+            deeplink.onLauncherUrl((url: string) => {
+                setLauncherUrl(url);
+                if(launcherUrl)
+                {
+                    // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
+                    // launcherUrl.split("//")[1]
+                    console.log(`Redirecting to ${launcherUrl.split("//")[1]}`);
+                    router.push(launcherUrl.split("//")[1]);
+                }
+            })
+            deeplink.setWindowIsReady(true);
+        })();
+    }, [launcherUrl, router]);
 
     return (
         <React.Fragment>
