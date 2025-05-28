@@ -8,6 +8,7 @@ publish:
 
 directories:
   output: dist
+  buildResources: resources
 
 dmg:
   title: Bitmap
@@ -36,20 +37,16 @@ linux:
     - snap
 
 files:
-  - from: build/main
-    to: main
+  - from: .
     filter:
-      - '**/*'
-  - from: build/renderer
-    to: renderer
-    filter:
-      - '**/*'
-  - from: src/main/static
-    to: static
-    filter:
-      - '**/*'
+      - package.json
+      - app
   - '!build'
   - '!dist'
   - '!scripts'
   - '!.idea'
   - '!.vscode'
+
+protocols:
+  name: Bitmap
+  schemes: ["bitmap"]

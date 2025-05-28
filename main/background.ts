@@ -1,21 +1,38 @@
-import path from 'path'
-import { app, ipcMain } from 'electron'
-import serve from 'electron-serve'
-import { createWindow } from './helpers'
+import path from 'path';
+import {app, ipcMain, session} from 'electron';
+import serve from 'electron-serve';
+import { createWindow } from './helpers';
 
-const isProd = process.env.NODE_ENV === 'production'
-const bIsDev: boolean = process.env.NODE_ENV === 'development';
+const bIsProd = process.env.NODE_ENV === 'production';
 
-if (isProd) {
-  serve({ directory: 'app' })
+let windowIsReady: boolean = false;
+let mainWindow: Electron.CrossProcessExports.BrowserWindow = null;
+const protocolScheme: string = "bitmap";
+
+if (bIsProd) {
+  serve({ directory: 'app' });
 } else {
-  app.setPath('userData', `${app.getPath('userData')} (development)`)
+  app.setPath('userData', `${app.getPath('userData')} (development)`);
+}
+
+const getMainWindowWhenReady = async () => {
+      if (!windowIsReady) {
+        await new Promise((resolve) => ipcMain.once('window-is-ready', resolve));
+      }
+      return mainWindow;
 }
 
 ;(async () => {
-  await app.whenReady()
+  const shouldContinue = checkLauncherUrl(getMainWindowWhenReady);
+  if (!shouldContinue) return;
 
-  const mainWindow = createWindow('main', {
+  await app.whenReady();
+
+  ipcMain.once('window-is-ready', () => {
+    windowIsReady = true
+  });
+
+  mainWindow = createWindow('main', {
     title: 'Bitmap',
     width: 1440,
     height: 900,
@@ -36,11 +53,16 @@ if (isProd) {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       webviewTag: true,
-      devTools: bIsDev,
+      devTools: true, // devTools: bIsDev,
     },
   })
 
-  if (isProd) {
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    details.requestHeaders['Origin'] = '*'; // 모든 요청을 허용하도록 변경
+    callback({ cancel: false, requestHeaders: details.requestHeaders });
+  });
+
+  if (bIsProd) {
     await mainWindow.loadURL('app://./')
   } else {
     const port = process.argv[2]
@@ -52,6 +74,50 @@ if (isProd) {
 app.on('window-all-closed', () => {
   app.quit()
 })
+
+function checkLauncherUrl(getMainWindow) {
+  if (process.platform === 'darwin') {
+    app.on('open-url', async (_event, url) => {
+      const mainWindow = await getMainWindow()
+      mainWindow.webContents.send('launcher-url', url)
+      mainWindow.isMinimized() && mainWindow.restore()
+    })
+  }
+
+  if (process.platform === 'win32') {
+    const gotTheLock = app.requestSingleInstanceLock()
+    if (!gotTheLock) {
+      app.quit()
+      return false
+    }
+
+    // app.setAsDefaultProtocolClient('your-custom-protocol-scheme')
+    app.setAsDefaultProtocolClient(protocolScheme);
+
+    app.on('second-instance', async (_event, args) => {
+      const mainWindow = await getMainWindow()
+
+      const url = args.find((arg) =>
+          // arg.startsWith(`${'your-custom-protocol-scheme'}://`)
+          arg.startsWith(`${protocolScheme}://`)
+      )
+      url && mainWindow.webContents.send('launcher-url', url)
+
+      mainWindow.isMinimized() && mainWindow.restore()
+      mainWindow.focus()
+    })
+
+    const url = process.argv.find((arg) =>
+        arg.startsWith(`${protocolScheme}://`)
+    )
+    url &&
+    getMainWindow().then((mainWindow) =>
+        mainWindow.webContents.send('launcher-url', url)
+    )
+  }
+
+  return true
+}
 
 ipcMain.on('message', async (event, arg) => {
   event.reply('message', `${arg} World!`)

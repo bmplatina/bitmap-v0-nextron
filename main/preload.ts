@@ -13,6 +13,14 @@ const handler = {
       ipcRenderer.removeListener(channel, subscription)
     }
   },
+  setWindowIsReady: (isReady: boolean) => {
+    ipcRenderer.send('window-is-ready', isReady)
+  },
+  onLauncherUrl: (callback) => {
+    ipcRenderer.on('launcher-url', (_event, url: string) => {
+      callback(url)
+    })
+  },
 }
 
 contextBridge.exposeInMainWorld('ipc', handler)
