@@ -4,6 +4,7 @@ import serve from 'electron-serve'
 import { createWindow } from './helpers'
 
 const isProd = process.env.NODE_ENV === 'production'
+const bIsDev: boolean = process.env.NODE_ENV === 'development';
 
 if (isProd) {
   serve({ directory: 'app' })
@@ -15,10 +16,27 @@ if (isProd) {
   await app.whenReady()
 
   const mainWindow = createWindow('main', {
-    width: 1000,
-    height: 600,
+    title: 'Bitmap',
+    width: 1440,
+    height: 900,
+    minWidth: 1366,
+    minHeight: 768,
+    autoHideMenuBar: true,
+    titleBarStyle: "hidden",
+    trafficLightPosition: {
+      x: 17,
+      y: 16
+    },
+    titleBarOverlay: {
+      height: 48,
+      color: '#00000000',
+      symbolColor: '#FFFFFFFF'
+    },
+    frame: false, // platformName === 'darwin',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      webviewTag: true,
+      devTools: bIsDev,
     },
   })
 

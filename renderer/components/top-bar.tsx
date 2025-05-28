@@ -39,6 +39,10 @@ export default function TopBar() {
         WebkitAppRegion: "drag",
     };
 
+    const electronNoDragCss: React.CSSProperties & { WebkitAppRegion?: string } = {
+        WebkitAppRegion: "none",
+    };
+
     return (
         <>
             <div
@@ -64,7 +68,7 @@ export default function TopBar() {
                     href="/"
                     className="flex items-center"
                     style={{
-                        ...electronDragCss,
+                        ...electronNoDragCss,
                         marginLeft: bIsMacOS ? "75px" : "0",
                     }}
                 >
@@ -80,7 +84,7 @@ export default function TopBar() {
 
                 {/* 검색 폼 */}
                 <form onSubmit={handleSearch} className="flex-1 max-w-md mx-auto">
-                    <div className="relative" style={electronDragCss}>
+                    <div className="relative" style={electronNoDragCss}>
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
