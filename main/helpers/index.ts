@@ -1,4 +1,4 @@
 import { createWindow } from "./create-window";
-import { ipcHandler } from "./ipcHandler";
+import { ipcHandle } from "./ipcHandler";
 
-export { createWindow, ipcHandler };
+export { createWindow, ipcHandle };

@@ -40,6 +40,7 @@ const electronTools = {
   getPlatform: () => ipcRenderer.invoke('get-platform'),
 };
 
+
 contextBridge.exposeInMainWorld('ipc', handler);
 contextBridge.exposeInMainWorld('deeplink', deeplink);
 contextBridge.exposeInMainWorld('electronTools', electronTools);

@@ -142,4 +142,5 @@ function getIsMac(): boolean {
   return platformName === 'darwin';
 }
 
-helpers.ipcHandler(mainWindow, platformName);
+const ipcImplement: helpers.ipcHandle = new helpers.ipcHandle(bIsProd, mainWindow, platformName);
+ipcImplement.initializeIpc();
