@@ -93,7 +93,8 @@ export default function TopBar() {
                         ...electronNoDragCss,
                         transform: titleTransform,
                         willChange: 'transform',
-                        transition: 'transform 0.5s ease 0.05s'
+                        transition: 'transform 0.5s ease 0.05s',
+                        mixBlendMode: "difference",
                     }}
                 >
                     <Image
@@ -103,9 +104,6 @@ export default function TopBar() {
                         height={32}
                         className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity"
                         priority
-                        style={{
-                            mixBlendMode: "difference",
-                        }}
                     />
                 </Link>
 
