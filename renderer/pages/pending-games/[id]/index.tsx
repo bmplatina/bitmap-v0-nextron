@@ -31,8 +31,8 @@ export default function PendingGameDetailPage() {
 
     useEffect(() => {
         const getGamesFromServer = async (uri: string): Promise<Game[]> => {
-            const { electronTools } = window as any;
-            return await electronTools.fetchData(uri);
+            const { bitmapApi } = window as any;
+            return await bitmapApi.fetchData(uri);
         }
 
         getGamesFromServer("https://api.prodbybitmap.com/api/games-pending")

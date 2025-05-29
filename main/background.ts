@@ -61,7 +61,7 @@ const getMainWindowWhenReady = async () => {
       webviewTag: true,
       devTools: !bIsProd, // devTools: bIsDev,
     },
-  })
+  });
 
   // CORS 우회 설정
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
@@ -82,13 +82,22 @@ const getMainWindowWhenReady = async () => {
 
 
   if (bIsProd) {
-    await mainWindow.loadURL('app://./')
+    await mainWindow.loadURL('app://./');
   } else {
-    const port = process.argv[2]
-    await mainWindow.loadURL(`http://localhost:${port}/`)
-    mainWindow.webContents.openDevTools()
+    const port = process.argv[2];
+    await mainWindow.loadURL(`http://localhost:${port}/`);
+    mainWindow.webContents.openDevTools();
   }
-})()
+
+  // 여기에 전체 화면 이벤트 리스너 추가
+  mainWindow.on('enter-full-screen', () => {
+    mainWindow.webContents.send('fullscreen-change', true);
+  });
+
+  mainWindow.on('leave-full-screen', () => {
+    mainWindow.webContents.send('fullscreen-change', false);
+  });
+})();
 
 app.on('window-all-closed', () => {
   app.quit()
@@ -97,42 +106,42 @@ app.on('window-all-closed', () => {
 function checkLauncherUrl(getMainWindow) {
   if (process.platform === 'darwin') {
     app.on('open-url', async (_event, url) => {
-      const mainWindow = await getMainWindow()
-      mainWindow.webContents.send('launcher-url', url)
-      mainWindow.isMinimized() && mainWindow.restore()
+      const mainWindow = await getMainWindow();
+      mainWindow.webContents.send('launcher-url', url);
+      mainWindow.isMinimized() && mainWindow.restore();
     })
   }
 
   if (process.platform === 'win32') {
-    const gotTheLock = app.requestSingleInstanceLock()
+    const gotTheLock = app.requestSingleInstanceLock();
     if (!gotTheLock) {
-      app.quit()
-      return false
+      app.quit();
+      return false;
     }
 
     // app.setAsDefaultProtocolClient('your-custom-protocol-scheme')
     app.setAsDefaultProtocolClient(protocolScheme);
 
     app.on('second-instance', async (_event, args) => {
-      const mainWindow = await getMainWindow()
+      const mainWindow = await getMainWindow();
 
       const url = args.find((arg) =>
           // arg.startsWith(`${'your-custom-protocol-scheme'}://`)
           arg.startsWith(`${protocolScheme}://`)
-      )
-      url && mainWindow.webContents.send('launcher-url', url)
+      );
+      url && mainWindow.webContents.send('launcher-url', url);
 
-      mainWindow.isMinimized() && mainWindow.restore()
-      mainWindow.focus()
+      mainWindow.isMinimized() && mainWindow.restore();
+      mainWindow.focus();
     })
 
     const url = process.argv.find((arg) =>
         arg.startsWith(`${protocolScheme}://`)
-    )
+    );
     url &&
     getMainWindow().then((mainWindow) =>
         mainWindow.webContents.send('launcher-url', url)
-    )
+    );
   }
 
   return true;
