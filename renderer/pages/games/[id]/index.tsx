@@ -1,16 +1,16 @@
 "use client"
 
-import {MouseEvent, Suspense, useEffect, useState} from "react";
-import {useRouter} from "next/router";
-import {EInstallState, Game, GameInstallInfo} from "../../../lib/types";
+import { MouseEvent, Suspense, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { GameInstallManager, EInstallState, Game, GameInstallInfo } from "../../../lib/types";
 import Image from "next/image";
-import {Calendar, Globe, Tag, User} from "lucide-react";
+import { Calendar, Globe, Tag, User } from "lucide-react";
 import dayjs from "dayjs";
 import Head from 'next/head';
 
-import {Button} from "../../../components/ui/button";
-import {Badge} from "../../../components/ui/badge";
-import {Input} from "../../../components/ui/input";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
+import { Input } from "../../../components/ui/input";
 import {
     Dialog,
     DialogClose,
@@ -22,25 +22,16 @@ import {
     DialogTrigger,
 } from "../../../components/ui/dialog";
 import { Progress } from "../../../components/ui/progress";
+import {observer} from "mobx-react";
 
-
-export default function GameDetailPage() {
+const GameDetailPage = observer(() => {
     const router = useRouter();
     const { id } = router.query;
-    const [game, setGame] = useState<Game | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
     const [bIsMac, setIsMac] = useState(false);
 
-    // Installation States
-    const [InstallationPath, setInstallationPath] = useState<string>("");
-    const [InstallState, setInstallState] = useState<EInstallState>(EInstallState.NotInstalled);
-    const [DefaultInstallationPath, setDefaultInstallationPath] = useState<string>("");
-    const [CurrentVersion, setCurrentVersion] = useState<number>(0);
-
-    // Installation Progresses
-    const [bIsUpdatable, setIsUpdatable] = useState(false);
-    const [downloadProgress, setDownloadProgress] = useState(0);
-    const [extractProgress, setExtractProgress] = useState(0);
+    const [gameInstallManager, setGameInstallManager] = useState<GameInstallManager>(() => new GameInstallManager());
 
     // Open-Remove Application
     /**
@@ -64,7 +55,7 @@ export default function GameDetailPage() {
      */
     function releasedAgo(): number {
         const today = dayjs();
-        const releasedDateFormat = dayjs(game.gameReleasedDate);
+        const releasedDateFormat = dayjs(gameInstallManager.getGameInfo.gameReleasedDate);
         return today.diff(releasedDateFormat, "years");
     }
 
@@ -72,13 +63,13 @@ export default function GameDetailPage() {
         let openCommand: string = "";
 
         if (bIsMac) {
-            openCommand = `open "${InstallationPath}/${game.gameBinaryName}.app"`;
+            openCommand = `open "${gameInstallManager.getInstallationPath}/${gameInstallManager.getGameInfo.gameBinaryName}.app"`;
         }
         else {
-            if (InstallationPath.charAt(0) === "C") {
-                openCommand = `"${InstallationPath}\\${game.gameBinaryName}.exe"`;
+            if (gameInstallManager.getInstallationPath.charAt(0) === "C") {
+                openCommand = `"${gameInstallManager.getInstallationPath}\\${gameInstallManager.getGameInfo.gameBinaryName}.exe"`;
             } else {
-                openCommand = `${InstallationPath.charAt(0)}: ; "${InstallationPath}\\${game.gameBinaryName}.exe"`;
+                openCommand = `${gameInstallManager.getInstallationPath.charAt(0)}: ; "${gameInstallManager.getInstallationPath}\\${gameInstallManager.getGameInfo.gameBinaryName}.exe"`;
             }
         }
 
@@ -91,147 +82,13 @@ export default function GameDetailPage() {
     }
 
     async function removeApp() {
-        if(InstallationPath) {
-            console.log(InstallationPath);
-            if(await window.bitmapApi.removeFile(InstallationPath)) {
-                setInstallState(EInstallState.NotInstalled);
-                setInstallationPath(DefaultInstallationPath);
-                await pushInstallState();
+        if(gameInstallManager.getInstallationPath) {
+            console.log(gameInstallManager.getInstallationPath);
+            if(await window.bitmapApi.removeFile(gameInstallManager.getInstallationPath)) {
+                gameInstallManager.setInstallState = EInstallState.NotInstalled;
+                gameInstallManager.setInstallationPath = gameInstallManager.getDefaultInstallationPath;
+                await gameInstallManager.pushInstallState();
             }
-        }
-    }
-
-    // NeDB Installation Info saver
-    async function pullInstallState() {
-        try {
-            // Declare default installation path
-            const getDefaultInstallPath = window.electronTools.getElectronStoredPath();
-            getDefaultInstallPath.then((appPath) => {
-                console.log("getDefaultInstallPath: ", appPath);
-                let DefaultInstallationPathLocal = bIsMac
-                    ? `/Users/Shared/Bitmap Production/${game.gameBinaryName}`
-                    : `${appPath}\\BitmapApps\\${game.gameBinaryName}`;
-
-                setDefaultInstallationPath(DefaultInstallationPathLocal)
-            });
-
-            const getResultLocal = window.bitmapApi.getGameInstallInfoByIndex(game.gameId);
-            getResultLocal.then((resolvedData: GameInstallInfo) => {
-                console.log("pullInstallState::resolvedData", resolvedData);
-                // If getting from store succeed, allocate it to property
-                if(!!resolvedData) {
-                    console.log("pullInstallState: If getting from store succeed, allocate it to property", resolvedData);
-                    setInstallState(resolvedData.gameInstallState);
-                    setInstallationPath(resolvedData.gameInstallationPath);
-                    setCurrentVersion(resolvedData.gameInstalledVersion);
-                    if(game.gameLatestRevision > CurrentVersion) {
-                        setIsUpdatable(true);
-                    }
-                }
-                // Otherwise, initialize property
-                else {
-                    console.log('pullInstallState: Otherwise, initialize property');
-                    setInstallationPath('');
-                    setInstallState(EInstallState.NotInstalled);
-                    setCurrentVersion(0);
-                }
-
-                // Check is installation path valid
-                if(InstallationPath) {
-                    const literalInstallationPath = bIsMac
-                        ? `${InstallationPath}/${game.gameBinaryName}`
-                        : `${InstallationPath}\\${game.gameBinaryName}`;
-
-                    window.bitmapApi.checkPathValid(literalInstallationPath).then((bIsValid: boolean) => {
-                        console.log(`pullInstallState::checkPathValid: ${bIsValid} from game ${game.gameTitle}`);
-                        setInstallState(bIsValid ? EInstallState.Installed : EInstallState.NotInstalled);
-                    });
-                }
-                else setInstallState(EInstallState.NotInstalled);
-
-                // Sync installation state
-                pushInstallState();
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    /**
-     * Insert or Update InstallState: GameInstallInfo to NeDB
-     */
-    async function pushInstallState() {
-        try {
-            const getResultLocal: Promise<GameInstallInfo> = window.bitmapApi.getGameInstallInfoByIndex(game.gameId);
-            getResultLocal.then((resolvedData: GameInstallInfo) => {
-                console.log("pushInstallState::resolvedData", resolvedData);
-                let InstallInfo: GameInstallInfo = {
-                    ...game,
-                    gameInstallationPath: InstallationPath,
-                    gameInstallState: InstallState,
-                    gameInstalledVersion: CurrentVersion,
-                };
-
-                const bUpdateExising: boolean = !!resolvedData;
-                console.log("pushInstallState::bUpdateExisting", bUpdateExising);
-                // If resolvedData valid, Update from the existing table, otherwise insert a new table
-                if(bUpdateExising) {
-                    window.bitmapApi.updateGameInstallInfo(game.gameId, InstallInfo);
-                }
-                else {
-                    window.bitmapApi.setGameInstallInfo(InstallInfo);
-                }
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    /**
-     * Download and Install Game. Do not call this function directly.
-     * @param url gameDownloadPlatformUrl
-     * @param savePath InstallationPath
-     */
-    async function downloadAndInstall(url: string | null, savePath: string) {
-        if(url == null) return;
-
-        const savePathLocal: string | null = bIsMac
-            ? `${savePath}/${url.split('/')[url.split('/').length - 1]}`
-            : `${savePath}\\${url.split('/')[url.split('/').length - 1]}`;
-        console.log(`URL: ${url}, SavePath: ${savePathLocal}`);
-
-        try {
-            // 다운로드 진행률 수신
-            window.bitmapApi.onDownloadProgress((progress) => {
-                setInstallState(EInstallState.Downloading);
-                setDownloadProgress(progress);
-                console.log(`다운로드 중: ${downloadProgress}, EInstallState.Downloading: ${InstallState === EInstallState.Downloading}`);
-            });
-
-            // 다운로드 요청
-            const filePath = await window.bitmapApi.downloadFile(url, savePathLocal);
-            console.log(`다운로드 완료: ${filePath}, EInstallState.Downloading: ${InstallState === EInstallState.Downloading}`);
-
-            // 압축 해제 진행률 수신
-            window.bitmapApi.onExtractProgress((progress) => {
-                setInstallState(EInstallState.Extracting);
-                setExtractProgress(progress);
-                console.log(`압축 해제 중: ${downloadProgress}, EInstallState.Extracting: ${InstallState === EInstallState.Extracting}`);
-            });
-
-            // 압축 해제 요청
-            const extractedPath = await window.bitmapApi.extractZip(filePath);
-            console.log(`압축 해제 완료: ${extractedPath}, EInstallState.Extracting: ${InstallState === EInstallState.Extracting}`);
-
-            setInstallState(EInstallState.Installed); // 작업 완료
-            setCurrentVersion(game.gameLatestRevision);
-            setIsUpdatable(false);
-            pushInstallState();
-            console.log(`설치 완료: EInstallState.Installed: ${InstallState === EInstallState.Installed}`);
-        }
-        catch (error) {
-            setInstallState(EInstallState.InstallError);
-            console.error('오류 발생:', error);
         }
     }
 
@@ -240,26 +97,25 @@ export default function GameDetailPage() {
      */
     const handleDownloadAndInstall = (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault(); // 필요한 경우
-        const downloadUri = bIsMac ? game.gameDownloadMacURL : game.gameDownloadWinURL;
-        downloadAndInstall(downloadUri, InstallationPath).catch((error) => {
+        const downloadUri = bIsMac ? gameInstallManager.getGameInfo.gameDownloadMacURL : gameInstallManager.getGameInfo.gameDownloadWinURL;
+        gameInstallManager.downloadAndInstall(downloadUri, gameInstallManager.getInstallationPath).catch((error) => {
             console.error("Download and Install Error:", error);
         });
     }
-
 
     /**
      * Check Platform compatibility
      */
     function GetIsPlatformCompatible(): boolean {
-        if(bIsMac) return game.gamePlatformMac == 1;
-        return game.gamePlatformWindows == 1;
+        if(bIsMac) return gameInstallManager.getGameInfo.gamePlatformMac == 1;
+        return gameInstallManager.getGameInfo.gamePlatformWindows == 1;
     }
 
     /**
      * Get Installing State
      */
     function GetIsDownloadingOrWritingToDisk(): boolean {
-        return InstallState === EInstallState.Downloading || InstallState === EInstallState.Extracting;
+        return gameInstallManager.getInstallState === EInstallState.Downloading || gameInstallManager.getInstallState === EInstallState.Extracting;
     }
 
     /**
@@ -274,10 +130,9 @@ export default function GameDetailPage() {
         try {
             const path = await (window as any).electronTools.showDialog(options);
             if (path) {
-                const newInstallationPath: string = bIsMac
-                    ? `${path}/${game.gameBinaryName}/`
-                    : `${path}\\${game.gameBinaryName}\\`; // 선택한 경로 저장
-                setInstallationPath(newInstallationPath);
+                gameInstallManager.setInstallationPath = bIsMac
+                    ? `${path}/${gameInstallManager.getGameInfo.gameBinaryName}/`
+                    : `${path}\\${gameInstallManager.getGameInfo.gameBinaryName}\\`; // 선택한 경로 저장
             }
         } catch (error) {
             console.error('파일 선택 중 오류 발생:', error);
@@ -307,20 +162,20 @@ export default function GameDetailPage() {
             .then((result: Game[]) => {
                 const foundGame = result.find((g) => g.gameId.toString() === id);
                 console.log("Found Game: ", foundGame);
-                setGame(foundGame || null);
+                gameInstallManager.setGameInfo = foundGame || null;
 
                 setIsLoading(false);
             })
             .catch((error) => {
                 console.error("Error:", error);
-                setGame(null);
+                gameInstallManager.setGameInfo = null;
                 setIsLoading(false);  // 에러 발생시에도 로딩 상태 업데이트
             });
     }, [id]);
 
     useEffect(() => {
-        if(game) pullInstallState();
-    }, [game]);
+        if(gameInstallManager.getGameInfo && gameInstallManager) gameInstallManager.pullInstallState();
+    }, [gameInstallManager.getGameInfo]);
 
     useEffect(() => {
         async function checkPlatform(): Promise<string>
@@ -331,7 +186,8 @@ export default function GameDetailPage() {
 
         checkPlatform().then((currentPlatform: string) => {
             console.log("Current Platform: ", currentPlatform);
-            setIsMac(currentPlatform === 'darwin');
+            gameInstallManager.setIsMac = currentPlatform === 'darwin';
+            setIsMac(gameInstallManager.getIsMac);
             console.log("Is Mac: ", bIsMac);
         });
     }, [bIsMac]);
@@ -349,7 +205,7 @@ export default function GameDetailPage() {
         )
     }
 
-    if (!game) {
+    if (!gameInstallManager.getGameInfo) {
         return (
             <>
                 <Head>
@@ -361,9 +217,9 @@ export default function GameDetailPage() {
                         <p className="text-sm text-muted-foreground">
                             요청하신 게임이 존재하지 않거나 데이터를 불러오는 중 문제가 발생했습니다.
                         </p>
-                        <Button 
-                            className="mt-4" 
-                            variant="outline" 
+                        <Button
+                            className="mt-4"
+                            variant="outline"
                             onClick={() => router.push('/')}
                         >
                             홈으로 돌아가기
@@ -377,8 +233,8 @@ export default function GameDetailPage() {
     return (
         <>
             <Head>
-                <title>{`Bitmap Store: ${game.gameTitle}`}</title>
-                <meta name="description" content={game.gameHeadline || game.gameDescription} />
+                <title>{`Bitmap Store: ${gameInstallManager.getGameInfo.gameTitle}`}</title>
+                <meta name="description" content={gameInstallManager.getGameInfo.gameHeadline || gameInstallManager.getGameInfo.gameDescription} />
             </Head>
             <div className="container mx-auto p-6 w-full">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -387,8 +243,8 @@ export default function GameDetailPage() {
                         <Suspense fallback={<div className="aspect-[1/1.414] w-full rounded-lg bg-muted"></div>}>
                             <div className="relative aspect-[1/1.414] w-full rounded-lg overflow-hidden">
                                 <Image
-                                    src={game.gameImageURL || "/placeholder.svg?height=600&width=424"}
-                                    alt={game.gameTitle}
+                                    src={gameInstallManager.getGameInfo.gameImageURL || "/placeholder.svg?height=600&width=424"}
+                                    alt={gameInstallManager.getGameInfo.gameTitle}
                                     fill
                                     className="object-cover"
                                     priority
@@ -397,9 +253,9 @@ export default function GameDetailPage() {
                         </Suspense>
 
                         <div className="mt-6 space-y-4">
-                            {game.gameWebsite && (
+                            {gameInstallManager.getGameInfo.gameWebsite && (
                                 <Button variant="outline" className="w-full" asChild>
-                                    <a href={game.gameWebsite} onClick={openExternal} rel="noopener noreferrer">
+                                    <a href={gameInstallManager.getGameInfo.gameWebsite} onClick={openExternal} rel="noopener noreferrer">
                                         <Globe className="mr-2 h-4 w-4" />
                                         웹사이트 방문
                                     </a>
@@ -424,9 +280,9 @@ export default function GameDetailPage() {
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>{game.gameTitle}</DialogTitle>
+                                        <DialogTitle>{gameInstallManager.getGameInfo.gameTitle}</DialogTitle>
                                         <DialogDescription>
-                                            {game.gameTitle}을(를) 설치합니다.
+                                            {gameInstallManager.getGameInfo.gameTitle}을(를) 설치합니다.
                                         </DialogDescription>
                                     </DialogHeader>
 
@@ -434,15 +290,18 @@ export default function GameDetailPage() {
                                         readOnly
                                         onClick={selectDirectory}
                                         placeholder="Path"
-                                        value={InstallationPath}
+                                        value={gameInstallManager.getInstallationPath}
                                     />
 
                                     {GetIsDownloadingOrWritingToDisk() && (
                                         <div>
-                                            {InstallState === EInstallState.Downloading
-                                                ? `다운로드 중: ${Math.round(downloadProgress)}%`
-                                                : `디스크에 쓰는 중: ${extractProgress}`
+                                            {gameInstallManager.getInstallState === EInstallState.Downloading
+                                                ? `다운로드 중: ${Math.round(gameInstallManager.getDownloadProgress)}%`
+                                                : `디스크에 쓰는 중: ${gameInstallManager.getExtractProgress}`
                                             }
+                                            <Progress value={gameInstallManager.getInstallState === EInstallState.Downloading
+                                                ? Math.round(gameInstallManager.getDownloadProgress)
+                                                : gameInstallManager.getExtractProgress} />
                                         </div>
                                     )}
 
@@ -460,29 +319,29 @@ export default function GameDetailPage() {
                     {/* 오른쪽 컬럼 - 상세 정보 */}
                     <div className="lg:col-span-2">
                         <div className="flex items-center gap-3 mb-4">
-                            <h1 className="text-3xl font-bold">{game.gameTitle}</h1>
-                            {game.isEarlyAccess === 1 && <Badge className="bg-blue-500">얼리 액세스</Badge>}
+                            <h1 className="text-3xl font-bold">{gameInstallManager.getGameInfo.gameTitle}</h1>
+                            {gameInstallManager.getGameInfo.isEarlyAccess === 1 && <Badge className="bg-blue-500">얼리 액세스</Badge>}
                         </div>
 
-                        <h2 className="text-xl text-muted-foreground mb-6">{game.gameHeadline}</h2>
+                        <h2 className="text-xl text-muted-foreground mb-6">{gameInstallManager.getGameInfo.gameHeadline}</h2>
 
                         {/* 게임 정보 그리드 */}
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <div className="flex items-center gap-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
-                                <span>개발: <strong>{game.gameDeveloper}</strong></span>
+                                <span>개발: <strong>{gameInstallManager.getGameInfo.gameDeveloper}</strong></span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
-                                <span>유통: <strong>{game.gamePublisher}</strong></span>
+                                <span>유통: <strong>{gameInstallManager.getGameInfo.gamePublisher}</strong></span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Tag className="h-5 w-5 text-muted-foreground" />
-                                <span>장르: <strong>{game.gameGenre}</strong></span>
+                                <span>장르: <strong>{gameInstallManager.getGameInfo.gameGenre}</strong></span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-muted-foreground" />
-                                <span>출시: <strong>{formatDate(game.gameReleasedDate)}</strong></span>
+                                <span>출시: <strong>{formatDate(gameInstallManager.getGameInfo.gameReleasedDate)}</strong></span>
                             </div>
                         </div>
 
@@ -490,18 +349,18 @@ export default function GameDetailPage() {
                         <div className="mb-8">
                             <h3 className="text-xl font-semibold mb-4">게임 소개</h3>
                             <div className="prose prose-invert max-w-none">
-                                <p>{game.gameDescription}</p>
+                                <p>{gameInstallManager.getGameInfo.gameDescription}</p>
                             </div>
                         </div>
 
                         {/* 트레일러 */}
-                        {game.gameVideoURL && (
+                        {gameInstallManager.getGameInfo.gameVideoURL && (
                             <div>
                                 <h3 className="text-xl font-semibold mb-4">트레일러</h3>
                                 <Suspense fallback={<div className="aspect-video w-full rounded-lg bg-muted"></div>}>
                                     <div className="relative aspect-video w-full rounded-lg overflow-hidden">
                                         <iframe
-                                            src={`https://www.youtube.com/embed/${game.gameVideoURL}?rel=0&modestbranding=1&playsinline=1`}
+                                            src={`https://www.youtube.com/embed/${gameInstallManager.getGameInfo.gameVideoURL}?rel=0&modestbranding=1&playsinline=1`}
                                             className="absolute inset-0 w-full h-full"
                                             allowFullScreen
                                             referrerPolicy="origin"
@@ -515,4 +374,5 @@ export default function GameDetailPage() {
             </div>
         </>
     )
-}
+})
+export default GameDetailPage;

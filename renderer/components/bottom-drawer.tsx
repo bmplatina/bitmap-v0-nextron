@@ -1,3 +1,5 @@
+"use client"
+
 import {
     Drawer,
     DrawerTrigger,
@@ -10,16 +12,17 @@ import {
 } from "./ui/drawer";
 import { ChevronUp, ChevronDown } from "lucide-react"
 import { Button } from "./ui/button";
+import { observer } from 'mobx-react-lite';
 
-export default function BottomDrawer() {
+const BottomDrawer = observer(() => {
     return (
         <Drawer>
             {/* Footer 스타일의 트리거 */}
-            <DrawerTrigger 
-                className="fixed bottom-0 left-0 right-0 z-50 
-                           bg-background border-t 
-                           flex items-center justify-center 
-                           p-4 hover:bg-accent 
+            <DrawerTrigger
+                className="fixed bottom-0 left-0 right-0 z-50
+                           bg-background border-t
+                           flex items-center justify-center
+                           p-4 hover:bg-accent
                            transition-colors duration-200"
             >
                 <div className="flex items-center gap-2">
@@ -28,7 +31,7 @@ export default function BottomDrawer() {
                     <ChevronUp className="w-5 h-5" />
                 </div>
             </DrawerTrigger>
-            
+
             <DrawerContent>
                 <DrawerHeader>
                     <DrawerTitle>다운로드</DrawerTitle>
@@ -46,4 +49,6 @@ export default function BottomDrawer() {
             </DrawerContent>
         </Drawer>
     )
-}
+})
+
+export default BottomDrawer;
