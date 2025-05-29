@@ -6,6 +6,7 @@ import "../styles/globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import Sidebar from "../components/sidebar";
 import TopBar from "../components/top-bar";
+import BottomDrawer from "../components/bottom-drawer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,6 +48,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                             <Sidebar />
                             <main className="flex-1 overflow-auto">
                                 <Component {...pageProps} />
+                                <BottomDrawer/>
                             </main>
                         </div>
                     </div>
