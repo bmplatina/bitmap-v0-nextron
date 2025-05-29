@@ -159,6 +159,14 @@ class GameInstallManager {
     console.log(`setIsMac: ${this.bIsMac}`);
   }
 
+  get getGameTitle(): string {
+    return this.gameTitle;
+  }
+
+  get getGameImageURL(): string {
+    return this.gameImageURL;
+  }
+
   get getDefaultInstallationPath(): string | null {
     return this.defaultInstallationPath;
   }
@@ -346,6 +354,39 @@ class GameInstallManager {
       });
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async openApp() {
+    let openCommand: string = "";
+
+    if (this.bIsMac) {
+      openCommand = `open "${this.installationPath}/${this.game.gameBinaryName}.app"`;
+    }
+    else {
+      if (this.installationPath.charAt(0) === "C") {
+        openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+      } else {
+        openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+      }
+    }
+
+    try {
+      const result: string = await window.bitmapApi.runCommand(openCommand);
+      console.log("명령 실행 성공:", result);
+    } catch (error) {
+      console.error("명령 실행 중 오류:", error as string);
+    }
+  }
+
+  async removeApp() {
+    if(this.installationPath) {
+      console.log(this.installationPath);
+      if(await window.bitmapApi.removeFile(this.installationPath)) {
+        this.installState = EInstallState.NotInstalled;
+        this.installationPath = this.defaultInstallationPath;
+        await this.pushInstallState();
+      }
     }
   }
 }

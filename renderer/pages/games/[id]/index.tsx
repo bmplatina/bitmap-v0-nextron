@@ -2,11 +2,13 @@
 
 import { MouseEvent, Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { GameInstallManager, EInstallState, Game, GameInstallInfo } from "../../../lib/types";
+import { GameInstallManager, EInstallState, Game } from "../../../lib/types";
 import Image from "next/image";
 import { Calendar, Globe, Tag, User } from "lucide-react";
-import dayjs from "dayjs";
 import Head from 'next/head';
+import dayjs from "dayjs";
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from '../../../lib/store';
 
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
@@ -22,7 +24,8 @@ import {
     DialogTrigger,
 } from "../../../components/ui/dialog";
 import { Progress } from "../../../components/ui/progress";
-import {observer} from "mobx-react";
+import { observer } from "mobx-react";
+import { addManager } from "../../../lib/slices/dl-slice";
 
 const GameDetailPage = observer(() => {
     const router = useRouter();
@@ -30,6 +33,12 @@ const GameDetailPage = observer(() => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [bIsMac, setIsMac] = useState(false);
+
+    const dispatch = useDispatch();
+
+    function pushNewManager() {
+        dispatch(addManager(gameInstallManager));
+    }
 
     const [gameInstallManager, setGameInstallManager] = useState<GameInstallManager>(() => new GameInstallManager());
 
@@ -59,39 +68,6 @@ const GameDetailPage = observer(() => {
         return today.diff(releasedDateFormat, "years");
     }
 
-    async function openApp() {
-        let openCommand: string = "";
-
-        if (bIsMac) {
-            openCommand = `open "${gameInstallManager.getInstallationPath}/${gameInstallManager.getGameInfo.gameBinaryName}.app"`;
-        }
-        else {
-            if (gameInstallManager.getInstallationPath.charAt(0) === "C") {
-                openCommand = `"${gameInstallManager.getInstallationPath}\\${gameInstallManager.getGameInfo.gameBinaryName}.exe"`;
-            } else {
-                openCommand = `${gameInstallManager.getInstallationPath.charAt(0)}: ; "${gameInstallManager.getInstallationPath}\\${gameInstallManager.getGameInfo.gameBinaryName}.exe"`;
-            }
-        }
-
-        try {
-            const result: string = await window.bitmapApi.runCommand(openCommand);
-            console.log("명령 실행 성공:", result);
-        } catch (error) {
-            console.error("명령 실행 중 오류:", error as string);
-        }
-    }
-
-    async function removeApp() {
-        if(gameInstallManager.getInstallationPath) {
-            console.log(gameInstallManager.getInstallationPath);
-            if(await window.bitmapApi.removeFile(gameInstallManager.getInstallationPath)) {
-                gameInstallManager.setInstallState = EInstallState.NotInstalled;
-                gameInstallManager.setInstallationPath = gameInstallManager.getDefaultInstallationPath;
-                await gameInstallManager.pushInstallState();
-            }
-        }
-    }
-
     /**
      * Download and Install Game. Call this function directly in your React component.
      */
@@ -101,6 +77,7 @@ const GameDetailPage = observer(() => {
         gameInstallManager.downloadAndInstall(downloadUri, gameInstallManager.getInstallationPath).catch((error) => {
             console.error("Download and Install Error:", error);
         });
+        pushNewManager();
     }
 
     /**

@@ -1,5 +1,9 @@
 "use client"
 
+import { observer } from 'mobx-react-lite';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../lib/store';
+
 import {
     Drawer,
     DrawerTrigger,
@@ -10,11 +14,13 @@ import {
     DrawerFooter,
     DrawerClose
 } from "./ui/drawer";
-import { ChevronUp, ChevronDown } from "lucide-react"
+import GameInstallationCard from "./game-installation-card";
+import { Download } from "lucide-react"
 import { Button } from "./ui/button";
-import { observer } from 'mobx-react-lite';
 
 const BottomDrawer = observer(() => {
+    const managers = useSelector((state: RootState) => state.gameInstaller.managers);
+
     return (
         <Drawer>
             {/* Footer 스타일의 트리거 */}
@@ -27,25 +33,38 @@ const BottomDrawer = observer(() => {
             >
                 <div className="flex items-center gap-2">
                     {/* 여기에 Footer 내용 추가 */}
+                    <Download className="w-5 h-5" />
                     <span>Downloads</span>
-                    <ChevronUp className="w-5 h-5" />
                 </div>
             </DrawerTrigger>
 
             <DrawerContent>
                 <DrawerHeader>
                     <DrawerTitle>다운로드</DrawerTitle>
-                    <DrawerDescription>현재 다운로드 중인 항목을 관리합니다</DrawerDescription>
+                    <DrawerDescription>다운로드하고 있는 항목을 관리합니다.</DrawerDescription>
                 </DrawerHeader>
 
-                {/* 내용 */}
+                {managers.map((manager, index) => (
+                    <div key={index}>
+                        <GameInstallationCard
+                            gameMgr={manager}
+                            gameTitle={manager.getGameTitle}
+                            gameImageURL={manager.getGameImageURL}
+                            gameDownloadProgress={manager.getDownloadProgress}
+                            gameExtractProgress={manager.getExtractProgress}
+                            gameInstallState={manager.getInstallState}
+                            gameInstallationPath={manager.getInstallationPath}
+                        />
+                    </div>
+                ))}
+                <GameInstallationCard gameTitle="Example"/>
 
-                <DrawerFooter>
-                    <Button>Action</Button>
-                    <DrawerClose>
-                        <Button variant="outline">Cancel</Button>
-                    </DrawerClose>
-                </DrawerFooter>
+                {/*<DrawerFooter>*/}
+                {/*    <Button>Action</Button>*/}
+                {/*    <DrawerClose>*/}
+                {/*        <Button variant="outline">Cancel</Button>*/}
+                {/*    </DrawerClose>*/}
+                {/*</DrawerFooter>*/}
             </DrawerContent>
         </Drawer>
     )

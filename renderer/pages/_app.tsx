@@ -1,7 +1,9 @@
 import React from 'react'
 import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
+import { Provider } from 'react-redux';
+import { store } from '../lib/store';
 import "../styles/globals.css";
 import { ThemeProvider } from "../components/theme-provider";
 import Sidebar from "../components/sidebar";
@@ -34,26 +36,28 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }, [launcherUrl, router]);
 
     return (
-        <React.Fragment>
-            <div className={inter.className}>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <div className="flex flex-col h-screen">
-                        <TopBar />
-                        <div className="flex flex-1 overflow-hidden">
-                            <Sidebar />
-                            <main className="flex-1 overflow-auto">
-                                <Component {...pageProps} />
-                                <BottomDrawer/>
-                            </main>
+        <Provider store={store}>
+            <React.Fragment>
+                <div className={inter.className}>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <div className="flex flex-col h-screen">
+                            <TopBar />
+                            <div className="flex flex-1 overflow-hidden">
+                                <Sidebar />
+                                <main className="flex-1 overflow-auto">
+                                    <Component {...pageProps} />
+                                    <BottomDrawer/>
+                                </main>
+                            </div>
                         </div>
-                    </div>
-                </ThemeProvider>
-            </div>
-        </React.Fragment>
+                    </ThemeProvider>
+                </div>
+            </React.Fragment>
+        </Provider>
     );
 }

@@ -10,12 +10,6 @@ export const sidebarItems = [
                 appIcon: Home,
                 href: "/"
             },
-            {
-                title: "Bitmap App",
-                icon: <Download className="h-5 w-5" />,
-                appIcon: Download,
-                href: "/about"
-            },
         ],
     },
     {
@@ -54,6 +48,12 @@ export const sidebarItems = [
                 icon: <User className="h-5 w-5" />,
                 appIcon: User,
                 href: "/account"
+            },
+            {
+                title: "About Bitmap App",
+                icon: <Download className="h-5 w-5" />,
+                appIcon: Download,
+                href: "/about"
             },
             {
                 title: "Settings",
