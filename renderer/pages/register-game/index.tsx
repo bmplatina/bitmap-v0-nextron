@@ -67,56 +67,24 @@ export default function RegisterGamePage() {
 
   // 게임 ID 자동 생성 - API에서 기존 게임 수를 가져와서 계산
   useEffect(() => {
-    async function fetchGames() {
-      try {
-        setIsLoadingGameId(true)
 
-        const [responseGames, responseGamesPending] = await Promise.all([
-          axios.get<Game[]>("https://api.prodbybitmap.com/api/games", {
-            timeout: 10000,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          }),
-          axios.get<Game[]>("https://api.prodbybitmap.com/api/games-pending", {
-            timeout: 10000,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          }),
-        ])
-
-        const fetchedGames: Game[] = responseGames.data
-        const fetchedGamesPending: Game[] = responseGamesPending.data
-
-        // 기존 게임 수 + 대기 중인 게임 수 + 1 (새로운 게임)
-        const newGameId = fetchedGames.length + fetchedGamesPending.length
-        setGameId(newGameId)
-
-        console.log(
-            `게임 ID 생성: 기존 게임 ${fetchedGames.length}개 + 대기 중인 게임 ${fetchedGamesPending.length}개 = ${newGameId}`,
-        )
-      } catch (error) {
-        console.error("게임 데이터를 가져오는 중 오류가 발생했습니다:", error)
-
-        // API 오류 시 현재 시간을 기반으로 임시 ID 생성
-        const fallbackId = Date.now()
-        setGameId(fallbackId)
-
-        toast({
-          title: "경고",
-          description: "게임 ID 생성 중 오류가 발생했습니다. 임시 ID가 할당되었습니다.",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoadingGameId(false)
-      }
+    const getGamesFromServer = async (uri: string): Promise<Game[]> => {
+      const { electronTools } = window as any;
+      return await electronTools.fetchData(uri);
     }
 
-    fetchGames()
-  }, [])
+    setIsLoadingGameId(true);
+    getGamesFromServer("https://api.prodbybitmap.com/api/games").then((gameResult: Game[]) => {
+      getGamesFromServer("https://api.prodbybitmap.com/api/games-pending").then((gamePendingResult: Game[]) => {
+        setGameId(gameResult.length + gamePendingResult.length);
+      });
+    }).catch((error) => {
+      console.error("Error fetching games:", error);
+      setGameId(Date.now());
+    }).finally(() => {
+      setIsLoadingGameId(false);
+    });
+  }, []);
 
   // 날짜 포맷팅 함수 (MySQL 형식)
   const formatDateToMySQL = (date: Date): string => {

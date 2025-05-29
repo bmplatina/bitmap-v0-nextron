@@ -35,6 +35,9 @@ const electronTools = {
 
   // Open external link in browser
   openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+
+  // Get current OS
+  getPlatform: () => ipcRenderer.invoke('get-platform'),
 };
 
 contextBridge.exposeInMainWorld('ipc', handler);

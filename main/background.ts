@@ -1,13 +1,18 @@
-import path from 'path';
-import { app, dialog, ipcMain, session, shell } from 'electron';
+// Default Imports
+import path, { join } from 'path';
+import { app, BrowserWindow, dialog, ipcMain, session, shell } from 'electron';
 import serve from 'electron-serve';
-import { createWindow } from './helpers';
-import axios from "axios";
+import * as helpers from './helpers';
 
+// Platform
 const bIsProd = process.env.NODE_ENV === 'production';
+const platformName = process.platform;
 
+// Window State
 let windowIsReady: boolean = false;
-let mainWindow: Electron.CrossProcessExports.BrowserWindow = null;
+let mainWindow: BrowserWindow = null;
+
+// Deeplinks
 const protocolScheme: string = "bitmap";
 
 if (bIsProd) {
@@ -33,7 +38,7 @@ const getMainWindowWhenReady = async () => {
     windowIsReady = true
   });
 
-  mainWindow = createWindow('main', {
+  mainWindow = helpers.createWindow('main', {
     title: 'Bitmap',
     width: 1440,
     height: 900,
@@ -54,7 +59,7 @@ const getMainWindowWhenReady = async () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       webviewTag: true,
-      devTools: true, // devTools: bIsDev,
+      devTools: !bIsProd, // devTools: bIsDev,
     },
   })
 
@@ -130,35 +135,11 @@ function checkLauncherUrl(getMainWindow) {
     )
   }
 
-  return true
+  return true;
 }
 
-ipcMain.on('message', async (event, arg) => {
-  event.reply('message', `${arg} World!`)
-})
+function getIsMac(): boolean {
+  return platformName === 'darwin';
+}
 
-// 파일 경로 지정
-ipcMain.handle('show-dialog', async (event, options) => {
-  const result = await dialog.showOpenDialog(mainWindow, options);
-  return result.filePaths[0]; // 사용자가 선택한 파일 경로
-});
-
-ipcMain.handle('fetch-data', async (_, url: string) => {
-  try {
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error: any) {
-    return { error: error.message };
-  }
-});
-
-ipcMain.handle('open-external', async (_, url: string) => {
-  try {
-    await shell.openExternal(url);
-    return true;
-  }
-  catch (error) {
-    console.error('Failed to open external URL:', error);
-    return false;
-  }
-});
+helpers.ipcHandler(mainWindow, platformName);

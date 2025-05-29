@@ -1,35 +1,52 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
-import { useRouter } from "next/router"
-import type { Game } from "../../../lib/types"
-import { Button } from "../../../components/ui/button"
-import { Badge } from "../../../components/ui/badge"
-import Image from "next/image"
-import { Calendar, User, Tag, Globe, Monitor, Apple } from "lucide-react"
-import dayjs from "dayjs"
-import axios from "axios"
-import Head from 'next/head'
+import { useEffect, useState, MouseEvent, Suspense } from "react";
+import { useRouter } from "next/router";
+import type { Game, EInstallState, GameInstallInfo } from "../../../lib/types";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../components/ui/badge";
+import Image from "next/image";
+import { Calendar, User, Tag, Globe, Monitor, Apple } from "lucide-react";
+import dayjs from "dayjs";
+import Head from 'next/head';
 
 export default function GameDetailPage() {
-    const router = useRouter()
-    const { id } = router.query
-    const [game, setGame] = useState<Game | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const router = useRouter();
+    const { id } = router.query;
+    const [game, setGame] = useState<Game | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [bIsMac, setIsMac] = useState(false);
 
-    function openExternal(event: React.MouseEvent<HTMLAnchorElement>) {
-        event.preventDefault()
-        const url = (event.currentTarget as HTMLAnchorElement).href
+    /**
+     * onClink={openExternal} 이 설정되어 있으면 클라이언트의 기본 브라우저로 href를 새 탭에서 호출한다
+     * @param event href 자동 감지
+     */
+    function openExternal(event: MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        const url = (event.currentTarget as HTMLAnchorElement).href;
 
         // TypeScript 안전성 확보
         if (window.electronTools && typeof window.electronTools.openExternal === 'function') {
-            window.electronTools.openExternal(url)
+            window.electronTools.openExternal(url);
         } else {
-            console.warn('Electron external link function not available')
+            console.warn('Electron external link function not available');
         }
     }
 
+    /**
+     * Released Ago
+     */
+    function releasedAgo(): number {
+        const today = dayjs();
+        const releasedDateFormat = dayjs(game.gameReleasedDate);
+        return today.diff(releasedDateFormat, "years");
+    }
+
     useEffect(() => {
+        /**
+         * axios를 Electron 메인 프로세스에서 호출하여 CORS 정책을 우회하며 API를 호출한다
+         * @param uri GET할 API 주소
+         */
         const getGamesFromServer = async (uri: string): Promise<Game[]> => {
             const { electronTools } = window as any;
             return await electronTools.fetchData(uri);
@@ -49,9 +66,23 @@ export default function GameDetailPage() {
         });
     }, [id])
 
+    useEffect(function () {
+        async function checkPlatform(): Promise<string>
+        {
+            const { electronTools } = window as any;
+            return electronTools.getPlatform();
+        }
+
+        checkPlatform().then((currentPlatform: string) => {
+            console.log("Current Platform: ", currentPlatform);
+            setIsMac(currentPlatform === 'darwin');
+            console.log("Is Mac: ", bIsMac);
+        });
+    }, [bIsMac, setIsMac]);
+
     const formatDate = (dateString: string) => {
-        if (!dateString) return "미정"
-        return dayjs(dateString).format("YYYY/MM/DD")
+        if (!dateString) return "TBD";
+        return dayjs(dateString).format("YYYY/MM/DD");
     }
 
     if (isLoading) {
@@ -127,8 +158,14 @@ export default function GameDetailPage() {
                             {game.gameDownloadWinURL && (
                                 <Button className="w-full" asChild>
                                     <a href={game.gameDownloadWinURL} target="_blank" rel="noopener noreferrer">
-                                        <Monitor className="mr-2 h-4 w-4" />
-                                        Windows 다운로드
+                                        <Image
+                                            src="/images/platformWindows10.png"
+                                            alt="Windows 다운로드"
+                                            className="mr-2 h-4 w-4"
+                                            width={18}
+                                            height={18}
+                                        />
+                                        다운로드
                                     </a>
                                 </Button>
                             )}
@@ -136,8 +173,14 @@ export default function GameDetailPage() {
                             {game.gameDownloadMacURL && (
                                 <Button className="w-full" variant="secondary" asChild>
                                     <a href={game.gameDownloadMacURL} target="_blank" rel="noopener noreferrer">
-                                        <Apple className="mr-2 h-4 w-4" />
-                                        Mac 다운로드
+                                        <Image
+                                            src="/images/platformMac.png"
+                                            alt="macOS 다운로드"
+                                            className="mr-2 h-4 w-4"
+                                            width={18}
+                                            height={18}
+                                        />
+                                        다운로드
                                     </a>
                                 </Button>
                             )}
@@ -157,11 +200,11 @@ export default function GameDetailPage() {
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <div className="flex items-center gap-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
-                                <span>개발사: <strong>{game.gameDeveloper}</strong></span>
+                                <span>개발: <strong>{game.gameDeveloper}</strong></span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <User className="h-5 w-5 text-muted-foreground" />
-                                <span>퍼블리셔: <strong>{game.gamePublisher}</strong></span>
+                                <span>유통: <strong>{game.gamePublisher}</strong></span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Tag className="h-5 w-5 text-muted-foreground" />
@@ -169,7 +212,7 @@ export default function GameDetailPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-muted-foreground" />
-                                <span>출시일: <strong>{formatDate(game.gameReleasedDate)}</strong></span>
+                                <span>출시: <strong>{formatDate(game.gameReleasedDate)}</strong></span>
                             </div>
                         </div>
 

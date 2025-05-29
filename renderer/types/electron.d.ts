@@ -1,5 +1,6 @@
 import Electron = require("electron");
 import {ipcRenderer, IpcRendererEvent} from "electron";
+import {Platform} from "electron-builder";
 
 /**
  * Should match main/preload.ts for typescript support in renderer
@@ -32,10 +33,13 @@ export interface tools {
     // Show Directory or File selector
     showDialog: (options: Electron.OpenDialogOptions) => Promise<string>,
 
-    // Bypass CORS
+    // Get JSON data with bypassing CORS
     fetchData: (url: string) => Promise<any>,
 
-    openExternal: (url: string) => void
+    // Opens external link
+    openExternal: (url: string) => void,
+
+    getPlatform: () => string,
 }
 
 declare global {

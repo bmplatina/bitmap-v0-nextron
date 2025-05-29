@@ -1,4 +1,4 @@
-export interface Game {
+interface Game {
   gameId: number
   gameTitle: string
   gameLatestRevision: number
@@ -22,7 +22,30 @@ export interface Game {
   gameDescription: string
 }
 
-export interface Metadata {
+interface GameInstallInfo extends Game {
+  gameInstallationPath: string;
+  gameInstalledVersion: number;
+  gameInstallState: EInstallState;
+}
+
+interface Metadata {
   title?: string
   description?: string
 }
+
+interface Settings {
+  id: number,
+  lang: string,
+  screenMode: string,
+}
+
+enum EInstallState {
+  NotInstalled,
+  Downloading,
+  Extracting,
+  Installed,
+  InstallError
+}
+
+export { EInstallState };
+export type { Game, GameInstallInfo, Metadata, Settings };
