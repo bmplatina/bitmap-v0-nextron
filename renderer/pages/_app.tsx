@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
 import { useRouter } from 'next/router';
 import { Provider } from 'react-redux';
+import { setIsMac } from '../lib/slices/platform-slice';
 import { store } from '../lib/store';
 import "../styles/globals.css";
 import { ThemeProvider } from "../components/theme-provider";

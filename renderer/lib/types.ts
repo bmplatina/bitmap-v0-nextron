@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { store } from "./store";
 
 interface Game {
   gameId: number
@@ -52,9 +53,21 @@ enum EInstallState {
 class GameInstallManager {
   constructor() {
     makeAutoObservable(this);
+
+    // Redux 상태 변경 시 MobX 상태도 업데이트
+    this.bIsMac = store.getState().platform.bIsMac;
+
+    // Redux store 구독
+    store.subscribe(() => {
+      const newIsMac = store.getState().platform.bIsMac;
+      if (this.bIsMac !== newIsMac) {
+        this.bIsMac = newIsMac;
+      }
+    });
+
   }
 
-  private bIsMac: boolean;
+  private bIsMac: boolean = true;
 
   // Installation Infos
   private defaultInstallationPath: string | null = '';

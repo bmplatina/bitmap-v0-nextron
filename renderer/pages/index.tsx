@@ -1,7 +1,25 @@
-import { Button } from "../components/ui/button"
-import Link from "next/link"
+import { Button } from "../components/ui/button";
+import Link from "next/link";
+import { useDispatch } from 'react-redux';
+import React from "react";
+import {setIsMac} from "../lib/slices/platform-slice";
 
 export default function Home() {
+    const dispatch = useDispatch();
+
+    React.useEffect(() => {
+        async function checkPlatform(): Promise<string>
+        {
+            const { electronTools } = window as any;
+            return electronTools.getPlatform();
+        }
+
+        checkPlatform().then((currentPlatform: string) => {
+            console.log("Current Platform: ", currentPlatform);
+            dispatch(setIsMac(currentPlatform === 'darwin'));
+        });
+    }, [dispatch]);
+
     return (
         <div className="flex flex-col items-center justify-center h-full p-6 text-center">
             <h1 className="text-4xl font-bold mb-6">Bitmap에 오신 것을 환영합니다</h1>

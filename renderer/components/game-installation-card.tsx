@@ -2,11 +2,13 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Button} from './ui/button';
 import Image from "next/image";
 import {Progress} from "./ui/progress";
-import { EInstallState, GameInstallManager } from "../lib/types";
+import {EInstallState, GameInstallManager} from "../lib/types";
 import {observer} from "mobx-react";
+import {useSelector} from 'react-redux';
+import type {RootState} from '../lib/store';
 
 interface GameInstallationCardProps {
-    gameMgr?: GameInstallManager;
+    index?: number;
     gameTitle?: string;
     gameImageURL?: string;
     gameDownloadProgress?: number;
@@ -16,7 +18,7 @@ interface GameInstallationCardProps {
 }
 
 const GameDetailPage = observer(({
-    gameMgr = undefined,
+    index = 0,
     gameTitle = "GAME_NAME",
     gameImageURL = "",
     gameDownloadProgress = 0,
@@ -24,6 +26,10 @@ const GameDetailPage = observer(({
     gameInstallationPath = '/Users/',
     gameInstallState = EInstallState.Downloading
 }: GameInstallationCardProps) => {
+    const managers = useSelector((state: RootState) => state.gameInstaller.managers);
+    const gameMgr: GameInstallManager = managers[index];
+
+
     return (
         <Card className="flex items-center p-2">
             <Image
@@ -52,25 +58,29 @@ const GameDetailPage = observer(({
                     )}
                 </CardContent>
                 <CardFooter>
-                    <Button 
-                        variant="default" 
-                        className="mr-2" 
-                        onClick={() => gameMgr?.openApp}
-                        disabled={!gameMgr}
-                    >
-                        Play
-                    </Button>
-                    <Button 
-                        variant="destructive" 
-                        className="mr-2" 
-                        onClick={() => gameMgr?.removeApp}
-                        disabled={!gameMgr}
-                    >
-                        Remove
-                    </Button>
-                    <Button variant="secondary" className="mr-2">
-                        Dismiss
-                    </Button>
+                    {gameMgr && gameInstallState === EInstallState.Installed && (
+                        <div>
+                            <Button
+                                variant="default"
+                                className="mr-2"
+                                onClick={gameMgr.openApp}
+                                disabled={!gameMgr}
+                            >
+                                Play
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                className="mr-2"
+                                onClick={gameMgr.removeApp}
+                                disabled={!gameMgr}
+                            >
+                                Remove
+                            </Button>
+                            <Button variant="secondary" className="mr-2">
+                                Dismiss
+                            </Button>
+                        </div>
+                    )}
                 </CardFooter>
             </div>
         </Card>

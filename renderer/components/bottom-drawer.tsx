@@ -17,9 +17,10 @@ import {
 import GameInstallationCard from "./game-installation-card";
 import { Download } from "lucide-react"
 import { Button } from "./ui/button";
+import { GameInstallManager } from "../lib/types";
 
 const BottomDrawer = observer(() => {
-    const managers = useSelector((state: RootState) => state.gameInstaller.managers);
+    const managers: GameInstallManager[] = useSelector((state: RootState) => state.gameInstaller.managers);
 
     return (
         <Drawer>
@@ -47,7 +48,6 @@ const BottomDrawer = observer(() => {
                 {managers.map((manager, index) => (
                     <div key={index}>
                         <GameInstallationCard
-                            gameMgr={manager}
                             gameTitle={manager.getGameTitle}
                             gameImageURL={manager.getGameImageURL}
                             gameDownloadProgress={manager.getDownloadProgress}

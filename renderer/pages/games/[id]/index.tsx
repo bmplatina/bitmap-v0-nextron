@@ -32,9 +32,8 @@ const GameDetailPage = observer(() => {
     const { id } = router.query;
     const [isLoading, setIsLoading] = useState(true);
 
-    const [bIsMac, setIsMac] = useState(false);
-
     const dispatch = useDispatch();
+    const bIsMac: boolean = useSelector((state: RootState) => state.platform.bIsMac);
 
     function pushNewManager() {
         dispatch(addManager(gameInstallManager));
@@ -155,18 +154,8 @@ const GameDetailPage = observer(() => {
     }, [gameInstallManager.getGameInfo]);
 
     useEffect(() => {
-        async function checkPlatform(): Promise<string>
-        {
-            const { electronTools } = window as any;
-            return electronTools.getPlatform();
-        }
-
-        checkPlatform().then((currentPlatform: string) => {
-            console.log("Current Platform: ", currentPlatform);
-            gameInstallManager.setIsMac = currentPlatform === 'darwin';
-            setIsMac(gameInstallManager.getIsMac);
-            console.log("Is Mac: ", bIsMac);
-        });
+        // gameInstallManager.setIsMac = bIsMac;
+        console.log("Is Mac: ", gameInstallManager.getIsMac);
     }, [bIsMac]);
 
     if (isLoading) {
