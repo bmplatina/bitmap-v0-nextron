@@ -2,17 +2,17 @@
 
 import { MouseEvent, Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { GameInstallManager, EInstallState, Game } from "../../../lib/types";
+import { EInstallState, Game, GameInstallManager } from "../../../lib/types";
 import Image from "next/image";
-import { Calendar, Globe, Tag, User } from "lucide-react";
+import { Calendar, Delete, Globe, Play, Tag, User } from "lucide-react";
 import Head from 'next/head';
 import dayjs from "dayjs";
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../../../lib/store';
+import {useDispatch, useSelector} from 'react-redux';
+import type {RootState} from '../../../lib/store';
 
-import { Button } from "../../../components/ui/button";
-import { Badge } from "../../../components/ui/badge";
-import { Input } from "../../../components/ui/input";
+import {Button} from "../../../components/ui/button";
+import {Badge} from "../../../components/ui/badge";
+import {Input} from "../../../components/ui/input";
 import {
     Dialog,
     DialogClose,
@@ -23,9 +23,9 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "../../../components/ui/dialog";
-import { Progress } from "../../../components/ui/progress";
-import { observer } from "mobx-react";
-import { addManager } from "../../../lib/slices/dl-slice";
+import {Progress} from "../../../components/ui/progress";
+import {observer} from "mobx-react";
+import {addManager} from "../../../lib/slices/dl-slice";
 
 const GameDetailPage = observer(() => {
     const router = useRouter();
@@ -34,6 +34,7 @@ const GameDetailPage = observer(() => {
 
     const dispatch = useDispatch();
     const bIsMac: boolean = useSelector((state: RootState) => state.platform.bIsMac);
+    const [bIsCompatible, setIsCompatible] = useState(false);
 
     function pushNewManager() {
         dispatch(addManager(gameInstallManager));
@@ -83,15 +84,20 @@ const GameDetailPage = observer(() => {
      * Check Platform compatibility
      */
     function GetIsPlatformCompatible(): boolean {
-        if(bIsMac) return gameInstallManager.getGameInfo.gamePlatformMac == 1;
-        return gameInstallManager.getGameInfo.gamePlatformWindows == 1;
-    }
+        if(gameInstallManager)
+        {
+            if(bIsMac) {
+                console.log(`GameInstallManager::PlatformMac: ${gameInstallManager.getPlatformMac}`);
+                return gameInstallManager.getPlatformMac;
+            }
 
-    /**
-     * Get Installing State
-     */
-    function GetIsDownloadingOrWritingToDisk(): boolean {
-        return gameInstallManager.getInstallState === EInstallState.Downloading || gameInstallManager.getInstallState === EInstallState.Extracting;
+            console.log(`GameInstallManager::PlatformWin: ${gameInstallManager.getPlatformWin}`);
+            return gameInstallManager.getPlatformWin;
+        }
+        else {
+            console.error("GameInstallManager: 클래스가 Invalid임", gameInstallManager);
+            return false;
+        }
     }
 
     /**
@@ -156,6 +162,8 @@ const GameDetailPage = observer(() => {
     useEffect(() => {
         // gameInstallManager.setIsMac = bIsMac;
         console.log("Is Mac: ", gameInstallManager.getIsMac);
+        setIsCompatible(GetIsPlatformCompatible());
+        console.log(`Game Compatibility: ${bIsCompatible ? "Yes" : "No"}`);
     }, [bIsMac]);
 
     if (isLoading) {
@@ -197,7 +205,7 @@ const GameDetailPage = observer(() => {
     }
 
     return (
-        <>
+        <div>
             <Head>
                 <title>{`Bitmap Store: ${gameInstallManager.getGameInfo.gameTitle}`}</title>
                 <meta name="description" content={gameInstallManager.getGameInfo.gameHeadline || gameInstallManager.getGameInfo.gameDescription} />
@@ -228,57 +236,75 @@ const GameDetailPage = observer(() => {
                                 </Button>
                             )}
 
-                            {/* Install View */}
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="w-full" asChild>
-                                        <div>
-                                            <Image
-                                                src={`/images/${bIsMac ? "platformMac.png" : "platformWindows11.png"}`}
-                                                alt="다운로드"
-                                                className="mr-2 h-4 w-4"
-                                                width={18}
-                                                height={18}
-                                            />
-                                            다운로드
-                                        </div>
+                            {/* When is installed */}
+                            {gameInstallManager.getInstallState === EInstallState.Installed && (
+                                <div>
+                                    <Button className="w-full" asChild onClick={gameInstallManager.openApp}>
+                                        <Play className="mr-2 h-4 w-4" />
+                                        실행
                                     </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>{gameInstallManager.getGameInfo.gameTitle}</DialogTitle>
-                                        <DialogDescription>
-                                            {gameInstallManager.getGameInfo.gameTitle}을(를) 설치합니다.
-                                        </DialogDescription>
-                                    </DialogHeader>
 
-                                    <Input
-                                        readOnly
-                                        onClick={selectDirectory}
-                                        placeholder="Path"
-                                        value={gameInstallManager.getInstallationPath}
-                                    />
+                                    <Button className="w-full" asChild onClick={gameInstallManager.removeApp}>
+                                        <Delete className="mr-2 h-4 w-4" />
+                                        제거
+                                    </Button>
+                                </div>
+                            )}
 
-                                    {GetIsDownloadingOrWritingToDisk() && (
-                                        <div>
-                                            {gameInstallManager.getInstallState === EInstallState.Downloading
-                                                ? `다운로드 중: ${Math.round(gameInstallManager.getDownloadProgress)}%`
-                                                : `디스크에 쓰는 중: ${gameInstallManager.getExtractProgress}`
-                                            }
-                                            <Progress value={gameInstallManager.getInstallState === EInstallState.Downloading
-                                                ? Math.round(gameInstallManager.getDownloadProgress)
-                                                : gameInstallManager.getExtractProgress} />
-                                        </div>
-                                    )}
+                            {/* Install View */}
+                            {bIsCompatible && (
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="w-full" asChild>
+                                            <div>
+                                                <Image
+                                                    src={`/images/${bIsMac ? "platformMac.png" : "platformWindows11.png"}`}
+                                                    alt="다운로드"
+                                                    className="mr-2 h-4 w-4"
+                                                    width={18}
+                                                    height={18}
+                                                />
+                                                다운로드
+                                            </div>
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>{gameInstallManager.getGameInfo.gameTitle}</DialogTitle>
+                                            <DialogDescription>
+                                                {gameInstallManager.getGameInfo.gameTitle}을(를) 설치합니다.
+                                            </DialogDescription>
+                                        </DialogHeader>
 
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button variant="secondary">Cancel</Button>
-                                        </DialogClose>
-                                        <Button onClick={handleDownloadAndInstall}>Delete</Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                                        <Input
+                                            readOnly
+                                            onClick={selectDirectory}
+                                            placeholder="Path"
+                                            value={gameInstallManager.getInstallationPath}
+                                        />
+
+                                        {gameInstallManager.getIsDownloadingOrInstallingState && (
+                                            <div>
+                                                {gameInstallManager.getInstallState === EInstallState.Downloading
+                                                    ? `다운로드 중: ${Math.round(gameInstallManager.getDownloadProgress)}%`
+                                                    : `디스크에 쓰는 중: ${gameInstallManager.getExtractProgress}`
+                                                }
+                                                <Progress value={gameInstallManager.getInstallState === EInstallState.Downloading
+                                                    ? Math.round(gameInstallManager.getDownloadProgress)
+                                                    : gameInstallManager.getExtractProgress} />
+                                            </div>
+                                        )}
+
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button variant="secondary">Cancel</Button>
+                                            </DialogClose>
+                                            <Button onClick={handleDownloadAndInstall}>Delete</Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+
                         </div>
                     </div>
 
@@ -338,7 +364,7 @@ const GameDetailPage = observer(() => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 })
 export default GameDetailPage;

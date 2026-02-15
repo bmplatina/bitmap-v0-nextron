@@ -1,26 +1,76 @@
 "use client"
 
-import { observer } from 'mobx-react-lite';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../lib/store';
+import {observer} from 'mobx-react-lite';
+import {useDispatch, useSelector} from 'react-redux';
+import type {RootState} from '../lib/store';
 
 import {
     Drawer,
-    DrawerTrigger,
+    DrawerClose,
     DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
     DrawerDescription,
     DrawerFooter,
-    DrawerClose
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger
 } from "./ui/drawer";
 import GameInstallationCard from "./game-installation-card";
-import { Download } from "lucide-react"
-import { Button } from "./ui/button";
-import { GameInstallManager } from "../lib/types";
+import {Download} from "lucide-react"
+import {Button} from "./ui/button";
+import {EInstallState, GameInstallManager} from "../lib/types";
+import {addManager} from "../lib/slices/dl-slice";
 
 const BottomDrawer = observer(() => {
     const managers: GameInstallManager[] = useSelector((state: RootState) => state.gameInstaller.managers);
+    const dispatch = useDispatch();
+
+    const createExampleManagerWithInstalledState = () => {
+        createExampleManager(true);
+    }
+
+    const createExampleManagerWithDownloadingState = () => {
+        createExampleManager(false);
+    }
+
+    const createExampleManager = (bIsInstalled: boolean) => {
+        const exampleMgr: GameInstallManager = new GameInstallManager();
+        exampleMgr.setGameInfo = {
+            gameId: 0,
+            gameTitle: "Example Game",
+            gameLatestRevision: 0,
+            gamePlatformWindows: 0,
+            gamePlatformMac: 1,
+            gamePlatformMobile: 0,
+            gameEngine: "Unreal",
+            gameGenre: "Action",
+            gameDeveloper: "Example Developer",
+            gamePublisher: "Example Publisher",
+            isEarlyAccess: 0,
+            isReleased: 0,
+            gameReleasedDate: "2021-01-01",
+            gameWebsite: "https://example.com",
+            gameVideoURL: "dsdfdfssdf",
+            gameDownloadMacURL: "dsdfdfssdf",
+            gameDownloadWinURL: "https://example.com",
+            gameImageURL: "https://example.com",
+            gameBinaryName: "ExampleGame",
+            gameHeadline: "Example Game Headline",
+            gameDescription: "Example Game Description",
+        }
+        // gameTitle={manager.getGameTitle}
+        // gameImageURL={manager.getGameImageURL}
+        // gameDownloadProgress={manager.getDownloadProgress}
+        // gameExtractProgress={manager.getExtractProgress}
+        // gameInstallState={manager.getInstallState}
+        // gameInstallationPath={manager.getInstallationPath}
+
+        exampleMgr.setDownloadProgress = 0;
+        exampleMgr.setExtractProgress = 0;
+        exampleMgr.setInstallState = bIsInstalled ? EInstallState.Downloading : EInstallState.Installed;
+        exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
+
+        dispatch(addManager(exampleMgr));
+    }
 
     return (
         <Drawer>
@@ -47,24 +97,28 @@ const BottomDrawer = observer(() => {
 
                 {managers.map((manager, index) => (
                     <div key={index}>
-                        <GameInstallationCard
-                            gameTitle={manager.getGameTitle}
-                            gameImageURL={manager.getGameImageURL}
-                            gameDownloadProgress={manager.getDownloadProgress}
-                            gameExtractProgress={manager.getExtractProgress}
-                            gameInstallState={manager.getInstallState}
-                            gameInstallationPath={manager.getInstallationPath}
-                        />
+                        {manager.getShowInDownloadDrawer && (
+                            <GameInstallationCard
+                                index={index}
+                                gameTitle={manager.getGameTitle}
+                                gameImageURL={manager.getGameImageURL}
+                                gameDownloadProgress={manager.getDownloadProgress}
+                                gameExtractProgress={manager.getExtractProgress}
+                                gameInstallState={manager.getInstallState}
+                                gameInstallationPath={manager.getInstallationPath}
+                            />
+                        )}
                     </div>
                 ))}
-                <GameInstallationCard gameTitle="Example"/>
+                {/*<GameInstallationCard gameTitle="Example"/>*/}
 
-                {/*<DrawerFooter>*/}
-                {/*    <Button>Action</Button>*/}
-                {/*    <DrawerClose>*/}
-                {/*        <Button variant="outline">Cancel</Button>*/}
-                {/*    </DrawerClose>*/}
-                {/*</DrawerFooter>*/}
+                <DrawerFooter>
+                    {/*<Button variant="secondary" onClick={createExampleManagerWithDownloadingState}>Create Example Manager: Installing</Button>*/}
+                    {/*<Button variant="outline" onClick={createExampleManagerWithInstalledState}>Create Example Manager: Installed</Button>*/}
+                    <DrawerClose>
+                        <Button variant="outline">Cancel</Button>
+                    </DrawerClose>
+                </DrawerFooter>
             </DrawerContent>
         </Drawer>
     )

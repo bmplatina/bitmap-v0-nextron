@@ -68,6 +68,7 @@ class GameInstallManager {
   }
 
   private bIsMac: boolean = true;
+  private bShowInDownloadDrawer = true;
 
   // Installation Infos
   private defaultInstallationPath: string | null = '';
@@ -101,6 +102,14 @@ class GameInstallManager {
   private gameBinaryName: string = '';
   private gameHeadline: string = '';
   private gameDescription: string = '';
+
+  set setShowInDownloadDrawer(bNewVisibility: boolean) {
+    this.bShowInDownloadDrawer = bNewVisibility;
+  }
+
+  get getShowInDownloadDrawer(): boolean {
+    return this.bShowInDownloadDrawer;
+  }
 
   set setGameInfo(newGame: Game | null) {
     if (newGame === null) {
@@ -163,6 +172,10 @@ class GameInstallManager {
     return this.game;
   }
 
+  get getIsDownloadingOrInstallingState(): boolean {
+    return this.installState === EInstallState.Downloading || this.installState === EInstallState.Extracting;
+  }
+
   get getIsMac(): boolean {
     return this.bIsMac;
   }
@@ -178,6 +191,14 @@ class GameInstallManager {
 
   get getGameImageURL(): string {
     return this.gameImageURL;
+  }
+
+  get getPlatformWin(): boolean {
+    return this.game.gamePlatformWindows == 1;
+  }
+
+  get getPlatformMac(): boolean {
+    return this.game.gamePlatformMac == 1;
   }
 
   get getDefaultInstallationPath(): string | null {

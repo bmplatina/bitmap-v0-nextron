@@ -24,10 +24,13 @@ const gameInstallerSlice = createSlice({
         clearManagers: (state) => {
             state.managers = [];
         },
+        removeManagerByIndex: (state, action: PayloadAction<number>) => {
+            state.managers.splice(action.payload, 1);
+        }
     },
 });
 
-export const { addManager, removeManager, clearManagers } =
+export const { addManager, removeManagerByIndex, clearManagers } =
     gameInstallerSlice.actions;
 
 export default gameInstallerSlice.reducer;

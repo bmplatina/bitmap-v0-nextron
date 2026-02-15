@@ -4,8 +4,9 @@ import Image from "next/image";
 import {Progress} from "./ui/progress";
 import {EInstallState, GameInstallManager} from "../lib/types";
 import {observer} from "mobx-react";
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import type {RootState} from '../lib/store';
+import {removeManagerByIndex} from "../lib/slices/dl-slice";
 
 interface GameInstallationCardProps {
     index?: number;
@@ -15,6 +16,7 @@ interface GameInstallationCardProps {
     gameExtractProgress?: number;
     gameInstallationPath?: string;
     gameInstallState?: EInstallState;
+    testInstallState?: boolean;
 }
 
 const GameDetailPage = observer(({
@@ -24,10 +26,40 @@ const GameDetailPage = observer(({
     gameDownloadProgress = 0,
     gameExtractProgress = 0,
     gameInstallationPath = '/Users/',
-    gameInstallState = EInstallState.Downloading
+    gameInstallState = EInstallState.Downloading,
+    testInstallState = false,
 }: GameInstallationCardProps) => {
+    const dispatch = useDispatch();
     const managers = useSelector((state: RootState) => state.gameInstaller.managers);
-    const gameMgr: GameInstallManager = managers[index];
+    const bIsMac = useSelector((state: RootState) => state.platform.bIsMac);
+
+    const dismiss = () => {
+        // if(managers[index]) dispatch(removeManagerByIndex(index));
+        if(managers[index]) managers[index].setShowInDownloadDrawer = false;
+    }
+
+    const openApp = () => {
+        if(managers[index]) {
+            console.log(`Requesting to open ${gameTitle}`);
+            managers[index].setIsMac = bIsMac;
+            managers[index].openApp();
+        }
+        else {
+            console.log(`Failed to open ${gameTitle}. Game install manager is not valid.`);
+        }
+    }
+
+    const removeApp = () => {
+        if(managers[index]) {
+            console.log(`Requesting to remove ${gameTitle}`);
+            managers[index].setIsMac = bIsMac;
+            managers[index].removeApp();
+            dismiss();
+        }
+        else {
+            console.log(`Failed to remove ${gameTitle}. Game install manager is not valid.`);
+        }
+    }
 
 
     return (
@@ -58,25 +90,25 @@ const GameDetailPage = observer(({
                     )}
                 </CardContent>
                 <CardFooter>
-                    {gameMgr && gameInstallState === EInstallState.Installed && (
+                    {managers[index] && gameInstallState === EInstallState.Installed && (
                         <div>
                             <Button
                                 variant="default"
                                 className="mr-2"
-                                onClick={gameMgr.openApp}
-                                disabled={!gameMgr}
+                                onClick={openApp}
+                                disabled={!managers[index]}
                             >
                                 Play
                             </Button>
                             <Button
                                 variant="destructive"
                                 className="mr-2"
-                                onClick={gameMgr.removeApp}
-                                disabled={!gameMgr}
+                                onClick={removeApp}
+                                disabled={!managers[index]}
                             >
                                 Remove
                             </Button>
-                            <Button variant="secondary" className="mr-2">
+                            <Button variant="secondary" className="mr-2" onClick={dismiss}>
                                 Dismiss
                             </Button>
                         </div>

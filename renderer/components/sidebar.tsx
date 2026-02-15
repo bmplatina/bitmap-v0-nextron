@@ -4,9 +4,27 @@ import { usePathname } from "next/navigation"
 import { cn } from "../lib/utils"
 
 import { sidebarItems } from "../lib/sidebar-items";
+import { useDispatch } from "react-redux";
+import React from "react";
+import { setIsMac } from "../lib/slices/platform-slice";
 
 export default function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+
+    const dispatch = useDispatch();
+
+    React.useEffect(() => {
+        async function checkPlatform(): Promise<string>
+        {
+            const { electronTools } = window as any;
+            return electronTools.getPlatform();
+        }
+
+        checkPlatform().then((currentPlatform: string) => {
+            console.log("Current Platform: ", currentPlatform);
+            dispatch(setIsMac(currentPlatform === 'darwin'));
+        });
+    }, [dispatch]);
 
   return (
       <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">

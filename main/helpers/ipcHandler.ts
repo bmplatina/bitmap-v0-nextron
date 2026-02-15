@@ -7,6 +7,9 @@ import { exec } from "child_process";
 import axios from "axios";
 import unzipper from 'unzipper';
 
+const axiosGetCancelToken = axios.CancelToken;
+const source = axiosGetCancelToken.source();
+
 // Parameter store
 import Datastore from 'nedb';
 import type { GameInstallInfo, Settings } from "../../renderer/lib/types";
@@ -42,6 +45,8 @@ class ipcHandle {
 
     private readonly settingsDbPath: string;
     private readonly settingsDb: Datastore<any>;
+
+    private readonly API_URI: string = "https://api.prodbybitmap.com/"
 
     initializeIpc() {
         // 신호등 버튼
@@ -96,6 +101,7 @@ class ipcHandle {
             try {
                 const response = await axios.get(url, {
                     responseType: 'stream',
+                    cancelToken: source.token,
                     onDownloadProgress: (progressEvent) => {
                         const progress = (progressEvent.loaded / progressEvent.total!) * 100;
                         event.sender.send('download-progress', progress);
@@ -114,6 +120,10 @@ class ipcHandle {
                 console.error('다운로드 실패:', error);
                 throw error;
             }
+        });
+
+        ipcMain.handle('download-cancel', async (event) => {
+            source.cancel();
         });
 
         ipcMain.handle('extract-zip', async (event, zipPath) => {
@@ -230,7 +240,7 @@ class ipcHandle {
                         console.error(err);
                         reject(err);
                     } else {
-                        // console.log("GetByIndex Succeed: ", typeof docs, docs);
+                        console.log("GetByIndex Succeed: ", typeof docs, docs);
                         resolve(docs);
                     }
                 })
