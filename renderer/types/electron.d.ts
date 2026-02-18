@@ -1,80 +1,96 @@
 import Electron = require("electron");
-import {ipcRenderer, IpcRendererEvent} from "electron";
-import {Platform} from "electron-builder";
+import { ipcRenderer, IpcRendererEvent } from "electron";
+import { Platform } from "electron-builder";
 
 /**
  * Should match main/preload.ts for typescript support in renderer
  */
 export interface Handler {
-    send: (channel: string, value: unknown) => void,
-    on: (channel: string, callback: (...args: unknown[]) => void) => function,
+  send: (channel: string, value: unknown) => void;
+  on: (channel: string, callback: (...args: unknown[]) => void) => function;
 }
 
 export interface deepLink {
-    setWindowIsReady: (isReady: boolean) => void,
-    onLauncherUrl: (callback) => void,
+  setWindowIsReady: (isReady: boolean) => void;
+  onLauncherUrl: (callback) => void;
 }
 
 export interface tools {
-    onFullscreenChange: (callback: (fullscreenState: boolean) => void) => void,
-    removeFullscreenListener: () => void,
+  onFullscreenChange: (callback: (fullscreenState: boolean) => void) => void;
+  removeFullscreenListener: () => void;
 
-    closeApp: () => void,
-    minimizeApp: () => void,
-    maximizeApp: () => void,
-    isMaximized: () => Promise<boolean>,
+  closeApp: () => void;
+  minimizeApp: () => void;
+  maximizeApp: () => void;
+  isMaximized: () => Promise<boolean>;
 
-    // Show Directory or File selector
-    showDialog: (options: Electron.OpenDialogOptions) => Promise<string>,
+  // Show Directory or File selector
+  showDialog: (options: Electron.OpenDialogOptions) => Promise<string>;
 
-    // Opens external link
-    openExternal: (url: string) => void,
+  // Opens external link
+  openExternal: (url: string) => void;
 
-    getPlatform: () => string,
+  getPlatform: () => string;
 
-    getLocale: () => string,
+  getLocale: () => string;
 
-    getElectronStoredPath: () => Promise<string>,
+  getElectronStoredPath: () => Promise<string>;
 }
 
 export interface bitmapApi {
-    // Get JSON data with bypassing CORS
-    fetchData: (url: string) => Promise<any>,
+  // Axios
+  axiosPost: <T>(
+    uriSubstring: string,
+    body: object,
+    token: string,
+  ) => Promise<T>;
 
-    downloadFile: (url: string | null, savePath: string) => string,
-    onDownloadProgress: (callback: (progress: number) => void) => number,
-    extractZip: (filePath: string) => string,
-    onExtractProgress: (callback: (progress: number) => void) => number,
+  axiosGet: <T>(uriSubstring: string, token?: string) => Promise<T>;
 
-    runCommand: (command: string) => Promise<string>,
+  // Get JSON data with bypassing CORS
+  fetchData: (url: string) => Promise<any>;
 
-    removeFile: (targetPath: string) => Promise<boolean>,
+  downloadFile: (url: string | null, savePath: string) => string;
+  onDownloadProgress: (callback: (progress: number) => void) => number;
+  extractZip: (filePath: string) => string;
+  onExtractProgress: (callback: (progress: number) => void) => number;
 
-    setGameInstallInfo: (value: GameInstallInfo) => Promise<any>,
-    getGameInstallInfoByIndex: (gameIdIndex: number) => Promise<any>,
-    deleteGameInstallInfo: (gameIdIndex: number) => Promise<any>,
-    updateGameInstallInfo: (gameIdIndex: number, gameInstallInfo: GameInstallInfo) => Promise<any>,
+  runCommand: (command: string) => Promise<string>;
 
-    updateSettings: (newSettings: Settings) => Promise<any>,
-    getSettings: () => Promise<any>,
+  removeFile: (targetPath: string) => Promise<boolean>;
 
-    checkPathValid: (dirPath: string) => Promise<boolean>,
+  setGameInstallInfo: (value: GameInstallInfo) => Promise<any>;
+  getGameInstallInfoByIndex: (gameIdIndex: number) => Promise<any>;
+  deleteGameInstallInfo: (gameIdIndex: number) => Promise<any>;
+  updateGameInstallInfo: (
+    gameIdIndex: number,
+    gameInstallInfo: GameInstallInfo,
+  ) => Promise<any>;
 
-    login: (username: string, password: string) => Promise<any>,
-    register: (username: string, email: string, password: string) => Promise<boolean>,
-    logout: () => Promise<any>,
-    getCookies: (cookieName: string) => Promise<string>,
+  updateSettings: (newSettings: Settings) => Promise<any>;
+  getSettings: () => Promise<any>;
+
+  checkPathValid: (dirPath: string) => Promise<boolean>;
+
+  login: (username: string, password: string) => Promise<any>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+  ) => Promise<boolean>;
+  logout: () => Promise<any>;
+  getCookies: (cookieName: string) => Promise<string>;
 }
 
 declare global {
-    interface Window {
-        handler: Handler,
-        deeplink: deepLink,
-        electronTools: tools,
-        bitmapApi: bitmapApi,
-        i18n: {
-            t: (key: string) => Promise<string>;
-            changeLanguage: (lng: string) => Promise<void>;
-        };
-    }
+  interface Window {
+    handler: Handler;
+    deeplink: deepLink;
+    electronTools: tools;
+    bitmapApi: bitmapApi;
+    i18n: {
+      t: (key: string) => Promise<string>;
+      changeLanguage: (lng: string) => Promise<void>;
+    };
+  }
 }
