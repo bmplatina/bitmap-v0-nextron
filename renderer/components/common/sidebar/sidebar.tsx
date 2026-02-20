@@ -39,7 +39,7 @@ export default function Sidebar() {
                   return (
                     <Link
                       key={item.title}
-                      href={item.href}
+                      href={`/${router.locale}${item.href}`}
                       target={
                         item.href.startsWith("http") ? "_blank" : undefined
                       }

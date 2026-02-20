@@ -5,7 +5,8 @@ import { Badge } from "../ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Code, Tag, User } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
 interface GameCardProps {
   game: Game;
@@ -16,7 +17,7 @@ export default function GameCard({
   game,
   linkPrefix = "/games",
 }: GameCardProps) {
-  const locale = await getLocale();
+  const router = useRouter();
   const { t } = useTranslation("GamesView");
 
   return (
@@ -63,12 +64,14 @@ export default function GameCard({
 
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4" />
-            <span>{getLocalizedString(locale, game.gameGenre)}</span>
+            <span>
+              {getLocalizedString(router.locale ?? "en", game.gameGenre)}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{formatDate(locale, game.gameReleasedDate)}</span>
+            <span>{formatDate(router.locale ?? "en", game.gameReleasedDate)}</span>
           </div>
         </div>
       </CardContent>

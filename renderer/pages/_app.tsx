@@ -42,48 +42,43 @@ function RootLayout({ Component, pageProps }: AppProps) {
   }, [launcherUrl, router]);
 
   return (
-    <html lang={i18next.i18n.defaultLocale} suppressHydrationWarning>
-      {/* <body className={`${pretendard.variable} font-sans antialiased`} suppressHydrationWarning>*/}
-      <body suppressHydrationWarning>
-        <Provider store={store}>
-          <React.Fragment>
-            <NextToploader showSpinner={false} />
-            <AuthProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
+    <Provider store={store}>
+      <React.Fragment>
+        <NextToploader showSpinner={false} />
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Theme>
+              <div
+                className={`${pretendard.variable} font-pretendard font-sans antialiased`}
               >
-                <Theme>
-                  <div
-                    className={`${pretendard.variable} font-pretendard font-sans antialiased`}
-                  >
-                    <div className="flex flex-col min-h-screen">
-                      <div className="sticky top-0 z-50 w-full">
-                        <TokenHandler />
-                        <TopBar />
-                      </div>
-                      <div className="flex flex-1">
-                        <aside className="sticky top-12 h-[calc(100vh-48px)] hidden md:block self-start z-30">
-                          <Sidebar />
-                        </aside>
-                        <main className="flex-1 w-full pb-10">
-                          <Component {...pageProps} />
-                          <Footer />
-                          <BottomDrawer />
-                        </main>
-                      </div>
-                    </div>
+                <div className="flex flex-col min-h-screen">
+                  <div className="sticky top-0 z-50 w-full">
+                    <TokenHandler />
+                    <TopBar />
                   </div>
-                  {/* 클라이언트 사이드 로직(토큰 처리)은 별도 컴포넌트로 유지 */}
-                </Theme>
-              </ThemeProvider>
-            </AuthProvider>
-          </React.Fragment>
-        </Provider>
-      </body>
-    </html>
+                  <div className="flex flex-1">
+                    <aside className="sticky top-12 h-[calc(100vh-48px)] hidden md:block self-start z-30">
+                      <Sidebar />
+                    </aside>
+                    <main className="flex-1 w-full pb-10">
+                      <Component {...pageProps} />
+                      <Footer />
+                      <BottomDrawer />
+                    </main>
+                  </div>
+                </div>
+              </div>
+              {/* 클라이언트 사이드 로직(토큰 처리)은 별도 컴포넌트로 유지 */}
+            </Theme>
+          </ThemeProvider>
+        </AuthProvider>
+      </React.Fragment>
+    </Provider>
   );
 }
 

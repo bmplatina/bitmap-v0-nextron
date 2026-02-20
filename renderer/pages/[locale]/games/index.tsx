@@ -1,4 +1,5 @@
 import type { Game } from "@/lib/types";
+import { useEffect, useState } from "react";
 import GameCardCollection from "@/components/games/game-card-collection";
 import { Box, Tabs, Text } from "@radix-ui/themes";
 import { getGames } from "@/lib/games";
@@ -6,8 +7,16 @@ import { useTranslation } from "next-i18next";
 
 export default function GamesPage() {
   // 서버 컴포넌트에서 직접 데이터 가져오기
-  const allGames: Game[] = await getGames("all");
+  const [allGames, setAllGames] = useState<Game[]>([]);
   const { t } = useTranslation("GamesView");
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      const gamesData = await getGames("all");
+      setAllGames(gamesData);
+    };
+    fetchGames();
+  }, []);
 
   return (
     <Tabs.Root defaultValue="released">
