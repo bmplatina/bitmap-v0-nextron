@@ -1,37 +1,36 @@
 import { useTranslation } from "next-i18next";
 import { getGameById, getGameRatesById } from "@/lib/games";
-import { Metadata } from "@/lib/types";
+import { useEffect, useState } from "react";
 import GameDetail from "@/components/games/game-details";
+import { observer } from "mobx-react";
+import { addManager } from "@/lib/slices/dl-slice";
+import { useRouter } from "next/router";
+import { Game, GameRating } from "@/lib/types";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await params;
-  const { t } = useTranslation("GamesView");
-  const game = await getGameById(id);
-
-  if (!game) {
-    return {
-      title: `Bitmap Store: ${t("unknown-game")}`,
-    };
-  }
-
-  return {
-    title: `Bitmap Store: ${game.gameTitle}`,
-  };
-}
-
-export default function GameDetailPage({
+export default observer(function GameDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const router = useRouter();
+  const { id } = router.query;
   const { t } = useTranslation("GamesView");
-  const game = await getGameById(id);
-  const gameRates = await getGameRatesById(id);
+  // const game = await getGameById(id);
+  // const gameRates = await getGameRatesById(id);
+  const [game, setGame] = useState<Game | null>();
+  const [gameRates, setGameRates] = useState<GameRating[]>([]);
+
+  useEffect(() => {
+    const fetchGame = async () => {
+      if (typeof id === "string") {
+        const gameData = await getGameById(id);
+        const gameRatesData = (await getGameRatesById(id)) ?? [];
+        setGameRates(gameRatesData);
+        setGame(gameData);
+      }
+    };
+    fetchGame();
+  }, [id]);
 
   if (!game) {
     return (
@@ -45,4 +44,4 @@ export default function GameDetailPage({
   }
 
   return <GameDetail game={game} gameRates={gameRates ?? []} />;
-}
+});
