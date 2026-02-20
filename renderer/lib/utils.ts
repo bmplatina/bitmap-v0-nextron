@@ -1,7 +1,7 @@
+import axios from "axios";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { Carousel, YouTubeQuery, stringLocalized } from "@/lib/types";
-import axios from "axios";
 import dayjs from "dayjs";
 import localFont from "next/font/local";
 
@@ -12,11 +12,44 @@ function cn(...inputs: ClassValue[]) {
 const imageUriRegExp: RegExp = /^https?:\/\/.*\.(jpg|jpeg|png)$/i;
 
 const pretendard = localFont({
-  src: "../pages/fonts/Pretendard/PretendardVariable.woff2", // 경로 확인 필요
+  src: "../pages/[locale]/fonts/Pretendard/PretendardVariable.woff2", // 경로 확인 필요
   display: "swap",
   variable: "--font-pretendard", // CSS 변수 선언
   weight: "45 920",
 });
+
+async function ssrAxiosGet<T>(
+  uriSubstring: string,
+  token?: string,
+): Promise<T> {
+  const response = await axios.get<T>(getApiLinkByPurpose(uriSubstring), {
+    timeout: 30000,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
+  return response.data;
+}
+
+async function ssrAxiosPost<T>(
+  uriSubstring: string,
+  body: object,
+  token: string,
+): Promise<T> {
+  const response = await axios.post<T>(
+    getApiLinkByPurpose(uriSubstring),
+    body,
+    {
+      timeout: 30000,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  return response.data;
+}
 
 /**
  * 숫자를 지정된 범위 내로 제한합니다.
@@ -130,33 +163,26 @@ function extractYoutubeId(input: string): string {
 function getApiLinkByPurpose(substring: string): string {
   const API_DOMAIN: string = "https://api.prodbybitmap.com/";
 
-  // 클라이언트 환경(브라우저)에서는 CORS 방지를 위해 Next.js Rewrite 프록시 사용
-  if (typeof window !== "undefined") {
-    const basePath = "/absproxy/3000";
-    if (window.location.pathname.startsWith(basePath)) {
-      return `${basePath}/api-proxy/${substring}`;
-    }
-    return `/api-proxy/${substring}`;
-  }
+  // // 클라이언트 환경(브라우저)에서는 CORS 방지를 위해 Next.js Rewrite 프록시 사용
+  // if (typeof window !== "undefined") {
+  //   const basePath = "/absproxy/3000";
+  //   if (window.location.pathname.startsWith(basePath)) {
+  //     return `${basePath}/api-proxy/${substring}`;
+  //   }
+  //   return `/api-proxy/${substring}`;
+  // }
   return `${API_DOMAIN}${substring}`;
 }
 
 // 서버 사이드에서 데이터를 가져오는 함수
 async function getYouTubeVideos(channelId: string): Promise<string[]> {
   try {
-    const response = await axios.get<YouTubeQuery>(
-      getApiLinkByPurpose(`youtube/get-videos/${channelId}`),
-      {
-        timeout: 10000,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const data = await ssrAxiosGet<YouTubeQuery>(
+      `youtube/get-videos/${channelId}`,
     );
 
-    if (response.data?.success) {
-      return response.data.videoIds;
+    if (data?.success) {
+      return data.videoIds;
     }
     return [];
   } catch (error) {
@@ -167,18 +193,9 @@ async function getYouTubeVideos(channelId: string): Promise<string[]> {
 
 async function getCarousel(): Promise<Carousel[]> {
   try {
-    const response = await axios.get<Carousel[]>(
-      getApiLinkByPurpose("general/carousel"),
-      {
-        timeout: 10000, // 10초 타임아웃
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    const data = await ssrAxiosGet<Carousel[]>("general/carousel");
 
-    return response.data;
+    return data;
   } catch (err: any) {
     return [];
   }
@@ -197,4 +214,6 @@ export {
   imageUriRegExp,
   pretendard,
   renderMarkdown,
+  ssrAxiosGet,
+  ssrAxiosPost,
 };

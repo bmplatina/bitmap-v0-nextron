@@ -256,7 +256,32 @@ class GameInstallManager {
   private bIsUpdatable: boolean = false;
 
   // Interface Game
-  private game: Game | null = null;
+  private game: Game = {
+    gameId: 0,
+    isApproved: false,
+    uid: "",
+    gameTitle: "",
+    gameLatestRevision: 0,
+    gamePlatformWindows: false,
+    gamePlatformMac: false,
+    gameEngine: "",
+    gameGenre: { ko: "", en: "" },
+    gameDeveloper: "",
+    gamePublisher: "",
+    isEarlyAccess: false,
+    isReleased: false,
+    gameReleasedDate: "",
+    gameWebsite: "",
+    gameVideoURL: "",
+    gameDownloadMacURL: null,
+    requirementsMac: null,
+    gameDownloadWinURL: null,
+    requirementsWindows: null,
+    gameImageURL: [],
+    gameBinaryName: "",
+    gameHeadline: { ko: "", en: "" },
+    gameDescription: { ko: "", en: "" },
+  };
 
   private gameId: number = 0;
   private isApproved: boolean = false;
@@ -513,7 +538,7 @@ class GameInstallManager {
         console.log("pushInstallState::resolvedData", resolvedData);
         let InstallInfo: GameInstallInfo = {
           ...this.getGameInfo,
-          gameInstallationPath: this.installationPath,
+          gameInstallationPath: this.installationPath ?? "",
           gameInstallState: this.installState,
           gameInstalledVersion: this.currentVersion,
         };
@@ -608,10 +633,12 @@ class GameInstallManager {
     if (this.bIsMac) {
       openCommand = `open "${this.installationPath}/${this.game.gameBinaryName}.app"`;
     } else {
-      if (this.installationPath.charAt(0) === "C") {
-        openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
-      } else {
-        openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+      if (this.installationPath) {
+        if (this.installationPath.charAt(0) === "C") {
+          openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+        } else {
+          openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+        }
       }
     }
 

@@ -1,66 +1,109 @@
-import { BookOpen, Code, Download, Home, GamepadIcon, PlusCircle, Clock, User, Settings, TvMinimalPlay } from "lucide-react";
+import {
+  BookOpen,
+  Code,
+  Download,
+  Home,
+  GamepadIcon,
+  PlusCircle,
+  Clock,
+  User,
+  Settings,
+  Youtube,
+} from "lucide-react";
 
 export const sidebarItems = [
-    {
-        title: "Bitmap",
-        items: [
-            {
-                title: "Bitmap",
-                icon: <Home className="h-5 w-5" />,
-                appIcon: Home,
-                href: "/"
-            },
-        ],
-    },
-    {
-        title: "Bitmap Store",
-        items: [
-            {
-                title: "Games",
-                icon: <GamepadIcon className="h-5 w-5" />,
-                appIcon: GamepadIcon,
-                href: "/games"
-            },
-        ],
-    },
-    {
-        title: "Management",
-        items: [
-            {
-                title: "Register New Game",
-                icon: <PlusCircle className="h-5 w-5" />,
-                appIcon: PlusCircle,
-                href: "/register-game"
-            },
-            {
-                title: "Pending Games",
-                icon: <Clock className="h-5 w-5" />,
-                appIcon: Clock,
-                href: "/pending-games"
-            },
-        ],
-    },
-    {
-        title: "User",
-        items: [
-            {
-                title: "Account",
-                icon: <User className="h-5 w-5" />,
-                appIcon: User,
-                href: "/account"
-            },
-            {
-                title: "About Bitmap App",
-                icon: <Download className="h-5 w-5" />,
-                appIcon: Download,
-                href: "/about"
-            },
-            {
-                title: "Settings",
-                icon: <Settings className="h-5 w-5" />,
-                appIcon: Settings,
-                href: "/settings"
-            },
-        ],
-    },
+  {
+    title: "bitmap",
+    bRequire: "",
+    items: [
+      {
+        title: "bitmap",
+        icon: <Home className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: Home,
+        href: "/",
+      },
+      {
+        title: "bitmap-app",
+        icon: <Download className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: Download,
+        href: "/download",
+      },
+      {
+        title: "bitmap-developer",
+        icon: <Code className="h-5 w-5" />,
+        bRequire: "developer",
+        appIcon: Code,
+        href: "https://developer.prodbybitmap.com",
+      },
+      {
+        title: "bitmap-youtube",
+        icon: <Youtube className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: Youtube,
+        href: "https://youtube.com/@prodbybitmap",
+      },
+      {
+        title: "bitmap-archives",
+        icon: <BookOpen className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: BookOpen,
+        href: "/archives",
+      },
+    ],
+  },
+  {
+    title: "bitmap-store",
+    bRequire: "",
+    items: [
+      {
+        title: "games",
+        icon: <GamepadIcon className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: GamepadIcon,
+        href: "/games",
+      },
+    ],
+  },
+  {
+    title: "publish",
+    bRequire: "login",
+    items: [
+      {
+        title: "publish-dashboard",
+        icon: <PlusCircle className="h-5 w-5" />,
+        bRequire: "developer",
+        appIcon: PlusCircle,
+        href: "/publish",
+      },
+      // {
+      //   title: "games-pending",
+      //   icon: <Clock className="h-5 w-5" />,
+      //   bRequire: "login",
+      //   appIcon: Clock,
+      //   href: "/publish/games/waiting",
+      // },
+    ],
+  },
+  // {
+  //   title: "accounts",
+  //   bRequire: "",
+  //   items: [
+  //     {
+  //       title: "accounts",
+  //       icon: <User className="h-5 w-5" />,
+  //       bRequire: "",
+  //       appIcon: User,
+  //       href: "/account",
+  //     },
+  //     {
+  //       title: "settings",
+  //       icon: <Settings className="h-5 w-5" />,
+  //       bRequire: "",
+  //       appIcon: Settings,
+  //       href: "/settings",
+  //     },
+  //   ],
+  // },
 ];

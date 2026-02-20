@@ -111,7 +111,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "axios-get",
-      async function (event, uriSubstring: string, token?: string) {
+      async (event, uriSubstring: string, token?: string) => {
         const response = await axios.get(
           this.getApiLinkByPurpose(uriSubstring),
           {
@@ -128,12 +128,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "axios-post",
-      async function (
-        event,
-        uriSubstring: string,
-        body: object,
-        token: string,
-      ) {
+      async (event, uriSubstring: string, body: object, token: string) => {
         const response = await axios.post(
           this.getApiLinkByPurpose(uriSubstring),
           body,
