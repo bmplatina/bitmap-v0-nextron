@@ -29,7 +29,7 @@ import {
 } from "../ui/card";
 import GameRateSubmitter from "./game-rate-submitter";
 import GameRateViewer from "./game-rate-viewer";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 
 type GameDetailProps = {
   game: Game;
@@ -107,14 +107,14 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
           <div className="mt-6 space-y-4">
             {game.gameWebsite && (
               <Button variant="outline" className="w-full" asChild>
-                <Link
+                <LocalizedLink
                   href={game.gameWebsite}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <Globe className="mr-2 h-4 w-4" />
                   {t("official-website")}
-                </Link>
+                </LocalizedLink>
               </Button>
             )}
 
@@ -124,13 +124,13 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
               asChild
               disabled={!game.isApproved}
             >
-              <Link
+              <LocalizedLink
                 href={`/download?gameId=${game.gameId}`}
                 rel="noopener noreferrer"
               >
                 <Monitor className="mr-2 h-4 w-4" />
                 {t("view-in-bitmap-app")}
-              </Link>
+              </LocalizedLink>
             </Button>
 
             {/*game.gameDownloadWinURL && (

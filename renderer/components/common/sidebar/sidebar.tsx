@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -17,12 +17,6 @@ export default function Sidebar() {
   React.useEffect(() => {
     console.log("Locale (ready): ", locale);
   }, [locale]);
-
-  function getHref(href: string): string {
-    if (href === "/") return `/${locale}`;
-    else if (href.startsWith("http")) return href;
-    else return `/${locale}${href}`;
-  }
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
@@ -48,22 +42,22 @@ export default function Sidebar() {
                   if (item.bRequire === "teammate" && !bIsTeammate) return null;
 
                   return (
-                    <Link
+                    <LocalizedLink
                       key={item.title}
-                      href={getHref(item.href)}
+                      href={item.href}
                       target={
                         item.href.startsWith("http") ? "_blank" : undefined
                       }
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        router.asPath === getHref(item.href)
+                        router.asPath === item.href
                           ? "bg-accent text-accent-foreground"
                           : "text-muted-foreground",
                       )}
                     >
                       {item.icon}
                       {t(item.title)}
-                    </Link>
+                    </LocalizedLink>
                   );
                 })}
               </div>

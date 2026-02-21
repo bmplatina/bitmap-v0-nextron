@@ -2,7 +2,7 @@ import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { useTranslation } from "next-i18next";
 import BitmapLogo from "@/public/bitmaplogo-notext.png";
 import { Separator } from "@/components/ui/separator";
@@ -55,7 +55,7 @@ export default function AccountPage() {
             <CardContent>
               <Flex direction="column" gap="2">
                 <Button size="3" asChild>
-                  <Link href="https://api.prodbybitmap.com/auth/google">
+                  <LocalizedLink href="https://api.prodbybitmap.com/auth/google">
                     <Image
                       src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
                       alt="Google"
@@ -64,7 +64,7 @@ export default function AccountPage() {
                       style={{ marginRight: "4px" }}
                     />
                     {t("login-google")}
-                  </Link>
+                  </LocalizedLink>
                 </Button>
               </Flex>
             </CardContent>

@@ -1,5 +1,5 @@
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link"
 import { Flex, Separator, Text, Container } from "@radix-ui/themes";
 import Image from "next/image";
 
@@ -18,14 +18,14 @@ export default function Footer() {
           align={{ initial: "start", md: "center" }}
         >
           <Flex gap="4" align="center">
-            <Link href="/">
+            <LocalizedLink href="/">
               <Image
                 src={BitmapLogo}
                 alt="Bitmap Production Logo"
                 width={36}
                 className="invert dark:invert-0 object-contain"
               />
-            </Link>
+            </LocalizedLink>
 
             <Flex direction="column" gap="2">
               <Text size="3" weight="bold" className="tracking-tighter">
@@ -43,41 +43,41 @@ export default function Footer() {
             align="center"
             className="text-muted-foreground"
           >
-            <Link
+            <LocalizedLink
               href="/legal?license=BitmapPrivacy"
               className="hover:text-foreground transition-colors duration-200"
             >
               <Text size="2" weight="medium">
                 {t("privacy-policy")}
               </Text>
-            </Link>
+            </LocalizedLink>
             <Separator orientation="vertical" />
-            <Link
+            <LocalizedLink
               href="/legal?license=BitmapEULA"
               className="hover:text-foreground transition-colors duration-200"
             >
               <Text size="2" weight="medium">
                 {t("terms-of-use")}
               </Text>
-            </Link>
+            </LocalizedLink>
             <Separator orientation="vertical" />
-            <Link
+            <LocalizedLink
               href="/legal?license=sla"
               className="hover:text-foreground transition-colors duration-200"
             >
               <Text size="2" weight="medium">
                 {t("legal")}
               </Text>
-            </Link>
+            </LocalizedLink>
             <Separator orientation="vertical" />
-            <Link
+            <LocalizedLink
               href="/about"
               className="hover:text-foreground transition-colors duration-200"
             >
               <Text size="2" weight="medium">
                 {t("about")}
               </Text>
-            </Link>
+            </LocalizedLink>
           </Flex>
         </Flex>
         <div className="mt-8">

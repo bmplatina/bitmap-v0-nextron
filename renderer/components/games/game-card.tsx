@@ -3,19 +3,19 @@ import { getLocalizedString, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { Calendar, Code, Tag, User } from "lucide-react";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 
 interface GameCardProps {
   game: Game;
-  linkPrefix?: string; // 링크 프리픽스 (기본값: "/games")
+  LocalizedLinkPrefix?: string; // 링크 프리픽스 (기본값: "/games")
 }
 
 export default function GameCard({
   game,
-  linkPrefix = "/games",
+  LocalizedLinkPrefix = "/games",
 }: GameCardProps) {
   const router = useRouter();
   const {
@@ -25,7 +25,10 @@ export default function GameCard({
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-lg">
-      <Link href={`/${locale}/${linkPrefix}/${game.gameId}`} className="block">
+      <LocalizedLink
+        href={`/${locale}/${LocalizedLinkPrefix}/${game.gameId}`}
+        className="block"
+      >
         <div className="relative aspect-[1/1.414] w-full cursor-pointer hover:opacity-90 transition-opacity">
           <Image
             src={
@@ -47,7 +50,7 @@ export default function GameCard({
             </Badge>
           )}
         </div>
-      </Link>
+      </LocalizedLink>
 
       <CardContent className="flex-1 p-4">
         <h3 className="text-xl font-bold mb-2 line-clamp-1">

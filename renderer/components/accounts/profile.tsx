@@ -14,7 +14,7 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "next-i18next";
 import { pretendard, imageUriRegExp } from "@/lib/utils";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import EmailVerificationDialog from "./email-verification";
 
 function ProfilePopover() {
@@ -41,7 +41,9 @@ function ProfilePopover() {
           <ProfileList />
           <Flex direction="column" gap="2" className="mt-3">
             <Button size="3" asChild>
-              <Link href="/account">{t("account-settings")}</Link>
+              <LocalizedLink href="/account">
+                {t("account-settings")}
+              </LocalizedLink>
             </Button>
             {!bIsEmailVerified && (
               <Button
@@ -54,7 +56,7 @@ function ProfilePopover() {
             )}
             {bIsAdmin && (
               <Button size="3" asChild variant="soft">
-                <Link href="/admin">{t("admin-menu")}</Link>
+                <LocalizedLink href="/admin">{t("admin-menu")}</LocalizedLink>
               </Button>
             )}
             <Button size="3" onClick={logout} color="red">

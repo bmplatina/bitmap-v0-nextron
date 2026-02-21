@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import Image from "next/image";
 import type { Game } from "@/lib/types";
 import { AspectRatio } from "@radix-ui/themes";
@@ -26,7 +26,7 @@ export default function GameRedirectButton({
 
   return (
     <>
-      <Link
+      <LocalizedLink
         key={gameId}
         href={disabled ? "#" : `/${locale}/games/${gameId}`}
         className="flex-none w-[85vw] md:w-[300px] aspect-video relative rounded-lg overflow-hidden shadow-md group"
@@ -46,7 +46,7 @@ export default function GameRedirectButton({
             <p className="text-white/80 text-sm font-medium">{gameDeveloper}</p>
           </div>
         </AspectRatio>
-      </Link>
+      </LocalizedLink>
     </>
   );
 }

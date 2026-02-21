@@ -1,5 +1,5 @@
 import { Box, Button, Dialog, Flex, Text } from "@radix-ui/themes";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link"
 import { ReactNode } from "react";
 import { pretendard } from "@/lib/utils";
 
@@ -11,11 +11,11 @@ export default function OpenSourceNotices({
   return (
     <Dialog.Root>
       <Dialog.Trigger>
-        <Link href="#">
+        <LocalizedLink href="#">
           <Text size="2" color="blue" className={pretendard.className}>
             {children}
           </Text>
-        </Link>
+        </LocalizedLink>
       </Dialog.Trigger>
 
       <Dialog.Content maxWidth="450px" className={pretendard.className}>
@@ -62,9 +62,9 @@ export default function OpenSourceNotices({
           </Box>
           <Text>
             Visit{" "}
-            <Link href="https://github.com/bmplatina/bitmap-v0" target="_blank">
+            <LocalizedLink href="https://github.com/bmplatina/bitmap-v0" target="_blank">
               <Text color="blue">GitHub</Text>
-            </Link>{" "}
+            </LocalizedLink>{" "}
             to see all dependencies.
           </Text>
         </Flex>

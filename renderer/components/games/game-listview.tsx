@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { Flex, IconButton, Text } from "@radix-ui/themes";
 import { Edit } from "lucide-react";
 import { Badge } from "../ui/badge";
@@ -18,7 +18,7 @@ export default function GameListView({ game, bIsPublishingMode }: GameProp) {
 
   return (
     <Flex align="center" gap="1">
-      <Link
+      <LocalizedLink
         key={game.gameId}
         href={`/games/${game.gameId}`}
         className="flex-1 min-w-0 flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
@@ -43,16 +43,16 @@ export default function GameListView({ game, bIsPublishingMode }: GameProp) {
             {game.gameDeveloper}
           </Text>
         </div>
-      </Link>
+      </LocalizedLink>
       {bIsPublishingMode && (
         <Flex align="center" gap="3" className="pr-4">
           <Badge>
             {game.isApproved ? t("approved") : t("waiting-for-approval")}
           </Badge>
           <IconButton radius="full" variant="ghost" asChild>
-            <Link href={`/publish/games?edit=${game.gameId}`}>
+            <LocalizedLink href={`/publish/games?edit=${game.gameId}`}>
               <Edit size={18} />
-            </Link>
+            </LocalizedLink>
           </IconButton>
         </Flex>
       )}

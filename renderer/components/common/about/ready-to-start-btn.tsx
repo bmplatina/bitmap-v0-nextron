@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { useAuth } from "@/lib/AuthContext";
 import { Button, Flex, Spinner } from "@radix-ui/themes";
 
@@ -17,23 +15,23 @@ export default function ReadyToStartNavigations() {
             <Flex direction="column" gap="2" align="stretch">
               {!bIsTeammate && (
                 <Button asChild size="3">
-                  <Link href="/account/permissions/team/apply">
+                  <LocalizedLink href="/account/permissions/team/apply">
                     Apply to Bitmap
-                  </Link>
+                  </LocalizedLink>
                 </Button>
               )}
               {!bIsDeveloper && (
                 <Button asChild size="3">
-                  <Link href="/account/permissions/developer/apply">
+                  <LocalizedLink href="/account/permissions/developer/apply">
                     Bitmap Developer
-                  </Link>
+                  </LocalizedLink>
                 </Button>
               )}
             </Flex>
           ) : (
             <Flex direction="column" gap="2" align="stretch">
               <Button asChild size="3">
-                <Link href="/auth">Signin or Signup</Link>
+                <LocalizedLink href="/auth">Signin or Signup</LocalizedLink>
               </Button>
             </Flex>
           )}

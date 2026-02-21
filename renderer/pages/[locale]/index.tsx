@@ -8,7 +8,7 @@ import GameRedirectButton from "@/components/games/game-redirect-button";
 import AutoSliderCarousel from "@/components/common/main-page-carousel";
 import { Suspense } from "react";
 import YouTubeWorksList from "@/components/common/youtube-works-list";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 
 export default function Home() {
   // 서버에서 직접 데이터 페칭
@@ -31,9 +31,9 @@ export default function Home() {
       <div className="flex flex-col items-center w-full p-6 pt-10 text-center space-y-12">
         {/* 유튜브 영상 가로 스크롤 섹션 */}
         <div className="w-full max-w-6xl">
-          <Link href="/about">
+          <LocalizedLink href="/about">
             <h2 className="text-2xl font-bold mb-4 text-left">{t("works")}</h2>
-          </Link>
+          </LocalizedLink>
           <YouTubeWorksList
             bFetchFromClient
             youTubeChannelId_Client="UCL137ZWChauNFsma6ifhNdA"
@@ -41,9 +41,9 @@ export default function Home() {
         </div>
 
         <div className="w-full max-w-6xl">
-          <Link href="/games">
+          <LocalizedLink href="/games">
             <h2 className="text-2xl font-bold mb-4 text-left">{t("games")}</h2>
-          </Link>
+          </LocalizedLink>
           <ScrollArea type="always" scrollbars="horizontal">
             <div className="flex gap-4 pb-4">
               {games.length > 0 ? (

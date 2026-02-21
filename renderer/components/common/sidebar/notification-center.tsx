@@ -17,7 +17,7 @@ import {
   Dialog,
 } from "@radix-ui/themes";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { BellOff, X } from "lucide-react";
 
 interface NotificationCenterProps {
@@ -174,7 +174,7 @@ function NotificationListView({ content }: NotificationListViewProp) {
   const { t } = useTranslation("Notifications");
 
   return (
-    <Link
+    <LocalizedLink
       href={content.redirectionUri || "#"}
       className="flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors w-full"
     >
@@ -200,6 +200,6 @@ function NotificationListView({ content }: NotificationListViewProp) {
           {t(content.content)}
         </Text>
       </div>
-    </Link>
+    </LocalizedLink>
   );
 }

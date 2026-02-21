@@ -1,11 +1,9 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Button, Spinner, Text } from "@radix-ui/themes";
 import { getGameById } from "@/lib/games";
 import type { Game } from "@/lib/types";
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { Download } from "lucide-react";
 
 interface GameProps {
@@ -42,7 +40,7 @@ export default function BitmapAppRedirector({ gameId }: GameProps) {
       asChild
       disabled={bIsFetching}
     >
-      <Link
+      <LocalizedLink
         href={`bitmap://games/${gameId}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -55,7 +53,7 @@ export default function BitmapAppRedirector({ gameId }: GameProps) {
             <Text>Bitmap App에서 {game?.gameTitle} 보기</Text>
           </>
         )}
-      </Link>
+      </LocalizedLink>
     </Button>
   );
 }

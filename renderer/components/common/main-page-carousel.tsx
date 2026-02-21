@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "next-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link"
 import { Button, Text } from "@radix-ui/themes";
 import { getCarousel, getLocalizedString, imageUriRegExp } from "@/lib/utils";
 import type { Carousel } from "@/lib/types";
@@ -143,9 +143,9 @@ export default function AutoSliderCarousel({
             <br />
             {carousel[index].href !== "#" && (
               <Button radius="full" asChild>
-                <Link href={carousel[index].href ?? "#"}>
+                <LocalizedLink href={carousel[index].href ?? "#"}>
                   {getLocalizedString(locale, carousel[index].button)}
-                </Link>
+                </LocalizedLink>
               </Button>
             )}
           </div>

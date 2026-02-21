@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/lib/AuthContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { getGamesByUid } from "@/lib/games";
 import GameListView from "@/components/games/game-listview";
 import { Game } from "@/lib/types";
@@ -89,12 +89,14 @@ export default function SubmitGames() {
             <CardFooter>
               <Flex gap="2">
                 <Button asChild>
-                  <Link href="/publish/games">{t("publish-new")}</Link>
+                  <LocalizedLink href="/publish/games">
+                    {t("publish-new")}
+                  </LocalizedLink>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href="/legal?license=BitmapGameDistributionAgreement">
+                  <LocalizedLink href="/legal?license=BitmapGameDistributionAgreement">
                     {t("distribution-agreement")}
-                  </Link>
+                  </LocalizedLink>
                 </Button>
               </Flex>
             </CardFooter>
@@ -113,7 +115,9 @@ export default function SubmitGames() {
                   {true ? (
                     t("publish-new")
                   ) : (
-                    <Link href="/publish/projectfiles">{t("publish-new")}</Link>
+                    <LocalizedLink href="/publish/projectfiles">
+                      {t("publish-new")}
+                    </LocalizedLink>
                   )}
                 </Button>
               </CardFooter>
@@ -129,7 +133,9 @@ export default function SubmitGames() {
                   {true ? (
                     t("publish-new")
                   ) : (
-                    <Link href="/publish/lectures">{t("publish-new")}</Link>
+                    <LocalizedLink href="/publish/lectures">
+                      {t("publish-new")}
+                    </LocalizedLink>
                   )}
                 </Button>
               </CardFooter>

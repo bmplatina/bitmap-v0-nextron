@@ -13,7 +13,7 @@ import {
 import { useTranslation } from "next-i18next";
 import BitmapAppAnim from "@/components/common/bitmap-app/bitmap-app-anim";
 import BitmapLogo from "@/public/bitmaplogo-notext.png";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import {
   FadeIn,
   FadeInUp,
@@ -166,7 +166,7 @@ export default function BitmapAbout() {
               </Text>
               <ReadyToStartNavigations />
               <Button asChild>
-                <Link href="/">Get Started</Link>
+                <LocalizedLink href="/">Get Started</LocalizedLink>
               </Button>
             </Flex>
           </FadeInWithScale>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link"
 import { Avatar, Flex, IconButton, Text } from "@radix-ui/themes";
 import type {
   MembershipApplies,
@@ -21,7 +21,7 @@ function MembershipApplicationListElement({ content }: ApplicationProps) {
 
   return (
     <Flex align="center" gap="1">
-      <Link
+      <LocalizedLink
         key={content.id}
         href={
           content.isApproved ? "#" : `/admin/members/action?apply=${content.id}`
@@ -44,20 +44,20 @@ function MembershipApplicationListElement({ content }: ApplicationProps) {
             {content.name}
           </Text>
         </div>
-      </Link>
+      </LocalizedLink>
       <Flex align="center" gap="3" className="pr-4">
         {content.isApproved ? (
           <IconButton radius="full" variant="ghost" asChild>
-            <Link href={`/admin/members/action?kick=${content.uid}`}>
+            <LocalizedLink href={`/admin/members/action?kick=${content.uid}`}>
               <Trash2 color="red" size={18} />
-            </Link>
+            </LocalizedLink>
           </IconButton>
         ) : (
           <>
             <IconButton radius="full" variant="ghost" asChild>
-              <Link href={`/admin/members/action?edit=${content.id}`}>
+              <LocalizedLink href={`/admin/members/action?edit=${content.id}`}>
                 <Edit size={18} />
-              </Link>
+              </LocalizedLink>
             </IconButton>
             <Badge>{t("pending")}</Badge>
           </>
@@ -85,7 +85,7 @@ function MembershipLeavingRequestListElement({ content }: LeavingProps) {
 
   return (
     <Flex align="center" gap="1">
-      <Link
+      <LocalizedLink
         key={content.id}
         href={`/admin/members/action?leave=${content.id}`}
         className="flex-1 min-w-0 flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
@@ -106,12 +106,12 @@ function MembershipLeavingRequestListElement({ content }: LeavingProps) {
             {user.email}
           </Text>
         </div>
-      </Link>
+      </LocalizedLink>
       <Flex align="center" gap="3" className="pr-4">
         <IconButton radius="full" variant="ghost" asChild>
-          <Link href={`/admin/members/action?leave=${content.id}`}>
+          <LocalizedLink href={`/admin/members/action?leave=${content.id}`}>
             <Trash2 color="red" size={18} />
-          </Link>
+          </LocalizedLink>
         </IconButton>
       </Flex>
     </Flex>

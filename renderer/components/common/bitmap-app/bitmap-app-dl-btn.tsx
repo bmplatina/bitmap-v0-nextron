@@ -1,10 +1,8 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { Button, Text, Flex } from "@radix-ui/themes";
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import Image from "next/image";
 import { UAParser } from "ua-parser-js";
 
@@ -41,7 +39,7 @@ export default function BitmapAppDownloadButton() {
         className="w-full cursor-pointer"
         asChild
       >
-        <Link
+        <LocalizedLink
           href={
             osName === "Windows"
               ? "https://github.com/bmplatina/bitmap/releases/download/v0.1.4-alpha/Bitmap.Setup.0.1.4.exe"
@@ -60,11 +58,11 @@ export default function BitmapAppDownloadButton() {
             }}
           />
           <Text weight="bold">{t("bitmap-app")}</Text>
-        </Link>
+        </LocalizedLink>
       </Button>
 
       <Button size="1" variant="ghost" color="gray" asChild>
-        <Link
+        <LocalizedLink
           href={
             osName === "Windows"
               ? "https://github.com/bmplatina/bitmap/releases/download/v0.1.4-alpha/Bitmap-0.1.4-universal.dmg"
@@ -72,7 +70,7 @@ export default function BitmapAppDownloadButton() {
           }
         >
           또는 {osName === "Windows" ? "macOS" : "Windows"} 앱 다운로드하기
-        </Link>
+        </LocalizedLink>
       </Button>
     </Flex>
   );

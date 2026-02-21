@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "next-i18next";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { Flex, Text } from "@radix-ui/themes";
 import { FileText } from "lucide-react";
 import type { DocumentArchives } from "@/lib/types";
@@ -19,7 +19,7 @@ export default function ArchiveListView({ doc }: ArchiveProp) {
 
   return (
     <Flex align="center" gap="1">
-      <Link
+      <LocalizedLink
         key={doc.id}
         href={`/archives?title=${doc.title}`}
         className="flex-1 min-w-0 flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
@@ -35,7 +35,7 @@ export default function ArchiveListView({ doc }: ArchiveProp) {
             {formatDate(locale, doc.lastUpdatedAt)}
           </Text>
         </div>
-      </Link>
+      </LocalizedLink>
     </Flex>
   );
 }

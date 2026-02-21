@@ -6,7 +6,7 @@ import { Avatar, Box, Button, Flex, Text } from "@radix-ui/themes";
 import { motion } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { getMembers } from "@/lib/general";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 
 export default function MemberList() {
   const [members, setMembers] = useState<MembershipApplies[]>([]);
@@ -76,7 +76,7 @@ export default function MemberList() {
                   size="6"
                   asChild
                 >
-                  <Link
+                  <LocalizedLink
                     href={`https://www.youtube.com/${member.youtubeHandle}`}
                     target="_blank"
                     rel="noopener noreferrer"

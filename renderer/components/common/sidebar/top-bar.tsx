@@ -4,7 +4,7 @@ import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, BellDot, Search as SearchIcon, Menu, X } from "lucide-react";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { imageUriRegExp } from "@/lib/utils";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
@@ -103,7 +103,7 @@ export default function TopBar() {
         }
       >
         {/* 로고 이미지 */}
-        <Link
+        <LocalizedLink
           href="/"
           className="flex items-center"
           style={{
@@ -122,7 +122,7 @@ export default function TopBar() {
             className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity invert dark:invert-0 object-contain"
             priority
           />
-        </Link>
+        </LocalizedLink>
 
         {/* 검색 폼 */}
         <Search
@@ -178,7 +178,7 @@ export default function TopBar() {
                 )}
                 {getIsSigninButtonActive() && (
                   <Button radius="full" asChild>
-                    <Link href="/auth">{t("signin")}</Link>
+                    <LocalizedLink href="/auth">{t("signin")}</LocalizedLink>
                   </Button>
                 )}
               </>

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { User, Youtube, Building2 } from "lucide-react";
 import type { MembershipApplies, MembershipLeaves } from "@/lib/types";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { useTranslation } from "next-i18next";
 import MultiLineText from "@/components/common/multi-line-text";
 import GrantButton from "./membership-approve-btn";
@@ -208,13 +208,13 @@ export default function MembershipApplicationViewer({
                 <Text as="label" weight="bold" size="5">
                   {t("work-submission")}
                 </Text>
-                <Link
+                <LocalizedLink
                   href={applyContent.portfolio}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <Text>{applyContent.portfolio}</Text>
-                </Link>
+                </LocalizedLink>
               </Flex>
             </Flex>
           </CardContent>

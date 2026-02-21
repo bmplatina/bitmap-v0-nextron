@@ -6,7 +6,7 @@ import { TextField } from "@radix-ui/themes";
 import { useAuth } from "@/lib/AuthContext";
 import { login as loginPost } from "@/lib/auth";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import LocalizedLink from "@/components/common/localized-link";
 import { useTranslation } from "next-i18next";
 
 export default function LoginElements() {
@@ -85,13 +85,13 @@ export default function LoginElements() {
         {bIsRequestingLogin ? <Spinner /> : <Text>{t("login")}</Text>}
       </Button>
 
-      <Link href="/auth/signup">
+      <LocalizedLink href="/auth/signup">
         <Button variant="ghost">{t("register")}</Button>
-      </Link>
+      </LocalizedLink>
 
-      <Link href="/auth/troubleshoot">
+      <LocalizedLink href="/auth/troubleshoot">
         <Button variant="ghost">{t("troubleshoot-auth")}</Button>
-      </Link>
+      </LocalizedLink>
     </Flex>
   );
 }
