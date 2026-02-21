@@ -13,7 +13,7 @@ const config = {
       ? path.resolve("./renderer/public/locales")
       : "/public/locales",
   react: {
-    useSuspense: false,
+    useSuspense: true,
   },
 };
 
