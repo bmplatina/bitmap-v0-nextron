@@ -18,6 +18,12 @@ export default function Sidebar() {
     console.log("Locale (ready): ", locale);
   }, [locale]);
 
+  function getHref(href: string): string {
+    if (href === "/") return `/${locale}`;
+    else if (href.startsWith("http")) return href;
+    else return `/${locale}${href}`;
+  }
+
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
       {/* 사이드바 콘텐츠 */}
@@ -44,17 +50,13 @@ export default function Sidebar() {
                   return (
                     <Link
                       key={item.title}
-                      href={
-                        item.href.startsWith("http")
-                          ? item.href
-                          : `/${locale}${item.href}`
-                      }
+                      href={getHref(item.href)}
                       target={
                         item.href.startsWith("http") ? "_blank" : undefined
                       }
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        router.asPath === `/${locale}${item.href}`
+                        router.asPath === getHref(item.href)
                           ? "bg-accent text-accent-foreground"
                           : "text-muted-foreground",
                       )}

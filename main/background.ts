@@ -85,10 +85,10 @@ const getMainWindowWhenReady = async () => {
   });
 
   if (bIsProd) {
-    await mainWindow.loadURL(`app://./${locale}/home`);
+    await mainWindow.loadURL(`app://./${locale}`);
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/${locale}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}/${locale}`);
     mainWindow.webContents.openDevTools();
   }
 

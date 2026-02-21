@@ -8,11 +8,7 @@ import { addManager } from "@/lib/slices/dl-slice";
 import { useRouter } from "next/router";
 import { Game, GameRating } from "@/lib/types";
 
-export default observer(function GameDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default observer(function GameDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const { t } = useTranslation("GamesView");

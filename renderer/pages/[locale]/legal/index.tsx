@@ -1,7 +1,6 @@
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { getLocalizedString } from "@/lib/utils";
 import { getEula } from "@/lib/general";
-import type { searchParamsPropsSSR } from "@/lib/types";
 import { useTranslation } from "next-i18next";
 import SmartMarkdown from "@/components/common/markdown/markdown-renderer";
 import { Text } from "@radix-ui/themes";

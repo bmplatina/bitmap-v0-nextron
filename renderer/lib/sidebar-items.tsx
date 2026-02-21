@@ -24,13 +24,6 @@ export const sidebarItems = [
         href: "/",
       },
       {
-        title: "bitmap-app",
-        icon: <Download className="h-5 w-5" />,
-        bRequire: "",
-        appIcon: Download,
-        href: "/download",
-      },
-      {
         title: "bitmap-developer",
         icon: <Code className="h-5 w-5" />,
         bRequire: "developer",
@@ -43,13 +36,6 @@ export const sidebarItems = [
         bRequire: "",
         appIcon: Youtube,
         href: "https://youtube.com/@prodbybitmap",
-      },
-      {
-        title: "bitmap-archives",
-        icon: <BookOpen className="h-5 w-5" />,
-        bRequire: "",
-        appIcon: BookOpen,
-        href: "/archives",
       },
     ],
   },

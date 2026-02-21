@@ -42,8 +42,8 @@ function RootLayout({ Component, pageProps }: AppProps) {
   }, [launcherUrl, router]);
 
   return (
-    <Provider store={store}>
-      <React.Fragment>
+    <React.Fragment>
+      <Provider store={store}>
         <NextToploader showSpinner={false} />
         <AuthProvider>
           <ThemeProvider
@@ -77,8 +77,8 @@ function RootLayout({ Component, pageProps }: AppProps) {
             </Theme>
           </ThemeProvider>
         </AuthProvider>
-      </React.Fragment>
-    </Provider>
+      </Provider>
+    </React.Fragment>
   );
 }
 

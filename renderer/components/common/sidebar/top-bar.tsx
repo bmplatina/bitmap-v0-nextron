@@ -7,7 +7,6 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { imageUriRegExp } from "@/lib/utils";
 import Image from "next/image";
-import { MobileSidebar } from "./mobile-sidebar";
 import { useTranslation } from "next-i18next";
 import {
   Avatar,
@@ -32,10 +31,6 @@ export default function TopBar() {
   const [bIsMacOS, setIsMacOS] = useState(false); // 예시 값, 실제로는 MacOS 감지 로직 필요
   const [titleTransform, setTitleTransform] = useState("translateX(0px)");
 
-  // 모바일 사이드바 상태 관리
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  // 모바일 검색창 상태 관리
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   // 프로필 팝오버 상태 관리
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   // 스크롤 상태 관리
@@ -74,19 +69,7 @@ export default function TopBar() {
   // 라우트 변경 시 팝오버 및 사이드바 닫기
   useEffect(() => {
     setIsProfileOpen(false);
-    setIsMobileSidebarOpen(false);
-    setIsMobileSearchOpen(false);
   }, [router.pathname]);
-
-  // 모바일 사이드바 토글
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(!isMobileSidebarOpen);
-  };
-
-  // 모바일 사이드바 닫기
-  const closeMobileSidebar = () => {
-    setIsMobileSidebarOpen(false);
-  };
 
   function getIsSigninButtonActive(): boolean {
     const authPageRegExp: RegExp = /^\/auth/;
@@ -119,25 +102,10 @@ export default function TopBar() {
             : electronDragCss
         }
       >
-        {/* 모바일 메뉴 버튼 */}
-        <div className={`md:hidden mr-3 ${isMobileSearchOpen ? "hidden" : ""}`}>
-          <IconButton
-            variant="ghost"
-            radius="full"
-            className="h-8 w-8"
-            onClick={toggleMobileSidebar}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">{t("open-menu")}</span>
-          </IconButton>
-        </div>
-
         {/* 로고 이미지 */}
         <Link
           href="/"
-          className={`flex items-center ${
-            isMobileSearchOpen ? "hidden md:flex" : ""
-          }`}
+          className="flex items-center"
           style={{
             ...electronNoDragCss,
             transform: titleTransform,
@@ -158,33 +126,11 @@ export default function TopBar() {
 
         {/* 검색 폼 */}
         <Search
-          className={
-            isMobileSearchOpen
-              ? "flex-1 relative block"
-              : "hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full"
-          }
+          className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full"
           style={electronNoDragCss}
         />
 
         <div className="ml-auto pl-2 flex items-center gap-2">
-          {/* 모바일 검색 토글 버튼 */}
-          <div className="md:hidden flex items-center">
-            <IconButton
-              variant="ghost"
-              radius="full"
-              className="h-8 w-8"
-              onClick={() => {
-                setIsMobileSearchOpen(!isMobileSearchOpen);
-              }}
-            >
-              {isMobileSearchOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <SearchIcon className="h-5 w-5" />
-              )}
-              <span className="sr-only">{t("search-toggle")}</span>
-            </IconButton>
-          </div>
           <Flex gap="4" className="items-center">
             {isLoading ? (
               <Spinner />
@@ -240,46 +186,6 @@ export default function TopBar() {
           </Flex>
         </div>
       </div>
-
-      {/* 모바일 사이드바 오버레이 */}
-      {isMobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          {/* 배경 오버레이 */}
-          <div
-            className="fixed inset-0 bg-black/50"
-            onClick={closeMobileSidebar}
-          />
-
-          {/* 사이드바 */}
-          <div
-            className={`fixed left-0 top-0 h-full w-64 border-r shadow-lg transform transition-transform duration-300 ease-in-out ${
-              isScrolled ? "border-border/50" : "bg-background border-border"
-            } flex flex-col`}
-            style={{
-              WebkitBackdropFilter: "saturate(180%) blur(20px)",
-              backdropFilter: "saturate(180%) blur(20px)",
-              backgroundColor: "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
-            }}
-          >
-            {/* 사이드바 헤더 */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">{t("menu")}</h2>
-              <IconButton
-                variant="ghost"
-                className="h-8 w-8"
-                radius="full"
-                onClick={closeMobileSidebar}
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">{t("close-menu")}</span>
-              </IconButton>
-            </div>
-
-            {/* 사이드바 콘텐츠 */}
-            <MobileSidebar onItemClick={closeMobileSidebar} />
-          </div>
-        </div>
-      )}
     </>
   );
 }
