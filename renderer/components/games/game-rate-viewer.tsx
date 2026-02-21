@@ -1,4 +1,5 @@
-import { getLocale, getTranslations } from "next-intl/server";
+import { useTranslation } from "next-i18next";
+import { useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { getProfile } from "@/lib/auth";
 import {
@@ -12,7 +13,7 @@ import {
 import { Star } from "lucide-react";
 import GameRateSubmitter from "./game-rate-submitter";
 import { Flex, Text } from "@radix-ui/themes";
-import { GameRating } from "@/lib/types";
+import { GameRating, UserProfile } from "@/lib/types";
 
 interface GameRateViewerProp {
   gameRates: GameRating[];
@@ -36,9 +37,17 @@ interface GameRateProp {
   rate: GameRating;
 }
 
-async function GameRateSingle({ rate }: GameRateProp) {
-  const locale = await getLocale();
-  const author = await getProfile(undefined, rate.uid);
+function GameRateSingle({ rate }: GameRateProp) {
+  const { i18n } = useTranslation();
+  const locale = i18n.language;
+  const [author, setAuthor] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    getProfile(undefined, rate.uid).then((res) => {
+      setAuthor(res as UserProfile);
+    });
+  }, [rate.uid]);
+
   return (
     <>
       <Card>
@@ -72,8 +81,7 @@ async function GameRateSingle({ rate }: GameRateProp) {
   );
 }
 
-async function GameRateEmpty() {
-  const locale = await getLocale();
+function GameRateEmpty() {
   const { t } = useTranslation("GamesView");
 
   return (

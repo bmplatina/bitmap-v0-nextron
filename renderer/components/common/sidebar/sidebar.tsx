@@ -11,9 +11,12 @@ export default function Sidebar() {
   const router = useRouter();
   const { bIsLoggedIn, bIsDeveloper, bIsTeammate, bIsAdmin } = useAuth();
   const { i18n, t } = useTranslation("Sidebar");
-  const locale = i18n.language || (router.query.locale as string) || "en";
 
-  React.useEffect(() => console.log("Locale: ", locale), [locale]);
+  const locale = (router.query.locale as string) || i18n.language || "en";
+
+  React.useEffect(() => {
+    console.log("Locale (ready): ", locale);
+  }, [locale]);
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">

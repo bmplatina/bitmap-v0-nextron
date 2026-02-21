@@ -30,7 +30,7 @@ const GameRedirectButton = dynamic(
 
 export default function GameAssetsUploader() {
   const { t } = useTranslation("GameSubmit");
-  const t_common = useTranslations("Common");
+  const { t: t_common } = useTranslation("common");
   const {
     gameData: game,
     updateField,

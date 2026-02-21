@@ -1,26 +1,30 @@
-"use client";
-
 import { useRouter } from "next/router";
-import { useParams } from "next/navigation";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "next-i18next";
 
 export default function LanguageSwitch() {
   const router = useRouter();
-  const locale = router.locale;
-  const params = useParams();
+  const { i18n } = useTranslation();
 
+  const locale = (router.query.locale as string) || i18n.language || "en";
   const isEnglish = locale === "en";
 
   const handleLocaleChange = (checked: boolean) => {
     const nextLocale = checked ? "en" : "ko";
 
-    router.replace(
-      // @ts-expect-error: dynamic params 타입을 위해 추가
-      { pathname: router.pathname, params },
-      { locale: nextLocale },
-    );
+    const { pathname, asPath, query } = router;
+
+    // 현재 경로에서 /locale/ 부분을 새 locale로 교체
+    const newAsPath = asPath.replace(`/${locale}`, `/${nextLocale}`);
+
+    // 만약 asPath가 그냥 /locale/ 이었다면 nextLocale로
+    if (asPath === `/${locale}` || asPath === `/${locale}/`) {
+      router.push(`/${nextLocale}`);
+    } else {
+      router.push(newAsPath);
+    }
   };
 
   return (

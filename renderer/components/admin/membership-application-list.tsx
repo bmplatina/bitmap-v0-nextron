@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { Avatar, Flex, IconButton, Text } from "@radix-ui/themes";
@@ -15,7 +16,7 @@ interface ApplicationProps {
   content: MembershipApplies;
 }
 
-async function MembershipApplicationListElement({ content }: ApplicationProps) {
+function MembershipApplicationListElement({ content }: ApplicationProps) {
   const { t } = useTranslation("Admin");
 
   return (
@@ -70,10 +71,17 @@ interface LeavingProps {
   content: MembershipLeaves;
 }
 
-async function MembershipLeavingRequestListElement({ content }: LeavingProps) {
+function MembershipLeavingRequestListElement({ content }: LeavingProps) {
   const { t } = useTranslation("Admin");
+  const [user, setUser] = useState<UserQueriedByUid | null>(null);
 
-  const user: UserQueriedByUid = await getProfile(undefined, content.uid);
+  useEffect(() => {
+    getProfile(undefined, content.uid).then((res) => {
+      setUser(res as UserQueriedByUid);
+    });
+  }, [content.uid]);
+
+  if (!user) return null;
 
   return (
     <Flex align="center" gap="1">

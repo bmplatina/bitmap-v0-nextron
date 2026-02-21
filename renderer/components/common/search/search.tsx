@@ -22,7 +22,7 @@ interface SearchProps {
 }
 
 export default function Search({ className, placeholder, style }: SearchProps) {
-  const { t } = useTranslation("Common");
+  const { t } = useTranslation("common");
   const router = useRouter();
 
   // 스크롤 상태 관리

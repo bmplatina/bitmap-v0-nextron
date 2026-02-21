@@ -17,7 +17,7 @@ import {
 import { User, Youtube, Building2 } from "lucide-react";
 import type { MembershipApplies, MembershipLeaves } from "@/lib/types";
 import Link from "next/link";
-import { getTranslations, getLocale } from "next-intl/server";
+import { useTranslation } from "next-i18next";
 import MultiLineText from "@/components/common/multi-line-text";
 import GrantButton from "./membership-approve-btn";
 
@@ -25,11 +25,11 @@ interface MembershipApplicationProps {
   applyContent: MembershipApplies;
 }
 
-async function MembershipApplicationViewer({
+export default function MembershipApplicationViewer({
   applyContent,
 }: MembershipApplicationProps) {
-  const { t } = useTranslation("BitmapTeammate");
-  const locale = await getLocale();
+  const { t, i18n } = useTranslation("BitmapTeammate");
+  const locale = i18n.language;
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -280,9 +280,9 @@ interface MembershipLeavingProps {
   leaveContent: MembershipLeaves;
 }
 
-async function MembershipLeaveViewer({ leaveContent }: MembershipLeavingProps) {
-  const { t } = useTranslation("BitmapTeammate");
-  const locale = await getLocale();
+function MembershipLeaveViewer({ leaveContent }: MembershipLeavingProps) {
+  const { t, i18n } = useTranslation("BitmapTeammate");
+  const locale = i18n.language;
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">

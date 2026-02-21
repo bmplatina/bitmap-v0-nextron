@@ -23,7 +23,7 @@ export async function getI18nProperties(
 ) {
   const locale = context?.params?.locale ?? i18next.i18n.defaultLocale;
   return {
-    ...(await serverSideTranslations(locale, namespaces)),
+    ...(await serverSideTranslations(locale, namespaces, i18next)),
   };
 }
 

@@ -16,6 +16,7 @@ import "./globals.css";
 import "@radix-ui/themes/styles.css";
 import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
+import nextI18NextConfig from "../../next-i18next.config";
 import { pretendard } from "@/lib/utils";
 
 function RootLayout({ Component, pageProps }: AppProps) {
@@ -81,4 +82,4 @@ function RootLayout({ Component, pageProps }: AppProps) {
   );
 }
 
-export default appWithTranslation(RootLayout);
+export default appWithTranslation(RootLayout, nextI18NextConfig);

@@ -25,7 +25,7 @@ import Search from "@/components/common/search/search";
 
 export default function TopBar() {
   const router = useRouter();
-  const { t } = useTranslation("Common");
+  const { t } = useTranslation("common");
   const { bIsLoggedIn, username, isLoading, avatarUri } = useAuth();
   // Electron 및 MacOS 환경 감지 변수 (실제 감지 코드는 구현하지 않음)
   const bIsElectron: boolean = false; // 예시 값, 실제로는 Electron 감지 로직 필요

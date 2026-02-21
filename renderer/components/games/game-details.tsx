@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import type { Game, GameRating } from "@/lib/types";
+import { Suspense, useEffect, useState } from "react";
+import type { Game, GameRating, UserProfile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { formatDate, imageUriRegExp } from "@/lib/utils";
 import { getProfile } from "@/lib/auth";
-import { getTranslations, getLocale } from "next-intl/server";
+import { useTranslation } from "next-i18next";
 import { getLocalizedString } from "@/lib/utils";
 import SmartMarkdown from "@/components/common/markdown/markdown-renderer";
 import { Box, Card, Flex, ScrollArea, Tabs, Text } from "@radix-ui/themes";
@@ -37,8 +37,18 @@ type GameDetailProps = {
 };
 
 export default function GameDetail({ game, gameRates }: GameDetailProps) {
-  const { t } = useTranslation("GamesView");
-  const locale = await getLocale();
+  const { t, i18n } = useTranslation("GamesView");
+  const locale = i18n.language;
+  const [author, setAuthor] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (game?.uid) {
+      getProfile(undefined, game.uid).then((res) => {
+        setAuthor(res as UserProfile);
+      });
+    }
+  }, [game?.uid]);
+
   let rateAvg: number = 0;
 
   for (const rate of gameRates) {
@@ -56,8 +66,6 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
       </div>
     );
   }
-
-  const author = await getProfile(undefined, game.uid);
 
   return (
     <div className="container mx-auto p-6 w-full">

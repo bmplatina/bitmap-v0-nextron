@@ -8,7 +8,13 @@ const config = {
   },
   debug: process.env.NODE_ENV === "development",
   reloadOnPrerender: process.env.NODE_ENV === "development",
-  localePath: path.resolve("./renderer/public/locales"),
+  localePath:
+    typeof window === "undefined"
+      ? path.resolve("./renderer/public/locales")
+      : "/public/locales",
+  react: {
+    useSuspense: false,
+  },
 };
 
 module.exports = config;

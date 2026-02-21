@@ -16,7 +16,8 @@ import {
   Pencil,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 import {
   Box,
   Callout,
@@ -57,9 +58,9 @@ import {
 } from "@/components/ui/dialog";
 
 export default function GameStoreViewEditor() {
-  const locale = useLocale();
-  const { t } = useTranslation("GamesView");
-  const t_gameSubmit = useTranslations("GameSubmit");
+  const { i18n, t } = useTranslation("GamesView");
+  const { t: t_gameSubmit } = useTranslation("GameSubmit");
+  const locale = i18n.language;
   const {
     gameData: game,
     updateField,

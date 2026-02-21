@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Calendar, User, Tag, Globe, Monitor, Code } from "lucide-react";
 import { formatDate, getLocalizedString, imageUriRegExp } from "@/lib/utils";
 import { getProfile } from "@/lib/auth";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslation } from "next-i18next";
 import ClientMarkdown from "@/components/common/markdown/client-markdown";
 import { Box, ScrollArea, Tabs, Text } from "@radix-ui/themes";
 import { Separator } from "../ui/separator";
@@ -29,9 +29,9 @@ export default function GameDetail({
   uid,
   submitState,
 }: GameDetailProps) {
-  const locale = useLocale();
-  const { t } = useTranslation("GamesView");
-  const t_gameSubmit = useTranslations("GameSubmit");
+  const { i18n, t } = useTranslation("GamesView");
+  const { t: t_gameSubmit } = useTranslation("GameSubmit");
+  const locale = i18n.language;
   const [author, setAuthor] = useState<AuthorInfo | null>(null);
 
   if (!game) {

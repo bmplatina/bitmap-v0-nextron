@@ -32,7 +32,7 @@ export default function MarkdownEditor({
   onCancel,
 }: MarkdownEditorProps) {
   const [activeTab, setActiveTab] = useState("edit");
-  const { t } = useTranslation("Common");
+  const { t } = useTranslation("common");
 
   // Monaco의 onChange는 (value: string | undefined)를 인자로 줍니다.
   const handleEditorChange = (val: string | undefined) => {
