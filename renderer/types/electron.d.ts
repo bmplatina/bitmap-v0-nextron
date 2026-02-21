@@ -32,7 +32,9 @@ export interface tools {
 
   getPlatform: () => string;
 
-  getLocale: () => string;
+  getLocale: () => "ko" | "en";
+
+  setLocale: (locale: "ko" | "en") => void;
 
   getElectronStoredPath: () => Promise<string>;
 }

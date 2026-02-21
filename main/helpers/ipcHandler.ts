@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
+import { userStore } from "./user-store";
 import { dirname, join } from "path";
 import fs from "fs";
 import { exec } from "child_process";
@@ -107,6 +108,10 @@ class ipcHandle {
     // 플랫폼 가져오기
     ipcMain.handle("get-locale", (event): string => {
       return app.getLocale();
+    });
+
+    ipcMain.handle("set-locale", (_event, locale: "ko" | "en") => {
+      userStore.set("locale", locale);
     });
 
     ipcMain.handle(

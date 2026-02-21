@@ -56,6 +56,8 @@ const electronTools = {
   // Get OS default language
   getLocale: () => ipcRenderer.invoke("get-locale"),
 
+  setLocale: (locale: "ko" | "en") => ipcRenderer.invoke("set-locale", locale),
+
   // Get Application Stored Path
   getElectronStoredPath: () => ipcRenderer.invoke("get-electron-appdata-path"),
 };
@@ -66,8 +68,7 @@ const bitmapApi = {
     uriSubstring: string,
     body: object,
     token: string,
-  ): Promise<T> =>
-    ipcRenderer.invoke("axios-post", uriSubstring, body, token),
+  ): Promise<T> => ipcRenderer.invoke("axios-post", uriSubstring, body, token),
 
   axiosGet: <T>(uriSubstring: string, token?: string): Promise<T> =>
     ipcRenderer.invoke("axios-get", uriSubstring, token),
