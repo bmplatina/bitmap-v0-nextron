@@ -72,24 +72,17 @@ export const sidebarItems = [
       // },
     ],
   },
-  // {
-  //   title: "accounts",
-  //   bRequire: "",
-  //   items: [
-  //     {
-  //       title: "accounts",
-  //       icon: <User className="h-5 w-5" />,
-  //       bRequire: "",
-  //       appIcon: User,
-  //       href: "/account",
-  //     },
-  //     {
-  //       title: "settings",
-  //       icon: <Settings className="h-5 w-5" />,
-  //       bRequire: "",
-  //       appIcon: Settings,
-  //       href: "/settings",
-  //     },
-  //   ],
-  // },
+  {
+    title: "accounts",
+    bRequire: "",
+    items: [
+      {
+        title: "settings",
+        icon: <Settings className="h-5 w-5" />,
+        bRequire: "",
+        appIcon: Settings,
+        href: "/settings",
+      },
+    ],
+  },
 ];

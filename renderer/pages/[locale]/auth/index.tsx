@@ -4,7 +4,7 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import LocalizedLink from "@/components/common/localized-link";
 import { useTranslation } from "next-i18next";
-import BitmapLogo from "@/public/bitmaplogo-notext.png";
+import BitmapLogo from "@/public/images/bitmaplogo-notext.png";
 import { Separator } from "@/components/ui/separator";
 import LoginElements from "@/components/common/authenticate/login";
 

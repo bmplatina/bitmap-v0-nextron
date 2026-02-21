@@ -29,7 +29,12 @@ export default function LoginElements() {
 
   async function handleLogin() {
     setIsRequestingLogin(true);
-    const loginResult = await loginPost(email, password, bRequestAutoLogin);
+    const loginResult = await loginPost(
+      email,
+      password,
+      bRequestAutoLogin,
+      window.bitmapApi,
+    );
     if (loginResult.success) {
       await login(loginResult.token);
     } else {

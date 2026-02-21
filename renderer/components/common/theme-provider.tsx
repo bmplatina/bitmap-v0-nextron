@@ -11,12 +11,11 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   // useEffect는 클라이언트 사이드에서만 실행됩니다
   useEffect(() => {
     setMounted(true);
-    if (!localStorage.getItem("theme")) {
-      localStorage.setItem("theme", "system");
+    if (!window.bitmapApi.getScreenMode()) {
+      window.bitmapApi.setScreenMode("system");
       setTheme("system");
-    }
-    else {
-      setTheme(localStorage.getItem("theme") as string);
+    } else {
+      setTheme(window.bitmapApi.getScreenMode());
     }
   }, []);
 

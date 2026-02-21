@@ -101,17 +101,36 @@ class ipcHandle {
     });
 
     // 플랫폼 가져오기
-    ipcMain.handle("get-platform", (event) => {
+    ipcMain.handle("get-platform", (_event) => {
       return this.platformName;
     });
 
-    // 플랫폼 가져오기
-    ipcMain.handle("get-locale", (event): string => {
-      return app.getLocale();
+    ipcMain.handle("get-locale", (_event): string => {
+      return userStore.get("locale");
     });
 
     ipcMain.handle("set-locale", (_event, locale: "ko" | "en") => {
       userStore.set("locale", locale);
+    });
+
+    ipcMain.handle("get-token", (_event): string => {
+      return userStore.get("token");
+    });
+
+    ipcMain.handle("set-token", (_event, token: string) => {
+      userStore.set("token", token);
+    });
+
+    ipcMain.handle("get-screen-mode", (_event): string => {
+      return userStore.get("screenMode");
+    });
+
+    ipcMain.handle("set-screen-mode", (_event, screenMode: string) => {
+      userStore.set("screenMode", screenMode);
+    });
+
+    ipcMain.handle("open-external", async (_event, url: string) => {
+      return shell.openExternal(url);
     });
 
     ipcMain.handle(
@@ -133,7 +152,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "axios-post",
-      async (event, uriSubstring: string, body: object, token: string) => {
+      async (event, uriSubstring: string, body: object, token?: string) => {
         const response = await axios.post(
           this.getApiLinkByPurpose(uriSubstring),
           body,
@@ -141,7 +160,7 @@ class ipcHandle {
             timeout: 30000,
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+              ...(token && { Authorization: `Bearer ${token}` }),
             },
           },
         );

@@ -149,7 +149,11 @@ export default function TopBar() {
                       onOpenChange={setIsProfileOpen}
                     >
                       <Popover.Trigger>
-                        <IconButton variant="ghost" radius="full">
+                        <IconButton
+                          variant="ghost"
+                          radius="full"
+                          style={electronNoDragCss}
+                        >
                           <Avatar
                             src={
                               imageUriRegExp.test(avatarUri)
@@ -177,7 +181,7 @@ export default function TopBar() {
                   </>
                 )}
                 {getIsSigninButtonActive() && (
-                  <Button radius="full" asChild>
+                  <Button radius="full" asChild style={electronNoDragCss}>
                     <LocalizedLink href="/auth">{t("signin")}</LocalizedLink>
                   </Button>
                 )}

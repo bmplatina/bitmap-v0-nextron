@@ -14,18 +14,31 @@ import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "next-i18next";
 import { pretendard, imageUriRegExp } from "@/lib/utils";
-import LocalizedLink from "@/components/common/localized-link";
+import Link from "next/link";
 import EmailVerificationDialog from "./email-verification";
+import { openExternal } from "@/lib/utils-client";
 
 function ProfilePopover() {
-  const { t } = useTranslation("Authentication");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("Authentication");
   const [bIsVerifyClicked, setVerificationClicked] = useState<boolean>(false);
 
   const { logout, bIsEmailVerified, bIsAdmin } = useAuth();
 
+  const [token, setToken] = useState("");
+
+  function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    const electronTools = window.electronTools;
+    if (!electronTools) return;
+    openExternal(event, electronTools);
+  }
+
   useEffect(() => {
     // bSetLoggedInState(localStorage.getItem("token") !== "");
-  });
+    setToken(window.bitmapApi.getToken());
+  }, []);
 
   return (
     <Flex
@@ -41,9 +54,12 @@ function ProfilePopover() {
           <ProfileList />
           <Flex direction="column" gap="2" className="mt-3">
             <Button size="3" asChild>
-              <LocalizedLink href="/account">
+              <Link
+                href={`https://prodbybitmap.com/${locale}/account?token=${token}`}
+                onClick={openExternalLink}
+              >
                 {t("account-settings")}
-              </LocalizedLink>
+              </Link>
             </Button>
             {!bIsEmailVerified && (
               <Button
@@ -56,7 +72,12 @@ function ProfilePopover() {
             )}
             {bIsAdmin && (
               <Button size="3" asChild variant="soft">
-                <LocalizedLink href="/admin">{t("admin-menu")}</LocalizedLink>
+                <Link
+                  href={`https://prodbybitmap.com/${locale}/admin?token=${token}`}
+                  onClick={openExternalLink}
+                >
+                  {t("admin-menu")}
+                </Link>
               </Button>
             )}
             <Button size="3" onClick={logout} color="red">

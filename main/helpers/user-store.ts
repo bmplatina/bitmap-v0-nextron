@@ -1,3 +1,12 @@
 import Store from "electron-store";
 
-export const userStore = new Store({ name: "com.prodbybitmap.esd" });
+interface Settings {
+  token: string;
+  screenMode: string;
+  locale: string;
+}
+
+export const userStore = new Store<Settings>({
+  name: "com.prodbybitmap.esd",
+  defaults: { token: "", screenMode: "auto", locale: "en" },
+});

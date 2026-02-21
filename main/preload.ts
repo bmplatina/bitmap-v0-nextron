@@ -73,6 +73,12 @@ const bitmapApi = {
   axiosGet: <T>(uriSubstring: string, token?: string): Promise<T> =>
     ipcRenderer.invoke("axios-get", uriSubstring, token),
 
+  setToken: (token: string) => ipcRenderer.invoke("set-token", token),
+  getToken: () => ipcRenderer.invoke("get-token"),
+
+  setScreenMode: (screenMode: string) => ipcRenderer.invoke("set-screen-mode", screenMode),
+  getScreenMode: () => ipcRenderer.invoke("get-screen-mode"),
+
   // Bypass CORS
   fetchData: (url: string) => ipcRenderer.invoke("fetch-data", url),
 

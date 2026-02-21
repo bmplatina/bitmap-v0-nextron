@@ -1,7 +1,7 @@
 import Link, { LinkProps } from "next/link";
 import { useRouter } from "next/router"; // 혹은 navigation (App Router)
 import { useTranslation } from "next-i18next";
-import { HTMLAttributeAnchorTarget, ReactNode } from "react";
+import { HTMLAttributeAnchorTarget, MouseEventHandler, ReactNode } from "react";
 import { Url } from "next/dist/shared/lib/router/router";
 
 interface LocalizedLinkProps extends LinkProps {
@@ -10,6 +10,7 @@ interface LocalizedLinkProps extends LinkProps {
   target?: HTMLAttributeAnchorTarget | undefined;
   rel?: string | undefined;
   style?: React.CSSProperties;
+  onClick?: MouseEventHandler<HTMLAnchorElement> | undefined;
 }
 
 const LocalizedLink = ({
@@ -18,6 +19,7 @@ const LocalizedLink = ({
   target,
   rel,
   style,
+  onClick,
   ...props
 }: LocalizedLinkProps) => {
   // const { locale } = useRouter(); // 현재 선택된 언어 가져오기
@@ -39,6 +41,7 @@ const LocalizedLink = ({
 
   return (
     <Link
+      onClick={onClick}
       href={getHref(href)}
       target={target}
       rel={rel}

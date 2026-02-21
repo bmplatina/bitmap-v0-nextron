@@ -44,10 +44,15 @@ export interface bitmapApi {
   axiosPost: <T>(
     uriSubstring: string,
     body: object,
-    token: string,
+    token?: string,
   ) => Promise<T>;
-
   axiosGet: <T>(uriSubstring: string, token?: string) => Promise<T>;
+
+  // Token Handler
+  setToken: (token: string) => void;
+  getToken: () => string;
+  setScreenMode: (screenMode: string) => void;
+  getScreenMode: () => string;
 
   // Get JSON data with bypassing CORS
   fetchData: (url: string) => Promise<any>;

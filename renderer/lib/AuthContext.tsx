@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 1. 앱이 켜지자마자 로그인 상태 체크
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem("accessToken");
+      const token = window.bitmapApi.getToken();
       if (token) {
         await fetchUser(token);
       }
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 2. 로그인 함수 (로그인 성공 시 실행)
   const login = async (token: string) => {
     // async 키워드 추가
-    localStorage.setItem("accessToken", token);
+    window.bitmapApi.setToken(token);
     setIsLoggedIn(true);
     await fetchUser(token); // 유저 정보를 다 가져올 때까지 기다림
     router.push("/");
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 3. 로그아웃 함수
   const logout = () => {
-    localStorage.removeItem("accessToken");
+    window.bitmapApi.setToken("");
     setIsLoggedIn(false);
     router.push("/"); // 로그아웃 후 이동
     // window.location.reload(); // 필요하다면 새로고침으로 상태 초기화
