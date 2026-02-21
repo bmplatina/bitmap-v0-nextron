@@ -81,10 +81,6 @@ function TitleFallback() {
   );
 }
 
-export const getStaticProps = makeStaticProperties([
-  "MainPage",
-  "Sidebar",
-  "common",
-]);
+export const getStaticProps = makeStaticProperties(["MainPage"]);
 
 export { getStaticPaths };

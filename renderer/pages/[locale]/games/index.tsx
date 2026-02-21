@@ -48,5 +48,5 @@ export default function GamesPage() {
   );
 }
 
-export const getStaticProps = makeStaticProperties(["GamesView","Sidebar","common"]);
+export const getStaticProps = makeStaticProperties(["GamesView"]);
 export { getStaticPaths };

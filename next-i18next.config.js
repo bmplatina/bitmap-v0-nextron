@@ -12,9 +12,9 @@ const config = {
     typeof window === "undefined"
       ? path.resolve("./renderer/public/locales")
       : "/public/locales",
-  react: {
-    useSuspense: true,
-  },
+  // react: {
+  //   useSuspense: true,
+  // },
 };
 
 module.exports = config;

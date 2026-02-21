@@ -41,16 +41,22 @@ export async function getI18nProperties(
   context: any,
   namespaces: i18nNamespaces[] = ["common"],
 ) {
-  const locale = context?.params?.locale ?? i18next.i18n.defaultLocale;
+  const locale = context?.locale ?? i18next.i18n.defaultLocale;
   return {
     ...(await serverSideTranslations(locale, namespaces, i18next)),
   };
 }
 
 export function makeStaticProperties(namespaces: i18nNamespaces[] = []) {
+  const commonNamespaces: i18nNamespaces[] = [
+    ...namespaces,
+    "Sidebar",
+    "common",
+    "Footer",
+  ];
   return async function (context: any) {
     return {
-      props: await getI18nProperties(context, namespaces),
+      props: await getI18nProperties(context, commonNamespaces),
     };
   };
 }

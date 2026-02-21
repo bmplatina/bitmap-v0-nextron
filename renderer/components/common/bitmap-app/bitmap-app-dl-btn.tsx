@@ -8,8 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { UAParser } from "ua-parser-js";
 
-import WindowsLogo from "@/public/platforms/platformWindows10.png";
-import MacLogo from "@/public/platforms/platformMac.png";
+import WindowsLogo from "@/public/images/platforms/platformWindows10.png";
+import MacLogo from "@/public/images/platforms/platformMac.png";
 
 export default function BitmapAppDownloadButton() {
   const { t } = useTranslation("Sidebar");

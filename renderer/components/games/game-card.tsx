@@ -25,7 +25,7 @@ export default function GameCard({
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-lg">
-      <Link href={`${linkPrefix}/${game.gameId}`} className="block">
+      <Link href={`/${locale}/${linkPrefix}/${game.gameId}`} className="block">
         <div className="relative aspect-[1/1.414] w-full cursor-pointer hover:opacity-90 transition-opacity">
           <Image
             src={
@@ -67,9 +67,7 @@ export default function GameCard({
 
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4" />
-            <span>
-              {getLocalizedString(locale, game.gameGenre)}
-            </span>
+            <span>{getLocalizedString(locale, game.gameGenre)}</span>
           </div>
 
           <div className="flex items-center gap-2">

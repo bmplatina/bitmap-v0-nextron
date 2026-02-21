@@ -1,6 +1,4 @@
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-"use client";
-
 import { useTranslation } from "next-i18next";
 import { Button, Skeleton, Flex } from "@radix-ui/themes";
 import {
@@ -12,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/AuthContext";
 import { useEffect, useState } from "react";
-import { Link, useRouter } from "next/router";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import { getGamesByUid } from "@/lib/games";
 import GameListView from "@/components/games/game-listview";
 import { Game } from "@/lib/types";
@@ -142,5 +141,5 @@ export default function SubmitGames() {
   );
 }
 
-export const getStaticProps = makeStaticProperties(["Publish","Sidebar","common"]);
+export const getStaticProps = makeStaticProperties(["Publish"]);
 export { getStaticPaths };

@@ -17,7 +17,7 @@ import { formatDate, imageUriRegExp } from "@/lib/utils";
 import { getProfile } from "@/lib/auth";
 import { useTranslation } from "next-i18next";
 import { getLocalizedString } from "@/lib/utils";
-import SmartMarkdown from "@/components/common/markdown/markdown-renderer";
+import SmartMarkdown from "@/components/common/markdown/client-markdown";
 import { Box, Card, Flex, ScrollArea, Tabs, Text } from "@radix-ui/themes";
 import { Separator } from "../ui/separator";
 import {

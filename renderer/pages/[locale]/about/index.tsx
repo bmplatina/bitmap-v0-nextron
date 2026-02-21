@@ -197,5 +197,5 @@ export default function BitmapAbout() {
   );
 }
 
-export const getStaticProps = makeStaticProperties(["About","Sidebar","common"]);
+export const getStaticProps = makeStaticProperties(["About"]);
 export { getStaticPaths };

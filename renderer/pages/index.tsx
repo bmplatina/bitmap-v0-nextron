@@ -15,4 +15,4 @@ export default function Index() {
   return null;
 }
 
-export const getStaticProps = makeStaticProperties(["common", "Sidebar"]);
+export const getStaticProps = makeStaticProperties([]);

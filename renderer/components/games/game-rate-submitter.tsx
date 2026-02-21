@@ -61,7 +61,7 @@ export default function GameRateSubmitter({
       console.error(err);
     } finally {
       setIsDeleting(false);
-      router.refresh();
+      router.replace(router.asPath);
     }
   }
 
@@ -167,13 +167,13 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
       };
 
       await submitGameRate(storageToken, newRate, bIsEditing);
-      router.refresh();
+      router.replace(router.asPath);
     } catch (err: any) {
       setPostFailMessage(err.message || String(err));
       console.error(err);
     } finally {
       setIsSubmitting(false);
-      router.refresh();
+      router.replace(router.asPath);
     }
   }
 

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "next-i18next";
@@ -35,7 +33,7 @@ export default function GrantButton({ uid, action, bIsApproved }: GrantProps) {
           : await grantMembershipLeavingByUid(token, uid);
 
       setSubmitMessage(t(response));
-      router.refresh();
+      router.replace(router.asPath);
     } catch (e: any) {
       console.error(e);
       setSubmitMessage(t(e.message));

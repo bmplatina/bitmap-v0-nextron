@@ -37,8 +37,7 @@ import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 
 export default function Signup() {
   const router = useRouter();
-  const { i18n, t } = useTranslation("Authentication");
-  const { t: t_common } = useTranslation("common");
+  const { i18n, t } = useTranslation();
   const locale = i18n.language;
 
   // terms 0 -> idpw 1 -> other-info 2 -> register 3
@@ -293,30 +292,30 @@ export default function Signup() {
                   onClick={() => setCurrentView(1)}
                   className="mt-2"
                 >
-                  {t_common("next")}
+                  {t("next")}
                 </Button>
               </div>
             )}
             {currentView == 1 && (
               <Flex gap="2">
                 <Button onClick={() => setCurrentView(0)} variant="surface">
-                  {t_common("back")}
+                  {t("back")}
                 </Button>
                 <Button
                   onClick={() => validateUserInfo(true)}
                   disabled={!validateUserInfo(false)}
                 >
-                  {t_common("next")}
+                  {t("next")}
                 </Button>
               </Flex>
             )}
             {currentView == 2 && (
               <Flex gap="2">
                 <Button onClick={() => setCurrentView(1)} variant="surface">
-                  {t_common("back")}
+                  {t("back")}
                 </Button>
                 <Button onClick={() => setCurrentView(3)}>
-                  {t_common("next")}
+                  {t("next")}
                 </Button>
               </Flex>
             )}
@@ -324,7 +323,7 @@ export default function Signup() {
               <div className="flex justify-end space-x-2 pt-4">
                 <Flex gap="2">
                   <Button onClick={() => setCurrentView(2)} variant="surface">
-                    {t_common("back")}
+                    {t("back")}
                   </Button>
                   <Button onClick={handleSignup}>
                     {bIsSignupProcessing ? <Spinner /> : t("register")}
@@ -348,9 +347,5 @@ export default function Signup() {
   );
 }
 
-export const getStaticProps = makeStaticProperties([
-  "Authentication",
-  "Sidebar",
-  "common",
-]);
+export const getStaticProps = makeStaticProperties(["Authentication"]);
 export { getStaticPaths };

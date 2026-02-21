@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Game } from "@/lib/types";
 import { AspectRatio } from "@radix-ui/themes";
+import { useTranslation } from "next-i18next";
 
 interface GameProp {
   gameId: number;
@@ -18,11 +19,16 @@ export default function GameRedirectButton({
   gameDeveloper,
   disabled,
 }: GameProp) {
+  const {
+    i18n: { language: locale },
+    t,
+  } = useTranslation();
+
   return (
     <>
       <Link
         key={gameId}
-        href={disabled ? "#" : `/games/${gameId}`}
+        href={disabled ? "#" : `/${locale}/games/${gameId}`}
         className="flex-none w-[85vw] md:w-[300px] aspect-video relative rounded-lg overflow-hidden shadow-md group"
       >
         <AspectRatio ratio={16 / 9}>

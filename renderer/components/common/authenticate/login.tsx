@@ -5,7 +5,8 @@ import { Checkbox, Button, Flex, Spinner, Text } from "@radix-ui/themes";
 import { TextField } from "@radix-ui/themes";
 import { useAuth } from "@/lib/AuthContext";
 import { login as loginPost } from "@/lib/auth";
-import { Link, useRouter } from "next/router";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
 
 export default function LoginElements() {

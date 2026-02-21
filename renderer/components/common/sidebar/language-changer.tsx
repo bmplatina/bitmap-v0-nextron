@@ -3,6 +3,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "next-i18next";
+import i18next from "../../../../next-i18next.config";
+import { useEffect } from "react";
 
 export default function LanguageSwitch() {
   const router = useRouter();
@@ -14,18 +16,17 @@ export default function LanguageSwitch() {
   const handleLocaleChange = (checked: boolean) => {
     const nextLocale = checked ? "en" : "ko";
 
-    const { pathname, asPath, query } = router;
-
-    // 현재 경로에서 /locale/ 부분을 새 locale로 교체
-    const newAsPath = asPath.replace(`/${locale}`, `/${nextLocale}`);
-
-    // 만약 asPath가 그냥 /locale/ 이었다면 nextLocale로
-    if (asPath === `/${locale}` || asPath === `/${locale}/`) {
-      router.push(`/${nextLocale}`);
-    } else {
-      router.push(newAsPath);
-    }
+    const newPath = router.pathname.replace("[locale]", nextLocale);
+    router.replace(newPath);
   };
+
+  useEffect(
+    function () {
+      const newLocale: "ko" | "en" = locale === "ko" ? "ko" : "en";
+      window.electronTools.setLocale(newLocale);
+    },
+    [locale],
+  );
 
   return (
     <div className="flex items-center justify-between px-2 py-2">

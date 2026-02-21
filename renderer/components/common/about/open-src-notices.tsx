@@ -1,4 +1,5 @@
-import { Box, Button, Dialog, Flex, Link, Text } from "@radix-ui/themes";
+import { Box, Button, Dialog, Flex, Text } from "@radix-ui/themes";
+import Link from "next/link";
 import { ReactNode } from "react";
 import { pretendard } from "@/lib/utils";
 

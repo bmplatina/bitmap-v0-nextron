@@ -74,6 +74,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@types/nedb": "^1.8.16",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.52",
@@ -82,8 +83,10 @@
     "electron": "^34.0.0",
     "electron-builder": "^24.13.3",
     "i18next": "^23.11.5",
+    "lottie-react": "^2.4.1",
     "next": "^14.2.4",
     "next-i18next": "^15.2.0",
+    "next-mdx-remote": "^5.0.0",
     "next-themes": "latest",
     "nextron": "^9.5.0",
     "postcss": "^8.4.38",
@@ -93,7 +96,9 @@
     "react-hook-form": "^7.54.1",
     "react-i18next": "^14.1.2",
     "react-resizable-panels": "^2.1.7",
+    "rehype-pretty-code": "^0.14.1",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "ua-parser-js": "^2.0.9"
   }
 }

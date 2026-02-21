@@ -75,5 +75,5 @@ export default function AccountPage() {
   );
 }
 
-export const getStaticProps = makeStaticProperties(["Authentication","Sidebar","common"]);
+export const getStaticProps = makeStaticProperties(["Authentication"]);
 export { getStaticPaths };

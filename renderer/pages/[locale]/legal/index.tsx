@@ -37,5 +37,5 @@ export default function EulaPage() {
   );
 }
 
-export const getStaticProps = makeStaticProperties(["Sidebar", "common"]);
+export const getStaticProps = makeStaticProperties([]);
 export { getStaticPaths };

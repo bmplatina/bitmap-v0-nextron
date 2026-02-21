@@ -43,9 +43,5 @@ export default observer(function GameDetailPage() {
   return <GameDetail game={game} gameRates={gameRates ?? []} />;
 });
 
-export const getStaticProps = makeStaticProperties([
-  "GamesView",
-  "Sidebar",
-  "common",
-]);
+export const getStaticProps = makeStaticProperties(["GamesView"]);
 export { getStaticPaths };
