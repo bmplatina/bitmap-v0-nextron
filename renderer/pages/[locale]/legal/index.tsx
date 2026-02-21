@@ -2,15 +2,26 @@ import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { getLocalizedString } from "@/lib/utils";
 import { getEula } from "@/lib/general";
 import type { searchParamsPropsSSR } from "@/lib/types";
-import { getLocale, getTranslations } from "next-intl/server";
+import { useTranslation } from "next-i18next";
 import SmartMarkdown from "@/components/common/markdown/markdown-renderer";
 import { Text } from "@radix-ui/themes";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 
-export default function EulaPage({ searchParams }: searchParamsPropsSSR) {
-  const locale = await getLocale();
-  const { t } = useTranslation("Common");
-  const { license } = await searchParams;
-  const eula = await getEula(license as string);
+export default function EulaPage() {
+  const router = useRouter();
+  const { locale, license } = router.query;
+  const { t } = useTranslation("common");
+  const [eula, setEula] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchEula() {
+      if (!license) return;
+      const data = await getEula(license as string);
+      setEula(data);
+    }
+    fetchEula();
+  }, [license]);
 
   if (!eula) {
     return (
@@ -22,10 +33,10 @@ export default function EulaPage({ searchParams }: searchParamsPropsSSR) {
 
   return (
     <div className="px-4 md:px-32 pt-6">
-      <SmartMarkdown content={getLocalizedString(locale, eula)} />
+      <SmartMarkdown content={getLocalizedString(locale as string, eula)} />
     </div>
   );
 }
 
-export const getStaticProps = makeStaticProperties(["Common","Sidebar","common"]);
+export const getStaticProps = makeStaticProperties(["Sidebar", "common"]);
 export { getStaticPaths };

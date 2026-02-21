@@ -25,7 +25,7 @@ import { ProfileList } from "@/components/accounts/profile";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TextField, AlertDialog } from "@radix-ui/themes";
 import { useRouter } from "next/router";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslation } from "next-i18next";
 import { getEula } from "@/lib/general";
 import { signup, checkIsEmailDuplicated } from "@/lib/auth";
 import { useAuth } from "@/lib/AuthContext";
@@ -33,12 +33,13 @@ import ClientMarkdown from "@/components/common/markdown/client-markdown";
 import { Separator } from "@radix-ui/themes";
 import ProfilePicsEditor from "@/components/accounts/profile-pics-editor";
 import EmailVerificationDialog from "@/components/accounts/email-verification";
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 
 export default function Signup() {
   const router = useRouter();
-  const locale = useLocale();
-  const { t } = useTranslation("Authentication");
-  const t_common = useTranslations("Common");
+  const { i18n, t } = useTranslation("Authentication");
+  const { t: t_common } = useTranslation("common");
+  const locale = i18n.language;
 
   // terms 0 -> idpw 1 -> other-info 2 -> register 3
   const [currentView, setCurrentView] = useState<number>(0);
@@ -346,3 +347,10 @@ export default function Signup() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties([
+  "Authentication",
+  "Sidebar",
+  "common",
+]);
+export { getStaticPaths };
