@@ -29,8 +29,8 @@ export default function GrantButton({ uid, action, bIsApproved }: GrantProps) {
       if (!token) throw Error("invalid-token");
       const response =
         action === "apply"
-          ? await grantMembershipApplyByUid(token, uid)
-          : await grantMembershipLeavingByUid(token, uid);
+          ? await grantMembershipApplyByUid(window.bitmapApi,token, uid)
+          : await grantMembershipLeavingByUid(window.bitmapApi, token, uid);
 
       setSubmitMessage(t(response));
       router.replace(router.asPath);

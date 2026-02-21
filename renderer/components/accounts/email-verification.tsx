@@ -48,7 +48,11 @@ export default function EmailVerificationDialog({
       const token = localStorage.getItem("accessToken");
 
       if (!token) throw new Error("token-required");
-      const response = await sendVerifyEmail(locale ?? "en", token);
+      const response = await sendVerifyEmail(
+        window.bitmapApi,
+        locale ?? "en",
+        token,
+      );
       if (response !== "email-sent") {
         throw Error(response);
       }
@@ -70,7 +74,11 @@ export default function EmailVerificationDialog({
       const token = localStorage.getItem("accessToken");
 
       if (!token) throw new Error("token-required");
-      const verifyResult = await verifyEmail(token, verificationCode);
+      const verifyResult = await verifyEmail(
+        window.bitmapApi,
+        token,
+        verificationCode,
+      );
       if (verifyResult !== "verified") {
         throw Error(verifyResult);
       }

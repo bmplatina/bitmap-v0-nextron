@@ -17,7 +17,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchGames = async () => {
-      const gamesData = await getGames("released");
+      const gamesData = await getGames(window.bitmapApi, "released");
       setGames(gamesData);
     };
     fetchGames();

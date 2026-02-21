@@ -1,6 +1,5 @@
-import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { useTranslation } from "next-i18next";
-import { getGameById, getGameRatesById } from "@/lib/games";
+import { getGames, getGameById, getGameRatesById } from "@/lib/games";
 import { useEffect, useState } from "react";
 import GameDetail from "@/components/games/game-details";
 import { observer } from "mobx-react";
@@ -12,16 +11,14 @@ export default observer(function GameDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const { t } = useTranslation("GamesView");
-  // const game = await getGameById(id);
-  // const gameRates = await getGameRatesById(id);
   const [game, setGame] = useState<Game | null>();
   const [gameRates, setGameRates] = useState<GameRating[]>([]);
 
   useEffect(() => {
     const fetchGame = async () => {
       if (typeof id === "string") {
-        const gameData = await getGameById(id);
-        const gameRatesData = (await getGameRatesById(id)) ?? [];
+        const gameData = await getGameById(window.bitmapApi, id);
+        const gameRatesData = (await getGameRatesById(window.bitmapApi, id)) ?? [];
         setGameRates(gameRatesData);
         setGame(gameData);
       }
@@ -42,6 +39,3 @@ export default observer(function GameDetailPage() {
 
   return <GameDetail game={game} gameRates={gameRates ?? []} />;
 });
-
-export const getStaticProps = makeStaticProperties(["GamesView"]);
-export { getStaticPaths };

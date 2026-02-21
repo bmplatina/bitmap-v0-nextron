@@ -46,9 +46,11 @@ export default function GameDetail({
   }
 
   useEffect(() => {
-    getProfile(undefined, uid).then((payload: AuthorInfo | null) => {
-      setAuthor(payload);
-    });
+    getProfile(window.bitmapApi, undefined, uid).then(
+      (payload: AuthorInfo | null) => {
+        setAuthor(payload);
+      },
+    );
   }, [author]);
 
   return (

@@ -1,6 +1,4 @@
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-("use client");
-
 import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
 import { Box, AlertDialog, Tabs, Flex } from "@radix-ui/themes";
@@ -55,13 +53,13 @@ export default function SubmitGames() {
 
   useEffect(() => {
     async function getGameAmount() {
-      const games = await getGames("all");
+      const games = await getGames(window.bitmapApi, "all");
       return games.length;
     }
 
     const gameId = searchParams.get("edit");
     if (gameId) {
-      getGameById(gameId).then((game) => {
+      getGameById(window.bitmapApi, gameId).then((game) => {
         if (game) {
           setGame(game);
           setIsEditingExisting(true);

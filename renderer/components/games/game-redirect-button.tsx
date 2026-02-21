@@ -28,7 +28,7 @@ export default function GameRedirectButton({
     <>
       <LocalizedLink
         key={gameId}
-        href={disabled ? "#" : `/${locale}/games/${gameId}`}
+        href={disabled ? "#" : `/${locale}/games/detail?id=${gameId}`}
         className="flex-none w-[85vw] md:w-[300px] aspect-video relative rounded-lg overflow-hidden shadow-md group"
       >
         <AspectRatio ratio={16 / 9}>

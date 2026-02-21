@@ -13,7 +13,7 @@ export default function GamesPage() {
 
   useEffect(() => {
     const fetchGames = async () => {
-      const gamesData = await getGames("all");
+      const gamesData = await getGames(window.bitmapApi, "all");
       setAllGames(gamesData);
     };
     fetchGames();

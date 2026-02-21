@@ -10,13 +10,9 @@ import { useRouter } from "next/router";
 
 interface GameCardProps {
   game: Game;
-  LocalizedLinkPrefix?: string; // 링크 프리픽스 (기본값: "/games")
 }
 
-export default function GameCard({
-  game,
-  LocalizedLinkPrefix = "/games",
-}: GameCardProps) {
+export default function GameCard({ game }: GameCardProps) {
   const router = useRouter();
   const {
     i18n: { language: locale },
@@ -26,7 +22,7 @@ export default function GameCard({
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-lg">
       <LocalizedLink
-        href={`/${locale}/${LocalizedLinkPrefix}/${game.gameId}`}
+        href={`/${locale}/games/detail?id=${game.gameId}`}
         className="block"
       >
         <div className="relative aspect-[1/1.414] w-full cursor-pointer hover:opacity-90 transition-opacity">

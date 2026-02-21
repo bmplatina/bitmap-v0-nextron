@@ -12,7 +12,7 @@ import {
 } from "@radix-ui/themes";
 import { useTranslation } from "next-i18next";
 import BitmapAppAnim from "@/components/common/bitmap-app/bitmap-app-anim";
-import BitmapLogo from "@/public/bitmaplogo-notext.png";
+import BitmapLogo from "@/public/images/bitmaplogo-notext.png";
 import LocalizedLink from "@/components/common/localized-link";
 import {
   FadeIn,

@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         await fetchUser(token);
       }
-      setIsLoggedIn(checkIsLoggedIn());
+      setIsLoggedIn(checkIsLoggedIn(window.bitmapApi));
       setIsLoading(false);
     };
 

@@ -20,7 +20,7 @@ export default function GameListView({ game, bIsPublishingMode }: GameProp) {
     <Flex align="center" gap="1">
       <LocalizedLink
         key={game.gameId}
-        href={`/games/${game.gameId}`}
+        href={`/games/detail?id=${game.gameId}`}
         className="flex-1 min-w-0 flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
       >
         <div className="relative w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-muted">

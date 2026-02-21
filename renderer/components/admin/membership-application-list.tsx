@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
-import LocalizedLink from "@/components/common/localized-link"
+import LocalizedLink from "@/components/common/localized-link";
 import { Avatar, Flex, IconButton, Text } from "@radix-ui/themes";
 import type {
   MembershipApplies,
@@ -76,7 +76,7 @@ function MembershipLeavingRequestListElement({ content }: LeavingProps) {
   const [user, setUser] = useState<UserQueriedByUid | null>(null);
 
   useEffect(() => {
-    getProfile(undefined, content.uid).then((res) => {
+    getProfile(window.bitmapApi, undefined, content.uid).then((res) => {
       setUser(res as UserQueriedByUid);
     });
   }, [content.uid]);

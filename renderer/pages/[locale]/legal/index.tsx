@@ -2,7 +2,7 @@ import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { getLocalizedString } from "@/lib/utils";
 import { getEula } from "@/lib/general";
 import { useTranslation } from "next-i18next";
-import SmartMarkdown from "@/components/common/markdown/markdown-renderer";
+import SmartMarkdown from "@/components/common/markdown/client-markdown";
 import { Text } from "@radix-ui/themes";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
@@ -16,7 +16,7 @@ export default function EulaPage() {
   useEffect(() => {
     async function fetchEula() {
       if (!license) return;
-      const data = await getEula(license as string);
+      const data = await getEula(window.bitmapApi, license as string);
       setEula(data);
     }
     fetchEula();

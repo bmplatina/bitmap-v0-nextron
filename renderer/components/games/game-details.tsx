@@ -43,7 +43,7 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
 
   useEffect(() => {
     if (game?.uid) {
-      getProfile(undefined, game.uid).then((res) => {
+      getProfile(window.bitmapApi, undefined, game.uid).then((res) => {
         setAuthor(res as UserProfile);
       });
     }

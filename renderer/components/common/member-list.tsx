@@ -16,7 +16,7 @@ export default function MemberList() {
   useEffect(() => {
     async function fetchMembers() {
       try {
-        const payloads = await getMembers("approved");
+        const payloads = await getMembers(window.bitmapApi, "approved");
         setMembers(payloads);
       } catch (error) {
         console.log(error);

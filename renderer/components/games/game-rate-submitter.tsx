@@ -56,7 +56,7 @@ export default function GameRateSubmitter({
       setIsDeleting(true);
       const token = localStorage.getItem("accessToken");
       if (!token) throw Error("login-required");
-      const response = await deleteGameRate(token, gameId);
+      const response = await deleteGameRate(window.bitmapApi, token, gameId);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -166,7 +166,7 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
         content: content,
       };
 
-      await submitGameRate(storageToken, newRate, bIsEditing);
+      await submitGameRate(window.bitmapApi, storageToken, newRate, bIsEditing);
       router.replace(router.asPath);
     } catch (err: any) {
       setPostFailMessage(err.message || String(err));

@@ -1,27 +1,24 @@
-import axios from "axios";
 import type {
   MembershipApplies,
   stringLocalized,
   DocumentArchives,
   Portfolio,
 } from "@/lib/types";
-import { getApiLinkByPurpose } from "./utils";
+import { csrAxiosGet, csrAxiosPost } from "./utils-client";
+import { bitmapApi } from "@/types/electron";
 
-async function getEula(eula: string): Promise<stringLocalized> {
+async function getEula(
+  context: bitmapApi,
+  eula: string,
+): Promise<stringLocalized> {
   try {
-    const response = await axios.get<stringLocalized>(
-      getApiLinkByPurpose(`general/eula/${eula}`),
-      {
-        timeout: 10000,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const response = await csrAxiosGet<stringLocalized>(
+      context,
+      `general/eula/${eula}`,
     );
 
-    if (response.data?.ko) {
-      return response.data;
+    if (response.ko) {
+      return response;
     }
     return { ko: "", en: "" };
   } catch (error) {
@@ -30,21 +27,17 @@ async function getEula(eula: string): Promise<stringLocalized> {
   }
 }
 
-async function getAllArchiveDocs(): Promise<DocumentArchives[]> {
+async function getAllArchiveDocs(
+  context: bitmapApi,
+): Promise<DocumentArchives[]> {
   try {
-    const response = await axios.get<DocumentArchives[]>(
-      getApiLinkByPurpose(`general/archive`),
-      {
-        timeout: 10000,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const response = await csrAxiosGet<DocumentArchives[]>(
+      context,
+      "general/archive",
     );
 
-    if (response.data) {
-      return response.data;
+    if (response) {
+      return response;
     }
     return [];
   } catch (error) {
@@ -54,22 +47,17 @@ async function getAllArchiveDocs(): Promise<DocumentArchives[]> {
 }
 
 async function getArchiveDocument(
+  context: bitmapApi,
   documentTitle: string,
 ): Promise<DocumentArchives> {
   try {
-    const response = await axios.get<DocumentArchives>(
-      getApiLinkByPurpose(`general/archive/${documentTitle}`),
-      {
-        timeout: 10000,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const response = await csrAxiosGet<DocumentArchives>(
+      context,
+      `general/archive/${documentTitle}`,
     );
 
-    if (response.data) {
-      return response.data;
+    if (response) {
+      return response;
     }
     return { id: 0, title: "", content: "", lastUpdatedAt: "" };
   } catch (error) {
@@ -79,21 +67,16 @@ async function getArchiveDocument(
 }
 
 async function getMembers(
+  context: bitmapApi,
   scope: "approved" | "all" | "pending",
 ): Promise<MembershipApplies[]> {
   try {
-    const response = await axios.get<MembershipApplies[]>(
-      getApiLinkByPurpose(`general/members/${scope}`),
-      {
-        timeout: 10000, // 10초 타임아웃
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const response = await csrAxiosGet<MembershipApplies[]>(
+      context,
+      `general/members/${scope}`,
     );
 
-    return response.data;
+    return response || [];
   } catch (error) {
     console.error("멤버 데이터를 가져오는 중 오류 발생:", error);
 
@@ -102,21 +85,18 @@ async function getMembers(
   }
 }
 
-async function getPortfolio(uid: string): Promise<Portfolio> {
+async function getPortfolio(
+  context: bitmapApi,
+  uid: string,
+): Promise<Portfolio> {
   try {
-    const response = await axios.get<Portfolio>(
-      getApiLinkByPurpose(`general/portfolio/${uid}`),
-      {
-        timeout: 10000,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      },
+    const response = await csrAxiosGet<Portfolio>(
+      context,
+      `general/portfolio/${uid}`,
     );
 
-    if (response.data) {
-      return response.data;
+    if (response) {
+      return response;
     }
   } catch (error) {
     console.error("Portfolio 가져오는 중 오류 발생:", error);

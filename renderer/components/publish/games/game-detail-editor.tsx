@@ -81,7 +81,7 @@ export default function GameDetailEditor() {
       try {
         setIsLoadingGameId(true);
 
-        const fetchedGames: Game[] = await getGames("all");
+        const fetchedGames: Game[] = await getGames(window.bitmapApi, "all");
 
         setGameId(fetchedGames.length);
       } catch (error) {

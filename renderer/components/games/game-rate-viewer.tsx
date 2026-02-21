@@ -43,7 +43,7 @@ function GameRateSingle({ rate }: GameRateProp) {
   const [author, setAuthor] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    getProfile(undefined, rate.uid).then((res) => {
+    getProfile(window.bitmapApi, undefined, rate.uid).then((res) => {
       setAuthor(res as UserProfile);
     });
   }, [rate.uid]);

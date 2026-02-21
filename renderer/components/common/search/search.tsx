@@ -13,8 +13,6 @@ import { getGames } from "@/lib/games";
 import { getAllArchiveDocs } from "@/lib/general";
 import { cn } from "@/lib/utils";
 
-
-
 interface SearchProps {
   className?: string;
   placeholder?: string;
@@ -56,7 +54,7 @@ export default function Search({ className, placeholder, style }: SearchProps) {
         router.push(`/archives?title=${firstResult.title}`);
       } else {
         // Game 인가?
-        router.push(`/games/${firstResult.gameId}`);
+        router.push(`/games/detail?id=${firstResult.gameId}`);
       }
 
       setIsSearchOpen(false);
@@ -95,11 +93,13 @@ export default function Search({ className, placeholder, style }: SearchProps) {
       try {
         const subjects: (Game | DocumentArchives)[] = [];
 
-        const games: Game[] = await getGames("released");
+        const games: Game[] = await getGames(window.bitmapApi, "released");
         if (!isMounted) return;
         subjects.push(...games);
 
-        const archives: DocumentArchives[] = await getAllArchiveDocs();
+        const archives: DocumentArchives[] = await getAllArchiveDocs(
+          window.bitmapApi,
+        );
         subjects.push(...archives);
         setAllData(subjects);
 

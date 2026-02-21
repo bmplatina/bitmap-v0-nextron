@@ -28,7 +28,7 @@ export default function MembershipKickHandler({ uid }: UidProps) {
   });
 
   useEffect(() => {
-    getProfile(undefined, uid).then((user) => {
+    getProfile(window.bitmapApi, undefined, uid).then((user) => {
       console.log("Queried user:", user);
       setUser(user);
     });

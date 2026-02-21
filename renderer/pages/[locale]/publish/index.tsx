@@ -42,7 +42,7 @@ export default function SubmitGames() {
       return;
     }
 
-    getGamesByUid(token)
+    getGamesByUid(window.bitmapApi, token)
       .then((data) => {
         setGames(data);
       })

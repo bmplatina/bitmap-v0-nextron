@@ -1,13 +1,15 @@
 import { Game, GameRating, GameRatingRequest } from "@/lib/types";
-import { getApiLinkByPurpose, ssrAxiosGet, ssrAxiosPost } from "@/lib/utils";
-import axios from "axios";
+import { getApiLinkByPurpose } from "@/lib/utils";
+import { csrAxiosGet, csrAxiosPost } from "./utils-client";
+import { bitmapApi } from "@/types/electron";
 
 // API에서 게임 데이터를 가져오는 함수 - 서버 컴포넌트에서만 호출
 async function getGames(
+  context: bitmapApi,
   getPendingOnly: "released" | "pending" | "all",
 ): Promise<Game[]> {
   try {
-    const data = await ssrAxiosGet<Game[]>("games/list");
+    const data = await csrAxiosGet<Game[]>(context, "games/list");
 
     if (getPendingOnly === "all") {
       return data;
@@ -30,9 +32,12 @@ async function getGames(
 }
 
 // API에서 특정 게임 데이터를 가져오는 함수
-async function getGameById(id: string): Promise<Game | null> {
+async function getGameById(
+  context: bitmapApi,
+  id: string,
+): Promise<Game | null> {
   try {
-    const data = await ssrAxiosGet<Game[]>("games/list");
+    const data = await csrAxiosGet<Game[]>(context, "games/list");
 
     const game = data.find((g) => g.gameId.toString() === id);
     return game || null;
@@ -42,9 +47,12 @@ async function getGameById(id: string): Promise<Game | null> {
   }
 }
 
-async function getGamesByUid(token: string): Promise<Game[]> {
+async function getGamesByUid(
+  context: bitmapApi,
+  token: string,
+): Promise<Game[]> {
   try {
-    const data = await ssrAxiosGet<Game[]>("games/list/uid", token);
+    const data = await csrAxiosGet<Game[]>(context, "games/list/uid", token);
 
     return data;
   } catch (error) {
@@ -57,14 +65,20 @@ async function getGamesByUid(token: string): Promise<Game[]> {
 
 // API에서 특정 대기 중인 게임 데이터를 가져오는 함수
 async function submitGame(
+  context: bitmapApi,
   token: string,
   newGame: Game,
   bIsEditingExisting: boolean,
-): Promise<any> {
+): Promise<{ message: string; id: string }> {
   const apiRoutesLink = bIsEditingExisting ? "games/edit" : "games/submit";
   try {
     // API 호출
-    const data = await ssrAxiosPost(apiRoutesLink, newGame, token);
+    const data = await csrAxiosPost<{ message: string; id: string }>(
+      context,
+      apiRoutesLink,
+      newGame,
+      token,
+    );
 
     console.log("Submit succeed:", data);
 
@@ -119,9 +133,12 @@ async function uploadGameImage(
 }
 
 // API에서 특정 게임 데이터를 가져오는 함수
-async function getGameRatesById(id: string): Promise<GameRating[] | null> {
+async function getGameRatesById(
+  context: bitmapApi,
+  id: string,
+): Promise<GameRating[] | null> {
   try {
-    const data = await ssrAxiosGet<GameRating[]>(`games/rate/${id}`);
+    const data = await csrAxiosGet<GameRating[]>(context, `games/rate/${id}`);
     return data;
   } catch (error) {
     console.error("게임 데이터를 가져오는 중 오류 발생:", error);
@@ -131,15 +148,20 @@ async function getGameRatesById(id: string): Promise<GameRating[] | null> {
 
 // API에서 특정 대기 중인 게임 데이터를 가져오는 함수
 async function submitGameRate(
+  context: bitmapApi,
   token: string,
   newGame: GameRatingRequest,
   bIsUpdating: boolean,
-): Promise<any> {
+): Promise<{ message: string }> {
   const apiRoutesLink = bIsUpdating ? "games/rate/edit" : "games/rate/add";
   try {
     // API 호출
-    const data = await ssrAxiosPost(apiRoutesLink, newGame, token);
-
+    const data = await csrAxiosPost<{ message: string }>(
+      context,
+      apiRoutesLink,
+      newGame,
+      token,
+    );
     console.log("Submit succeed:", data);
 
     // 성공 알림
@@ -151,10 +173,19 @@ async function submitGameRate(
 }
 
 // API에서 특정 대기 중인 게임 데이터를 가져오는 함수
-async function deleteGameRate(token: string, gameId: number): Promise<any> {
+async function deleteGameRate(
+  context: bitmapApi,
+  token: string,
+  gameId: number,
+): Promise<{ message: string }> {
   try {
     // API 호출
-    const data = await ssrAxiosPost("games/rate/delete", { gameId }, token);
+    const data = await csrAxiosPost<{ message: string }>(
+      context,
+      "games/rate/delete",
+      { gameId },
+      token,
+    );
 
     console.log("Deletion succeed:", data);
 

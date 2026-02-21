@@ -27,7 +27,12 @@ export default function gamePublishSubmitter() {
       if (token.length === 0) {
         throw Error("No token found");
       }
-      const result = await submitGame(token, game, bIsEditingExisting);
+      const result = await submitGame(
+        window.bitmapApi,
+        token,
+        game,
+        bIsEditingExisting,
+      );
       setPostMessage(result.message as string);
       setIsPostSucceed(true);
     } catch (error: any) {

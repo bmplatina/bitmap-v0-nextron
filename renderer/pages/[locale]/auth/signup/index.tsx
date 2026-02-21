@@ -93,6 +93,7 @@ export default function Signup() {
     try {
       setIsSignupProcessing(true);
       const signupResult = await signup(
+        window.bitmapApi,
         locale,
         username,
         email,
@@ -122,7 +123,10 @@ export default function Signup() {
 
   async function handleEmailDuplication(): Promise<boolean> {
     try {
-      const result: boolean = await checkIsEmailDuplicated(email);
+      const result: boolean = await checkIsEmailDuplicated(
+        window.bitmapApi,
+        email,
+      );
       return result;
     } catch (error: any) {
       console.log(t(error.message));
@@ -134,7 +138,7 @@ export default function Signup() {
     if (bIsLoggedIn) {
       router.push("/account");
     }
-    getEula("BitmapEULA").then((payload) => {
+    getEula(window.bitmapApi, "BitmapEULA").then((payload) => {
       console.log(payload);
       setEula(locale === "ko" ? payload.ko : payload.en);
     });
@@ -314,9 +318,7 @@ export default function Signup() {
                 <Button onClick={() => setCurrentView(1)} variant="surface">
                   {t("back")}
                 </Button>
-                <Button onClick={() => setCurrentView(3)}>
-                  {t("next")}
-                </Button>
+                <Button onClick={() => setCurrentView(3)}>{t("next")}</Button>
               </Flex>
             )}
             {currentView == 3 && (

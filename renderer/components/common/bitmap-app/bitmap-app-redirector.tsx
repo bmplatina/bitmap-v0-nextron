@@ -19,7 +19,7 @@ export default function BitmapAppRedirector({ gameId }: GameProps) {
     async function fetchGame() {
       try {
         setIsFetching(true);
-        const game = await getGameById(gameId);
+        const game = await getGameById(window.bitmapApi, gameId);
         setGame(game);
       } catch (err: any) {
       } finally {
