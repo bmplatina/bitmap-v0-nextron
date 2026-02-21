@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Suspense } from "react";
 import {
   Flex,
@@ -150,3 +151,6 @@ function RedirectorSkeleton() {
     </Button>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["BitmapApp","Sidebar","common"]);
+export { getStaticPaths };

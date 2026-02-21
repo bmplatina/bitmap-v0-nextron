@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useState, useEffect, type KeyboardEvent } from "react";
@@ -161,3 +162,6 @@ export default function BitmapDeveloperApply() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["BitmapTeammate","Sidebar","common"]);
+export { getStaticPaths };

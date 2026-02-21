@@ -3,7 +3,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import i18next from "../../next-i18next.config";
 
 export function getI18nPaths() {
-  return ["en", "de"].map((locale) => ({
+  return ["en", "ko"].map((locale) => ({
     params: {
       locale,
     },
@@ -17,14 +17,17 @@ export function getStaticPaths() {
   };
 }
 
-export async function getI18nProperties(context: any, namespaces = ["common"]) {
+export async function getI18nProperties(
+  context: any,
+  namespaces: string[] = ["common"],
+) {
   const locale = context?.params?.locale ?? i18next.i18n.defaultLocale;
   return {
     ...(await serverSideTranslations(locale, namespaces)),
   };
 }
 
-export function makeStaticProperties(namespaces = []) {
+export function makeStaticProperties(namespaces: string[] = []) {
   return async function (context: any) {
     return {
       props: await getI18nProperties(context, namespaces),

@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import {
   Button,
   Flex,
@@ -178,3 +179,6 @@ export default function AllMembers() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Admin","Sidebar","common"]);
+export { getStaticPaths };

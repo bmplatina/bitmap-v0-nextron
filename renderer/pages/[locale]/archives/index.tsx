@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { getArchiveDocument } from "@/lib/general";
 import { formatDate } from "@/lib/utils";
 import type { searchParamsPropsSSR } from "@/lib/types";
@@ -47,3 +48,6 @@ export default function ArchivedDocumentPage({
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Common","Sidebar","common"]);
+export { getStaticPaths };

@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
@@ -7,11 +5,15 @@ import { useAuth } from "@/lib/AuthContext";
 import { sidebarItems } from "@/lib/sidebar-items";
 import { useTranslation } from "next-i18next";
 import LanguageSwitcher from "./language-changer";
+import React from "react";
 
 export default function Sidebar() {
   const router = useRouter();
   const { bIsLoggedIn, bIsDeveloper, bIsTeammate, bIsAdmin } = useAuth();
-  const { t } = useTranslation("Sidebar");
+  const { i18n, t } = useTranslation("Sidebar");
+  const locale = i18n.language || (router.query.locale as string) || "en";
+
+  React.useEffect(() => console.log("Locale: ", locale), [locale]);
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
@@ -39,13 +41,17 @@ export default function Sidebar() {
                   return (
                     <Link
                       key={item.title}
-                      href={`/${router.locale}${item.href}`}
+                      href={
+                        item.href.startsWith("http")
+                          ? item.href
+                          : `/${locale}${item.href}`
+                      }
                       target={
                         item.href.startsWith("http") ? "_blank" : undefined
                       }
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        router.pathname === item.href
+                        router.asPath === `/${locale}${item.href}`
                           ? "bg-accent text-accent-foreground"
                           : "text-muted-foreground",
                       )}

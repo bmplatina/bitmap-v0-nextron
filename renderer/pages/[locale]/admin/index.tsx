@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Button, Flex, Spinner, Text } from "@radix-ui/themes";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { useTranslation } from "next-i18next";
@@ -31,3 +32,6 @@ export default function AccountPage() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Admin","Sidebar","common"]);
+export { getStaticPaths };

@@ -1,0 +1,10 @@
+{
+  "bitmap-apply": "Join Bitmap Team",
+  "bitmap-apply-desc": "Join the Bitmap team to enjoy all the services we provide. Click the Join button below to apply.",
+  "bitmap-quit": "Leave Bitmap Team",
+  "bitmap-quit-desc": "Leaving the Bitmap team. Please note the following restrictions when you lose your teammate status:\\n\\n1. Access to the Bitmap community (KakaoTalk open chat, Discord server teammate roles) will be restricted.\\n2. You will no longer be able to post or edit content on Bitmap's social media (YouTube, Bitmap site, etc.).\\n3. If you leave due to excessive conflict, details may be disclosed in the conflict log without prior notice.",
+  "bitmap-developer-enable": "Switch to Bitmap Developer Account",
+  "bitmap-developer-enable-desc": "Switch to Bitmap Developer account to publish your own apps such as games or use the Bitmap API.",
+  "apply": "Apply",
+  "quit": "Leave"
+}

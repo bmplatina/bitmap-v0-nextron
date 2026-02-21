@@ -1,11 +1,9 @@
 "use client";
 
 import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
 import Link from "next/link";
-import { Flex, IconButton, Text } from "@radix-ui/themes";
-import { Edit, FileText } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { Flex, Text } from "@radix-ui/themes";
+import { FileText } from "lucide-react";
 import type { DocumentArchives } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -14,9 +12,10 @@ interface ArchiveProp {
 }
 
 export default function ArchiveListView({ doc }: ArchiveProp) {
-  const { t } = useTranslation("Publish");
-  const router = useRouter();
-  const locale = router.locale ?? "en";
+  const {
+    i18n: { language: locale },
+    t,
+  } = useTranslation("Publish");
 
   return (
     <Flex align="center" gap="1">

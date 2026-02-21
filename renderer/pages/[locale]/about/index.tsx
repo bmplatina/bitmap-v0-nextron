@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import Image from "next/image";
 import {
   Container,
@@ -195,3 +196,6 @@ export default function BitmapAbout() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["About","Sidebar","common"]);
+export { getStaticPaths };

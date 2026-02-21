@@ -1,0 +1,10 @@
+{
+  "edit": "수정",
+  "account-edit": "계정 정보 수정",
+  "personal-info-edit": "프로필의 개인 정보를 수정합니다.",
+  "username-edit": "사용자 이름 수정",
+  "password-edit": "비밀번호 수정",
+  "id": "사용자 이름",
+  "password": "비밀번호",
+  "again": "(다시 입력)"
+}

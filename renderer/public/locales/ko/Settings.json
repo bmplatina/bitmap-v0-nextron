@@ -1,0 +1,12 @@
+{
+  "settings-general": "일반 설정",
+  "theme": "테마",
+  "current-theme": "현재 테마",
+  "screen-mode": "화면 모드",
+  "screen-mode-dark": "다크 모드",
+  "screen-mode-dark-desc": "어두운 테마를 사용합니다.",
+  "screen-mode-light": "라이트 모드",
+  "screen-mode-light-desc": "밝은 테마를 사용합니다.",
+  "screen-mode-system-default": "자동",
+  "screen-mode-system-default-desc": "시스템의 테마 설정을 따릅니다."
+}

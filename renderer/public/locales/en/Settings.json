@@ -1,0 +1,12 @@
+{
+  "settings-general": "General Settings",
+  "theme": "Theme",
+  "current-theme": "Current Theme",
+  "screen-mode": "Screen Mode",
+  "screen-mode-dark": "Dark Mode",
+  "screen-mode-dark-desc": "Use dark mode",
+  "screen-mode-light": "Light Mode",
+  "screen-mode-light-desc": "Use light mode",
+  "screen-mode-system-default": "Auto",
+  "screen-mode-system-default-desc": "Follow the system theme settings"
+}

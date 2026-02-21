@@ -1,0 +1,10 @@
+{
+  "dashboard": "Dashboard",
+  "members-list": "Bitmap Teammates List",
+  "member-manage": "Manage Bitmap Teammates",
+  "membership-application": "Manage Membership Applications",
+  "membership-leaving-req": "Manage Membership Leaving Requests",
+  "bitmap-developer": "Bitmap Developer",
+  "pending": "Pending",
+  "kick-from-team": "Kick {username} ({email}) from Team Bitmap"
+}

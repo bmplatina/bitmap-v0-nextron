@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import type { Game } from "@/lib/types";
 import { useEffect, useState } from "react";
 import GameCardCollection from "@/components/games/game-card-collection";
@@ -46,3 +47,6 @@ export default function GamesPage() {
     </Tabs.Root>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["GamesView","Sidebar","common"]);
+export { getStaticPaths };

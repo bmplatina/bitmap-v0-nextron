@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useEffect, useState } from "react";
@@ -134,3 +135,6 @@ export default function SubmitGames() {
     </>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["GameSubmit","Sidebar","common"]);
+export { getStaticPaths };

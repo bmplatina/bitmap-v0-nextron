@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useTranslation } from "next-i18next";
@@ -140,3 +141,6 @@ export default function SubmitGames() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Publish","Sidebar","common"]);
+export { getStaticPaths };

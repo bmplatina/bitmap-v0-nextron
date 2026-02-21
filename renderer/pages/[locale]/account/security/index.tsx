@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useState, useEffect, type KeyboardEvent } from "react";
@@ -124,3 +125,6 @@ function AccountInfoEditor({
     </Dialog.Root>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["AccountEdit","Sidebar","common"]);
+export { getStaticPaths };

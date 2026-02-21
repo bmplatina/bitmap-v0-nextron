@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "next-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { Button, Text } from "@radix-ui/themes";
 import { getCarousel, getLocalizedString, imageUriRegExp } from "@/lib/utils";
 import type { Carousel } from "@/lib/types";
@@ -23,8 +23,11 @@ export default function AutoSliderCarousel({
   carousels_Server = [],
   bFetchFromClient,
 }: CarouselProps) {
-  const router = useRouter();
-  const locale = router.locale ?? "en";
+  const {
+    i18n: { language: locale },
+    t,
+  } = useTranslation();
+
   const [[page, direction], setPage] = useState([0, 0]);
   const [carousel, setCarousel] = useState<Carousel[]>([]);
 

@@ -1,0 +1,14 @@
+{
+  "about": "Bitmap App is the ultimate space where creators from arts and technology share information, play games, and communicate with each other.",
+  "download-alert": "You will be redirected to the GitHub Release page for a safe installation.",
+  "intro-title": "Value Beyond Gaming, Bitmap",
+  "feature-1-title": "Easy Install & Updates",
+  "feature-1-desc": "Install the latest games with one click and let us handle automatic updates.",
+  "feature-2-title": "Creator Community",
+  "feature-2-desc": "Communicate directly with developers, give feedback, and build games together.",
+  "feature-3-title": "Cross-Platform Support",
+  "feature-3-desc": "Enjoy Bitmap games on various environments including Windows, macOS, and Linux.",
+  "system-req": "System Requirements",
+  "os": "Operating System",
+  "os-desc": "Windows 10+, macOS 11+, Linux (glibc 2.27+)"
+}

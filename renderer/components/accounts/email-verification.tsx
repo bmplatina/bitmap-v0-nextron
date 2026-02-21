@@ -30,7 +30,6 @@ export default function EmailVerificationDialog({
 }: EmailVerificationDialogProps) {
   const router = useRouter();
 
-  const locale = router.locale;
   const { login, logout, email, fetchUser } = useAuth();
   const [verificationCode, setVerificationCode] = useState("");
   const [bIsVerificationMailSending, setIsVerificationMailSending] =
@@ -38,7 +37,10 @@ export default function EmailVerificationDialog({
   const [bIsVerifying, setIsVerifying] = useState(false);
   const [bIsVerificationMailSent, setIsVerificationMailSent] = useState(false);
   const [verificationFailMessage, setVerificationFailMessage] = useState("");
-  const { t } = useTranslation(["Authentication", "Common"]);
+  const {
+    i18n: { language: locale },
+    t,
+  } = useTranslation(["Authentication", "Common"]);
 
   async function handleSendVerificationEmail() {
     try {

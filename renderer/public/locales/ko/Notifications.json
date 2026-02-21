@@ -1,0 +1,7 @@
+{
+  "notifications": "알림",
+  "all-read": "모든 내용 읽음",
+  "view-read": "읽은 내용 보기",
+  "mail-verification-required": "{username}님, Bitmap ID의 메일 인증이 완료되지 않았습니다.",
+  "mail-verification-required-desc": "메일 인증을 완료하여 Bitmap의 모든 서비스를 이용하십시오."
+}

@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { getLocalizedString } from "@/lib/utils";
 import { getEula } from "@/lib/general";
 import type { searchParamsPropsSSR } from "@/lib/types";
@@ -25,3 +26,6 @@ export default function EulaPage({ searchParams }: searchParamsPropsSSR) {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Common","Sidebar","common"]);
+export { getStaticPaths };

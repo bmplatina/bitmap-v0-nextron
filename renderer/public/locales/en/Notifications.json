@@ -1,0 +1,7 @@
+{
+  "notifications": "Notifications",
+  "all-read": "All Read",
+  "view-read": "View Read",
+  "mail-verification-required": "{username}, your Bitmap ID email verification is not complete.",
+  "mail-verification-required-desc": "Please complete email verification to use all Bitmap services."
+}

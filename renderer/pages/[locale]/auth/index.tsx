@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import Image from "next/image";
@@ -73,3 +74,6 @@ export default function AccountPage() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Authentication","Sidebar","common"]);
+export { getStaticPaths };

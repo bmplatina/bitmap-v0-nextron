@@ -18,7 +18,10 @@ export default function GameCard({
   linkPrefix = "/games",
 }: GameCardProps) {
   const router = useRouter();
-  const { t } = useTranslation("GamesView");
+  const {
+    i18n: { language: locale },
+    t,
+  } = useTranslation("GamesView");
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-lg">
@@ -65,13 +68,13 @@ export default function GameCard({
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4" />
             <span>
-              {getLocalizedString(router.locale ?? "en", game.gameGenre)}
+              {getLocalizedString(locale, game.gameGenre)}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{formatDate(router.locale ?? "en", game.gameReleasedDate)}</span>
+            <span>{formatDate(locale, game.gameReleasedDate)}</span>
           </div>
         </div>
       </CardContent>

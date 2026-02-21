@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useTheme } from "next-themes";
@@ -125,3 +126,6 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Settings","Sidebar","common"]);
+export { getStaticPaths };

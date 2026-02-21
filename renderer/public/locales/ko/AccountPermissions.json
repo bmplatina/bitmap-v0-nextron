@@ -1,0 +1,10 @@
+{
+  "bitmap-apply": "Bitmap 팀 가입",
+  "bitmap-apply-desc": "Bitmap 팀에 가입하여 제공하는 모든 서비스를 누릴 수 있습니다. 아래 가입 버튼을 클릭하여 가입을 신청하십시오.",
+  "bitmap-quit": "Bitmap 팀 탈퇴",
+  "bitmap-quit-desc": "Bitmap 팀에서 탈퇴합니다. 팀원 자격을 잃으면 제한되는 내용을 확인하십시오:\\n\\n1. Bitmap 커뮤니티 (카카오톡 오픈채팅 접근, Discord 서버 팀원 권한)의 접근이 제한됩니다.\\n2. Bitmap의 소셜 미디어 (YouTube, Bitmap 사이트 등)에 컨텐츠를 게시하거나 기존 컨텐츠를 수정할 수 없습니다.\\n3. 과한 분쟁으로 인해 탈퇴되는 경우 분쟁 로그에 분쟁 내용이 사전 고지 없이 투명하게 공개될 수 있습니다.",
+  "bitmap-developer-enable": "Bitmap Developer 계정으로 전환",
+  "bitmap-developer-enable-desc": "Bitmap Developer 계정으로 전환하여 게임 등 자신의 앱을 게시하거나 Bitmap API를 사용할 수 있습니다.",
+  "apply": "가입하기",
+  "quit": "탈퇴하기"
+}

@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { useTranslation } from "next-i18next";
 import { getGameById, getGameRatesById } from "@/lib/games";
 import { useEffect, useState } from "react";
@@ -45,3 +46,10 @@ export default observer(function GameDetailPage({
 
   return <GameDetail game={game} gameRates={gameRates ?? []} />;
 });
+
+export const getStaticProps = makeStaticProperties([
+  "GamesView",
+  "Sidebar",
+  "common",
+]);
+export { getStaticPaths };

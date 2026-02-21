@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 "use client";
 
 import { useEffect, type KeyboardEvent } from "react";
@@ -39,3 +40,6 @@ export default function AccountPage() {
     </div>
   );
 }
+
+export const getStaticProps = makeStaticProperties(["Authentication","Sidebar","common"]);
+export { getStaticPaths };

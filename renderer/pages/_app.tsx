@@ -1,6 +1,5 @@
 import React from "react";
 import type { AppProps } from "next/app";
-import i18next from "../../next-i18next.config";
 import { useRouter } from "next/router";
 import { Provider } from "react-redux";
 import { setIsMac } from "../lib/slices/platform-slice";

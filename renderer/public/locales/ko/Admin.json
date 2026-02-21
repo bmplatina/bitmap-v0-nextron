@@ -1,0 +1,10 @@
+{
+  "dashboard": "대시보드",
+  "members-list": "Bitmap 팀원 목록",
+  "member-manage": "Bitmap 팀원 관리",
+  "membership-application": "멤버십 신청 관리",
+  "membership-leaving-req": "멤버십 탈퇴 신청 관리",
+  "bitmap-developer": "Bitmap Developer",
+  "pending": "승인 대기 중",
+  "kick-from-team": "Team Bitmap에서 {username} ({email}) 추방"
+}
