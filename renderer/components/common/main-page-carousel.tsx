@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "next-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import LocalizedLink from "@/components/common/localized-link"
+import LocalizedLink from "@/components/common/localized-link";
 import { Button, Text } from "@radix-ui/themes";
 import { getCarousel, getLocalizedString, imageUriRegExp } from "@/lib/utils";
 import type { Carousel } from "@/lib/types";
@@ -40,7 +40,7 @@ export default function AutoSliderCarousel({
   useEffect(() => {
     async function fetchCarousel() {
       try {
-        const payloads = await getCarousel();
+        const payloads = await getCarousel(window.bitmapApi);
         setCarousel(payloads);
       } catch (err: any) {
         console.error(err);

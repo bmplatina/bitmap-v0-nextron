@@ -18,18 +18,12 @@ import { getProfile } from "@/lib/auth";
 import { useTranslation } from "next-i18next";
 import { getLocalizedString } from "@/lib/utils";
 import SmartMarkdown from "@/components/common/markdown/client-markdown";
-import { Box, Card, Flex, ScrollArea, Tabs, Text } from "@radix-ui/themes";
+import { Box, Flex, ScrollArea, Tabs, Text } from "@radix-ui/themes";
 import { Separator } from "../ui/separator";
-import {
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
 import GameRateSubmitter from "./game-rate-submitter";
 import GameRateViewer from "./game-rate-viewer";
 import LocalizedLink from "@/components/common/localized-link";
+import GameInteractableButtons from "./bitmapapp_game-interactable-buttons";
 
 type GameDetailProps = {
   game: Game;
@@ -37,8 +31,10 @@ type GameDetailProps = {
 };
 
 export default function GameDetail({ game, gameRates }: GameDetailProps) {
-  const { t, i18n } = useTranslation("GamesView");
-  const locale = i18n.language;
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("GamesView");
   const [author, setAuthor] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -104,49 +100,9 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
             </div>
           </Suspense>
 
-          <div className="mt-6 space-y-4">
-            {game.gameWebsite && (
-              <Button variant="outline" className="w-full" asChild>
-                <LocalizedLink
-                  href={game.gameWebsite}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Globe className="mr-2 h-4 w-4" />
-                  {t("official-website")}
-                </LocalizedLink>
-              </Button>
-            )}
-
-            <Button
-              className="w-full"
-              variant="default"
-              asChild
-              disabled={!game.isApproved}
-            >
-              <LocalizedLink
-                href={`/download?gameId=${game.gameId}`}
-                rel="noopener noreferrer"
-              >
-                <Monitor className="mr-2 h-4 w-4" />
-                {t("view-in-bitmap-app")}
-              </LocalizedLink>
-            </Button>
-
-            {/*game.gameDownloadWinURL && (
-                  <Button className="w-full">
-                    <Monitor className="mr-2 h-4 w-4" />
-                    Windows 다운로드
-                  </Button>
-              )*/}
-
-            {/*game.gameDownloadMacURL && (
-                  <Button className="w-full" variant="secondary">
-                    <Apple className="mr-2 h-4 w-4" />
-                    Mac 다운로드
-                  </Button>
-              )*/}
-          </div>
+          <GameInteractableButtons
+            game={game}
+          />
         </div>
 
         {/* 오른쪽 컬럼 - 상세 정보 */}

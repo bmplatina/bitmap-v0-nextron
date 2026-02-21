@@ -91,6 +91,7 @@ async function submitGame(
 }
 
 async function uploadGameImage(
+  context: bitmapApi,
   file: File | null,
   token: string,
   gameBinaryName: string,
@@ -103,32 +104,34 @@ async function uploadGameImage(
   formData.append("gameBinaryName", gameBinaryName);
   formData.append("image", file); // Express의 upload.single('image')와 일치해야 함
 
+  const removeListener = context.onAxiosPostProgress((progress) => {
+    // React 상태 업데이트 로직 등을 여기에 작성
+    if (onProgress) {
+      onProgress(progress);
+    }
+  });
+
   try {
-    const response = await axios.post(
-      getApiLinkByPurpose("upload/game/image"),
+    const response = await csrAxiosPost<{
+      message: string;
+      filePath: string;
+      uri: string;
+      uploaderUid: string;
+    }>(
+      context,
+      "upload/game/image",
       formData, // 별도의 Header 설정 없이 body에 바로 전달
-      {
-        timeout: 30000, // 30초 타임아웃
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            onProgress(percentCompleted);
-          }
-        },
-      },
+      token,
     );
 
-    const data = response.data;
+    const data = response;
     alert("업로드 성공: " + data.uri);
     return data.uri as string;
   } catch (error: any) {
     console.error("업로드 실패:", error);
     return error.message;
+  } finally {
+    removeListener();
   }
 }
 

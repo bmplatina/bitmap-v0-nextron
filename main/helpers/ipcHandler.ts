@@ -135,7 +135,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "axios-get",
-      async (_event, uriSubstring: string, token?: string) => {
+      async (event, uriSubstring: string, token?: string) => {
         const response = await axios.get(
           this.getApiLinkByPurpose(uriSubstring),
           {
@@ -143,6 +143,14 @@ class ipcHandle {
             headers: {
               "Content-Type": "application/json",
               ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            onDownloadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percentCompleted = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total,
+                );
+                event.sender.send("axios-get-progress", percentCompleted);
+              }
             },
           },
         );
@@ -153,7 +161,7 @@ class ipcHandle {
     ipcMain.handle(
       "axios-post",
       async (
-        _event,
+        event,
         uriSubstring: string,
         body: object,
         token?: string,
@@ -167,6 +175,14 @@ class ipcHandle {
             headers: {
               "Content-Type": contentType || "application/json",
               ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percentCompleted = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total,
+                );
+                event.sender.send("axios-post-progress", percentCompleted);
+              }
             },
           },
         );

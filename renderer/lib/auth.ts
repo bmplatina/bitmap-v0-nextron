@@ -9,6 +9,7 @@ import {
   UserProfile,
 } from "./types";
 import { bitmapApi, tools } from "@/types/electron";
+import { promises } from "dns";
 
 function checkIsLoggedIn(context: bitmapApi) {
   if (typeof window === "undefined") return false; // 서버 사이드 렌더링 방지
@@ -248,12 +249,20 @@ async function uploadProfilePics(
   context: bitmapApi,
   formData: FormData,
   token: string,
+  onProgress?: (progress: number) => void,
 ): Promise<{
   message: string;
   filePath: string;
   uri: string;
   uploaderUid: string;
 }> {
+  const removeListener = context.onAxiosPostProgress((progress) => {
+    // React 상태 업데이트 로직 등을 여기에 작성
+    if (onProgress) {
+      onProgress(progress);
+    }
+  });
+
   try {
     const response = await csrAxiosPost<{
       message: string;
@@ -267,6 +276,8 @@ async function uploadProfilePics(
     }
   } catch (error) {
     console.error("Profile image upload failed:", error);
+  } finally {
+    removeListener();
   }
   return {
     message: "server-error",

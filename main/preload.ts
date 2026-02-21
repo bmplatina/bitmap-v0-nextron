@@ -68,16 +68,34 @@ const bitmapApi = {
     uriSubstring: string,
     body: object,
     token?: string,
-    contentType?: string
-  ): Promise<T> => ipcRenderer.invoke("axios-post", uriSubstring, body, token, contentType),
+    contentType?: string,
+  ): Promise<T> =>
+    ipcRenderer.invoke("axios-post", uriSubstring, body, token, contentType),
+
+  onAxiosPostProgress: (callback: (progress: number) => void) => {
+    const subscription = (_event, progress: number) => callback(progress);
+    ipcRenderer.on("axios-post-progress", subscription);
+    return () => {
+      ipcRenderer.removeListener("axios-post-progress", subscription);
+    };
+  },
 
   axiosGet: <T>(uriSubstring: string, token?: string): Promise<T> =>
     ipcRenderer.invoke("axios-get", uriSubstring, token),
 
+  onAxiosGetProgress: (callback: (progress: number) => void) => {
+    const subscription = (_event, progress: number) => callback(progress);
+    ipcRenderer.on("axios-get-progress", subscription);
+    return () => {
+      ipcRenderer.removeListener("axios-get-progress", subscription);
+    };
+  },
+
   setToken: (token: string) => ipcRenderer.invoke("set-token", token),
   getToken: () => ipcRenderer.invoke("get-token"),
 
-  setScreenMode: (screenMode: string) => ipcRenderer.invoke("set-screen-mode", screenMode),
+  setScreenMode: (screenMode: string) =>
+    ipcRenderer.invoke("set-screen-mode", screenMode),
   getScreenMode: () => ipcRenderer.invoke("get-screen-mode"),
 
   // Bypass CORS

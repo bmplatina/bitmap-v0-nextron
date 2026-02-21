@@ -47,7 +47,9 @@ export interface bitmapApi {
     token?: string,
     contentType?: string,
   ) => Promise<T>;
+  onAxiosPostProgress: (callback: (progress: number) => void) => () => void;
   axiosGet: <T>(uriSubstring: string, token?: string) => Promise<T>;
+  onAxiosGetProgress: (callback: (progress: number) => void) => () => void;
 
   // Token Handler
   setToken: (token: string) => void;
