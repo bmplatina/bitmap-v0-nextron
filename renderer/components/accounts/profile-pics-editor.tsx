@@ -5,8 +5,8 @@ import { Avatar, Button, Flex, IconButton, Text } from "@radix-ui/themes";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "next-i18next";
-import axios from "axios";
 import { getApiLinkByPurpose } from "@/lib/utils";
+import { uploadProfilePics } from "@/lib/auth";
 
 interface UsernameProps {
   username?: string;
@@ -39,20 +39,13 @@ export default function ProfilePicsEditor({
       formData.append("image", file);
 
       try {
-        const response = await axios.post(
-          getApiLinkByPurpose("auth/profile/edit/avatar"),
+        const response = await uploadProfilePics(
+          window.bitmapApi,
           formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          },
+          token,
         );
 
-        if (response.data.avatarUri) {
-          profileUri(response.data.avatarUri);
-        }
+        if (response) profileUri(response.uri);
       } catch (error) {
         console.error("Profile image upload failed:", error);
       }

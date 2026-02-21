@@ -73,6 +73,31 @@ const getProfile = async (
   };
 };
 
+async function getMyProfile(
+  context: bitmapApi,
+  token: string,
+): Promise<UserProfile> {
+  try {
+    const res = await csrAxiosGet<UserProfile>(context, "auth/profile", token);
+    return res;
+  } catch (error) {
+    console.error("유저 정보 불러오기 실패", error);
+  }
+  return {
+    id: 0,
+    username: "Bitmap",
+    email: "public@prodbybitmap.com",
+    isAdmin: false,
+    isDeveloper: false,
+    isTeammate: false,
+    avatarUri: "",
+    createdAt: "",
+    google_id: "",
+    uid: "",
+    isEmailVerified: false,
+  };
+}
+
 /**
  * 로그인 핸들링 함수
  * @param email
@@ -219,13 +244,47 @@ async function editProfileElement(
   return "server-error";
 }
 
+async function uploadProfilePics(
+  context: bitmapApi,
+  formData: FormData,
+  token: string,
+): Promise<{
+  message: string;
+  filePath: string;
+  uri: string;
+  uploaderUid: string;
+}> {
+  try {
+    const response = await csrAxiosPost<{
+      message: string;
+      filePath: string;
+      uri: string;
+      uploaderUid: string;
+    }>(context, "upload/avatar", formData, token, "multipart/form-data");
+    // "Content-Type": "",
+    if (response.uri) {
+      return response;
+    }
+  } catch (error) {
+    console.error("Profile image upload failed:", error);
+  }
+  return {
+    message: "server-error",
+    filePath: "",
+    uri: "",
+    uploaderUid: "",
+  };
+}
+
 export {
   checkIsLoggedIn,
   getProfile,
+  getMyProfile,
   editProfileElement,
   login,
   signup,
   checkIsEmailDuplicated,
   verifyEmail,
   sendVerifyEmail,
+  uploadProfilePics,
 };

@@ -45,6 +45,7 @@ export interface bitmapApi {
     uriSubstring: string,
     body: object,
     token?: string,
+    contentType?: string,
   ) => Promise<T>;
   axiosGet: <T>(uriSubstring: string, token?: string) => Promise<T>;
 

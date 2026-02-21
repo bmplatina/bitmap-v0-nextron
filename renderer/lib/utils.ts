@@ -1,9 +1,10 @@
-import axios from "axios";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { Carousel, YouTubeQuery, stringLocalized } from "@/lib/types";
 import dayjs from "dayjs";
 import localFont from "next/font/local";
+import { csrAxiosGet, csrAxiosPost } from "./utils-client";
+import { bitmapApi } from "@/types/electron";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,39 +18,6 @@ const pretendard = localFont({
   variable: "--font-pretendard", // CSS 변수 선언
   weight: "45 920",
 });
-
-async function ssrAxiosGet<T>(
-  uriSubstring: string,
-  token?: string,
-): Promise<T> {
-  const response = await axios.get<T>(getApiLinkByPurpose(uriSubstring), {
-    timeout: 30000,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-  });
-  return response.data;
-}
-
-async function ssrAxiosPost<T>(
-  uriSubstring: string,
-  body: object,
-  token: string,
-): Promise<T> {
-  const response = await axios.post<T>(
-    getApiLinkByPurpose(uriSubstring),
-    body,
-    {
-      timeout: 30000,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  return response.data;
-}
 
 /**
  * 숫자를 지정된 범위 내로 제한합니다.
@@ -175,9 +143,13 @@ function getApiLinkByPurpose(substring: string): string {
 }
 
 // 서버 사이드에서 데이터를 가져오는 함수
-async function getYouTubeVideos(channelId: string): Promise<string[]> {
+async function getYouTubeVideos(
+  context: bitmapApi,
+  channelId: string,
+): Promise<string[]> {
   try {
-    const data = await ssrAxiosGet<YouTubeQuery>(
+    const data = await csrAxiosGet<YouTubeQuery>(
+      context,
       `youtube/get-videos/${channelId}`,
     );
 
@@ -191,9 +163,9 @@ async function getYouTubeVideos(channelId: string): Promise<string[]> {
   }
 }
 
-async function getCarousel(): Promise<Carousel[]> {
+async function getCarousel(context: bitmapApi): Promise<Carousel[]> {
   try {
-    const data = await ssrAxiosGet<Carousel[]>("general/carousel");
+    const data = await csrAxiosGet<Carousel[]>(context, "general/carousel");
 
     return data;
   } catch (err: any) {
@@ -214,6 +186,4 @@ export {
   imageUriRegExp,
   pretendard,
   renderMarkdown,
-  ssrAxiosGet,
-  ssrAxiosPost,
 };

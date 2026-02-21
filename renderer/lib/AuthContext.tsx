@@ -1,9 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { checkIsLoggedIn } from "./auth"; // 위에서 만든 함수
+import { checkIsLoggedIn, getMyProfile } from "./auth"; // 위에서 만든 함수
 import { useRouter } from "next/router";
-import axios from "axios";
 import { getApiLinkByPurpose } from "./utils";
 import { jwtDecode } from "jwt-decode";
 
@@ -49,14 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!token) return;
 
     try {
-      const res = await axios.get(getApiLinkByPurpose("auth/profile"), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await getMyProfile(window.bitmapApi, token);
 
       // API 응답에 없으면 토큰에서 직접 디코딩하여 확인 (강력한 대비책)
-      if (res.data === undefined) {
+      if (res === undefined) {
         try {
           const decoded: any = jwtDecode(token);
           console.log("JWT 수동 디코딩", decoded);
@@ -72,14 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error("토큰 디코딩 실패:", e);
         }
       } else {
-        setUsername(res.data.username);
-        setEmail(res.data.email);
-        setIsAdmin(!!res.data.isAdmin);
-        setIsDeveloper(!!res.data.isDeveloper);
-        setIsTeammate(!!res.data.isTeammate);
-        setIsEmailVerified(!!res.data.isEmailVerified);
-        setUid(res.data.uid);
-        setAvatarUri(res.data.avatarUri);
+        setUsername(res.username);
+        setEmail(res.email);
+        setIsAdmin(!!res.isAdmin);
+        setIsDeveloper(!!res.isDeveloper);
+        setIsTeammate(!!res.isTeammate);
+        setIsEmailVerified(!!res.isEmailVerified);
+        setUid(res.uid);
+        setAvatarUri(res.avatarUri);
       }
     } catch (error) {
       console.error("유저 정보 불러오기 실패", error);

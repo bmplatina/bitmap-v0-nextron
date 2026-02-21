@@ -23,7 +23,10 @@ export default function YouTubeWorksList({
   useEffect(() => {
     async function fetchYouTubeVideos() {
       try {
-        const videos = await getYouTubeVideos(youTubeChannelId_Client);
+        const videos = await getYouTubeVideos(
+          window.bitmapApi,
+          youTubeChannelId_Client,
+        );
         setYoutubeVideosClient(videos);
       } catch (error) {}
     }

@@ -67,8 +67,9 @@ const bitmapApi = {
   axiosPost: <T>(
     uriSubstring: string,
     body: object,
-    token: string,
-  ): Promise<T> => ipcRenderer.invoke("axios-post", uriSubstring, body, token),
+    token?: string,
+    contentType?: string
+  ): Promise<T> => ipcRenderer.invoke("axios-post", uriSubstring, body, token, contentType),
 
   axiosGet: <T>(uriSubstring: string, token?: string): Promise<T> =>
     ipcRenderer.invoke("axios-get", uriSubstring, token),

@@ -1,24 +1,20 @@
-import { getApiLinkByPurpose } from "./utils";
 import { Notification } from "./types";
-import axios from "axios";
+import { csrAxiosGet } from "./utils-client";
+import { bitmapApi } from "@/types/electron";
 
 async function getNotifications(
+  context: bitmapApi,
   token: string,
   scope: "unread" | "read" | "all",
 ) {
   try {
-    const response = await axios.get<Notification[]>(
-      getApiLinkByPurpose(`notify/${scope}`),
-      {
-        timeout: 30000, // 30초 타임아웃
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      },
+    const response = await csrAxiosGet<Notification[]>(
+      context,
+      `notify/${scope}`,
+      token,
     );
 
-    return response.data;
+    return response;
     // bSetLoggedInState(true);
   } catch (error) {
     console.log(error);
