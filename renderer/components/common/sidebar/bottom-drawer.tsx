@@ -17,9 +17,16 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EInstallState, GameInstallManager } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import { useState } from "react";
 
 export default function BottomDrawer() {
   const { addManager, managers, bIsMac } = useGameInstallManager();
+
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
+  const [extractProgress, setExtractProgress] = useState<number>(0);
+  const [installState, setInstallState] = useState<EInstallState>(
+    EInstallState.NotInstalled,
+  );
 
   const createExampleManagerWithInstalledState = () => {
     createExampleManager(true);
@@ -75,7 +82,7 @@ export default function BottomDrawer() {
     exampleMgr.setInstallState = bIsInstalled
       ? EInstallState.Downloading
       : EInstallState.Installed;
-    exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
+    exampleMgr.setInstallationPath("/Users/Shared/Downloads/ExampleGame");
 
     addManager(exampleMgr);
   };
@@ -84,20 +91,24 @@ export default function BottomDrawer() {
     <Drawer>
       {/* Footer 스타일의 트리거 */}
       <DrawerTrigger
-        className="fixed bottom-0 left-0 right-0 z-50
+        style={{
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          backgroundColor: "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
+        }}
+        className="fixed bottom-0 left-64 right-0 z-50
                            bg-background border-t
                            flex items-center justify-center
                            p-4 hover:bg-accent
-                           transition-colors duration-200"
+                           transition-all duration-200"
       >
         <div className="flex items-center gap-2">
-          {/* 여기에 Footer 내용 추가 */}
           <Download className="w-5 h-5" />
           <span>Downloads</span>
         </div>
       </DrawerTrigger>
 
-      <DrawerContent>
+      <DrawerContent className="left-64">
         <DrawerHeader>
           <DrawerTitle>다운로드</DrawerTitle>
           <DrawerDescription>
@@ -105,20 +116,12 @@ export default function BottomDrawer() {
           </DrawerDescription>
         </DrawerHeader>
 
-        {[...managers.entries()].map(([gameId, manager]) => (
-          <div key={gameId}>
-            {manager.getShowInDownloadDrawer && (
-              <GameInstallationCard
-                gameId={gameId}
-                gameTitle={manager.getGameTitle}
-                gameImageURL={manager.getGameImageURL[0]}
-                gameDownloadProgress={manager.getDownloadProgress}
-                gameExtractProgress={manager.getExtractProgress}
-                gameInstallState={manager.getInstallState}
-                gameInstallationPath={manager.getInstallationPath ?? undefined}
-              />
+        {[...managers.entries()].map(([gameId, mgr]) => (
+          <>
+            {mgr.getShowInDownloadDrawer && (
+              <GameInstallationCard key={gameId} manager={mgr} />
             )}
-          </div>
+          </>
         ))}
         {/*<GameInstallationCard gameTitle="Example"/>*/}
 

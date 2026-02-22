@@ -103,10 +103,10 @@ function NotificationListContent() {
 
   React.useEffect(() => {
     async function fetchNotifications() {
-      const token = localStorage.getItem("accessToken") || "";
+      const token = window.bitmapApi.getToken();
       try {
         setIsFetching(true);
-        const data = await getNotifications(token, scope);
+        const data = await getNotifications(window.bitmapApi, token, scope);
         setNotifications(data || []);
       } catch (error) {
         console.error("Failed to fetch notifications:", error);

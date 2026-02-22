@@ -414,8 +414,16 @@ class GameInstallManager {
     return this.installationPath;
   }
 
-  set setInstallationPath(newInstallationPath: string | null) {
-    this.installationPath = newInstallationPath;
+  setInstallationPath(
+    newInstallationPath: string | null,
+    callback?: (newPath: string) => void,
+  ) {
+    this.installationPath = this.bIsMac
+      ? `${newInstallationPath}/${this.gameBinaryName}/`
+      : `${newInstallationPath}\\${this.gameBinaryName}\\`;
+    if (callback) {
+      callback(newInstallationPath ?? "");
+    }
   }
 
   get getInstallState(): EInstallState {
@@ -465,21 +473,28 @@ class GameInstallManager {
    */
   async downloadAndInstall(
     context: bitmapApi,
-    url: string | null,
-    savePath: string,
+    downloadProgressCallback?: (progress: number) => void,
+    extractProgressCallback?: (progress: number) => void,
+    installStateCallback?: (progress: EInstallState) => void,
   ) {
-    if (url == null) return;
+    const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
 
     const savePathLocal: string | null = this.bIsMac
-      ? `${savePath}/${url.split("/")[url.split("/").length - 1]}`
-      : `${savePath}\\${url.split("/")[url.split("/").length - 1]}`;
+      ? `${this.installationPath}/${url?.split("/")[url?.split("/").length - 1]}`
+      : `${this.installationPath}\\${url?.split("/")[url?.split("/").length - 1]}`;
     console.log(`URL: ${url}, SavePath: ${savePathLocal}`);
 
     try {
       // 다운로드 진행률 수신
       context.onDownloadProgress((progress) => {
         this.installState = EInstallState.Downloading;
+        if (installStateCallback) {
+          installStateCallback(this.installState);
+        }
         this.downloadProgress = progress;
+        if (downloadProgressCallback) {
+          downloadProgressCallback(progress);
+        }
         console.log(
           `다운로드 중: ${this.downloadProgress}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
         );
@@ -494,9 +509,15 @@ class GameInstallManager {
       // 압축 해제 진행률 수신
       context.onExtractProgress((progress) => {
         this.installState = EInstallState.Extracting;
+        if (installStateCallback) {
+          installStateCallback(this.installState);
+        }
         this.extractProgress = progress;
+        if (extractProgressCallback) {
+          extractProgressCallback(progress);
+        }
         console.log(
-          `압축 해제 중: ${this.downloadProgress}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
+          `압축 해제 중: ${this.extractProgress}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
         );
       });
 
@@ -550,7 +571,12 @@ class GameInstallManager {
   }
 
   // NeDB Installation Info saver
-  async pullInstallState(ElectronTools: tools, BitmapAPI: bitmapApi) {
+  async pullInstallState(
+    ElectronTools: tools,
+    BitmapAPI: bitmapApi,
+    installationPathCallback?: (path: string) => void,
+    installStateCallback?: (state: EInstallState) => void,
+  ) {
     try {
       // Declare default installation path
       const getDefaultInstallPath = ElectronTools.getElectronStoredPath();
@@ -595,16 +621,16 @@ class GameInstallManager {
             ? `${this.installationPath}/${this.game.gameBinaryName}`
             : `${this.installationPath}\\${this.game.gameBinaryName}`;
 
-          window.bitmapApi
-            .checkPathValid(literalInstallationPath)
-            .then((bIsValid: boolean) => {
+          BitmapAPI.checkPathValid(literalInstallationPath).then(
+            (bIsValid: boolean) => {
               console.log(
                 `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
               );
               this.installState = bIsValid
                 ? EInstallState.Installed
                 : EInstallState.NotInstalled;
-            });
+            },
+          );
         } else this.installState = EInstallState.NotInstalled;
 
         // Sync installation state
@@ -612,6 +638,13 @@ class GameInstallManager {
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      if (installStateCallback) {
+        installStateCallback(this.installState);
+      }
+      if (installationPathCallback) {
+        installationPathCallback(this.defaultInstallationPath ?? "");
+      }
     }
   }
 

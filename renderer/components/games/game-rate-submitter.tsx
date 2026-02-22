@@ -54,7 +54,7 @@ export default function GameRateSubmitter({
   async function rateDeleteHandler() {
     try {
       setIsDeleting(true);
-      const token = localStorage.getItem("accessToken");
+      const token = window.bitmapApi.getToken();
       if (!token) throw Error("login-required");
       const response = await deleteGameRate(window.bitmapApi, token, gameId);
     } catch (err: any) {
@@ -151,7 +151,7 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
   async function submitHandler() {
     try {
       setIsSubmitting(true);
-      const storageToken = localStorage.getItem("accessToken");
+      const storageToken = window.bitmapApi.getToken();
       if (!storageToken) throw Error("login-required");
 
       if (title.length === 0) throw Error("title-required");

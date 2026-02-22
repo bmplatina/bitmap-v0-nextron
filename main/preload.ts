@@ -21,7 +21,7 @@ const deeplink = {
     ipcRenderer.send("window-is-ready", isReady);
   },
   onLauncherUrl: (callback: (url: string) => void) => {
-    ipcRenderer.on("launcher-url", (_event, url: string) => {
+    ipcRenderer.on("launcher-url", (_event: IpcRendererEvent, url: string) => {
       callback(url);
     });
   },
@@ -73,7 +73,8 @@ const bitmapApi = {
     ipcRenderer.invoke("axios-post", uriSubstring, body, token, contentType),
 
   onAxiosPostProgress: (callback: (progress: number) => void) => {
-    const subscription = (_event, progress: number) => callback(progress);
+    const subscription = (_event: IpcRendererEvent, progress: number) =>
+      callback(progress);
     ipcRenderer.on("axios-post-progress", subscription);
     return () => {
       ipcRenderer.removeListener("axios-post-progress", subscription);
@@ -84,7 +85,8 @@ const bitmapApi = {
     ipcRenderer.invoke("axios-get", uriSubstring, token),
 
   onAxiosGetProgress: (callback: (progress: number) => void) => {
-    const subscription = (_event, progress: number) => callback(progress);
+    const subscription = (_event: IpcRendererEvent, progress: number) =>
+      callback(progress);
     ipcRenderer.on("axios-get-progress", subscription);
     return () => {
       ipcRenderer.removeListener("axios-get-progress", subscription);

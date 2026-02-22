@@ -14,66 +14,44 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 
 interface GameInstallationCardProps {
-  gameId?: number;
-  gameTitle?: string;
-  gameImageURL?: string;
-  gameDownloadProgress?: number;
-  gameExtractProgress?: number;
-  gameInstallationPath?: string;
-  gameInstallState?: EInstallState;
-  testInstallState?: boolean;
+  manager: GameInstallManager;
 }
 
 export default function GameInstallationCard({
-  gameId = 0,
-  gameTitle = "GAME_NAME",
-  gameImageURL = "",
-  gameDownloadProgress = 0,
-  gameExtractProgress = 0,
-  gameInstallationPath = "/Users/",
-  gameInstallState = EInstallState.Downloading,
-  testInstallState = false,
+  manager,
 }: GameInstallationCardProps) {
-  const { managers, bIsMac } = useGameInstallManager();
-
-  const manager = managers.get(gameId);
-
+  const { bIsMac } = useGameInstallManager();
   const dismiss = () => {
     // if(managers[index]) dispatch(removeManagerByIndex(index));
-    
+
     if (manager) manager.setShowInDownloadDrawer = false;
   };
 
   const openApp = () => {
-    
     if (manager) {
-      console.log(`Requesting to open ${gameTitle}`);
+      console.log(`Requesting to open ${manager.getGameTitle}`);
       manager.setIsMac = bIsMac;
       manager.openApp(window.bitmapApi);
     } else {
-      console.log(
-        `Failed to open ${gameTitle}. Game install manager is not valid.`,
-      );
+      console.log(`Failed to open. Game install manager is not valid.`);
     }
   };
 
   const removeApp = () => {
     if (manager) {
-      console.log(`Requesting to remove ${gameTitle}`);
+      console.log(`Requesting to remove ${manager.getGameTitle}`);
       manager.setIsMac = bIsMac;
       manager.removeApp(window.bitmapApi);
       dismiss();
     } else {
-      console.log(
-        `Failed to remove ${gameTitle}. Game install manager is not valid.`,
-      );
+      console.log(`Failed to remove. Game install manager is not valid.`);
     }
   };
 
   return (
     <Card className="flex items-center p-2">
       <Image
-        src={gameImageURL || "/images/unknownImage.png"}
+        src={manager.getGameImageURL[0] || "/images/unknownImage.png"}
         alt=""
         width={100}
         height={141}
@@ -81,29 +59,29 @@ export default function GameInstallationCard({
       />
       <div className="flex-grow">
         <CardHeader>
-          <CardTitle>{gameTitle}</CardTitle>
+          <CardTitle>{manager.getGameTitle}</CardTitle>
           <CardDescription>
-            {gameInstallState === EInstallState.Downloading &&
-              `다운로드 중: ${Math.round(gameDownloadProgress)}%`}
-            {gameInstallState === EInstallState.Extracting &&
-              `디스크에 쓰는 중: ${gameExtractProgress}`}
-            {gameInstallState === EInstallState.Installed &&
-              `"${gameInstallationPath}" 에 설치됨`}
+            {manager.getInstallState === EInstallState.Downloading &&
+              `다운로드 중: ${Math.round(manager.getDownloadProgress)}%`}
+            {manager.getInstallState === EInstallState.Extracting &&
+              `디스크에 쓰는 중: ${manager.getExtractProgress}`}
+            {manager.getInstallState === EInstallState.Installed &&
+              `"${manager.getInstallationPath}" 에 설치됨`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {gameInstallState !== EInstallState.Installed && (
+          {manager.getInstallState !== EInstallState.Installed && (
             <Progress
               value={
-                gameInstallState === EInstallState.Downloading
-                  ? Math.round(gameDownloadProgress)
-                  : gameExtractProgress
+                manager.getInstallState === EInstallState.Downloading
+                  ? Math.round(manager.getDownloadProgress)
+                  : manager.getExtractProgress
               }
             />
           )}
         </CardContent>
         <CardFooter>
-          {manager && gameInstallState === EInstallState.Installed && (
+          {manager && manager.getInstallState === EInstallState.Installed && (
             <div>
               <Button
                 variant="default"

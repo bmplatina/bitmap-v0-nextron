@@ -61,7 +61,7 @@ export const sidebarItems = [
         icon: <PlusCircle className="h-5 w-5" />,
         bRequire: "developer",
         appIcon: PlusCircle,
-        href: "/publish",
+        href: "https://prodbybitmap.com/publish",
       },
       // {
       //   title: "games-pending",

@@ -25,11 +25,11 @@ export default function GrantButton({ uid, action, bIsApproved }: GrantProps) {
   async function handleApprove() {
     try {
       setIsApproving(true);
-      const token = localStorage.getItem("accessToken");
+      const token = window.bitmapApi.getToken();
       if (!token) throw Error("invalid-token");
       const response =
         action === "apply"
-          ? await grantMembershipApplyByUid(window.bitmapApi,token, uid)
+          ? await grantMembershipApplyByUid(window.bitmapApi, token, uid)
           : await grantMembershipLeavingByUid(window.bitmapApi, token, uid);
 
       setSubmitMessage(t(response));
