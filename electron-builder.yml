@@ -3,7 +3,7 @@ appId: com.prodbybitmap.esd
 
 publish:
   - provider: github
-    repo: bitmap
+    repo: bitmap-v0-nextron
     owner: bmplatina
 
 directories:
@@ -20,7 +20,7 @@ nsis:
   shortcutName: Bitmap
 
 win:
-  icon: assets/AppIcon.ico
+  icon: resources/icon.ico
   target:
     - target: nsis
       arch: x64
@@ -30,7 +30,7 @@ mac:
   target:
     - target: dmg
       arch: [universal]
-  icon: assets/AppIcon.icns
+  icon: resources/icon.icns
 
 linux:
   target:
@@ -41,11 +41,11 @@ files:
     filter:
       - package.json
       - app
-  - '!build'
-  - '!dist'
-  - '!scripts'
-  - '!.idea'
-  - '!.vscode'
+  - "!build"
+  - "!dist"
+  - "!scripts"
+  - "!.idea"
+  - "!.vscode"
 
 protocols:
   name: Bitmap
