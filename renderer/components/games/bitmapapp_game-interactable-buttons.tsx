@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "../ui/input";
+import AppleLogo from "@/public/images/platforms/platformMac.png";
+import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
 
 interface GameInteractableButtonsProps {
   game: Game;
@@ -66,6 +68,7 @@ export default observer(function GameInteractableButtons({
       : gameInstallManager.getGameInfo.gameDownloadWinURL;
     gameInstallManager
       .downloadAndInstall(
+        window.bitmapApi,
         downloadUri,
         gameInstallManager.getInstallationPath ?? "",
       )
@@ -123,7 +126,10 @@ export default observer(function GameInteractableButtons({
 
   useEffect(() => {
     if (gameInstallManager.getGameInfo && gameInstallManager)
-      gameInstallManager.pullInstallState();
+      gameInstallManager.pullInstallState(
+        window.electronTools,
+        window.bitmapApi,
+      );
   }, [gameInstallManager.getGameInfo]);
 
   useEffect(() => {
@@ -167,7 +173,7 @@ export default observer(function GameInteractableButtons({
           <Button
             className="w-full"
             asChild
-            onClick={gameInstallManager.openApp}
+            onClick={() => gameInstallManager.openApp(window.bitmapApi)}
           >
             <Play className="mr-2 h-4 w-4" />
             실행
@@ -176,7 +182,7 @@ export default observer(function GameInteractableButtons({
           <Button
             className="w-full"
             asChild
-            onClick={gameInstallManager.removeApp}
+            onClick={() => gameInstallManager.removeApp(window.bitmapApi)}
           >
             <Delete className="mr-2 h-4 w-4" />
             제거
@@ -191,7 +197,7 @@ export default observer(function GameInteractableButtons({
             <Button className="w-full" asChild>
               <div>
                 <Image
-                  src={`/images/${bIsMac ? "platformMac.png" : "platformWindows11.png"}`}
+                  src={bIsMac ? AppleLogo : Windows10Logo}
                   alt="다운로드"
                   className="mr-2 h-4 w-4"
                   width={18}
