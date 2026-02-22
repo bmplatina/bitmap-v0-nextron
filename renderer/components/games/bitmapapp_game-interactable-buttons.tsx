@@ -6,11 +6,7 @@ import { Delete, Globe, Monitor, Play } from "lucide-react";
 import LocalizedLink from "../common/localized-link";
 import { Button } from "../ui/button";
 import { openExternal } from "@/lib/utils-client";
-import { observer } from "mobx-react";
 import { EInstallState, Game, GameInstallManager } from "@/lib/types";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/lib/store";
-import { addManager } from "@/lib/slices/dl-slice";
 import {
   Dialog,
   DialogClose,
@@ -25,58 +21,62 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "../ui/input";
 import AppleLogo from "@/public/images/platforms/platformMac.png";
 import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
+import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 
 interface GameInteractableButtonsProps {
   game: Game;
 }
 
-export default observer(function GameInteractableButtons({
+export default function GameInteractableButtons({
   game,
 }: GameInteractableButtonsProps) {
+  const {
+    managers: existingInstallManagers,
+    bIsMac,
+    addManager,
+  } = useGameInstallManager();
+
   const router = useRouter();
   const {
     t,
     i18n: { language: locale },
   } = useTranslation("GamesView");
 
+  const [gameInstallManager, setGameInstallManager] =
+    useState<GameInstallManager>(() => new GameInstallManager(bIsMac));
+
   function openExternalLink(e: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(e, window.electronTools);
   }
-
-  const dispatch = useDispatch();
-  const bIsMac: boolean = useSelector(
-    (state: RootState) => state.platform.bIsMac,
-  );
   const [bIsCompatible, setIsCompatible] = useState(false);
 
   function pushNewManager() {
-    dispatch(addManager(gameInstallManager));
+    addManager(gameInstallManager);
   }
-
-  const [gameInstallManager, setGameInstallManager] =
-    useState<GameInstallManager>(() => new GameInstallManager());
 
   /**
    * Download and Install Game. Call this function directly in your React component.
    */
-  const handleDownloadAndInstall = (
+  async function handleDownloadAndInstall(
     event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  ) {
     event.preventDefault(); // 필요한 경우
     const downloadUri = bIsMac
       ? gameInstallManager.getGameInfo.gameDownloadMacURL
       : gameInstallManager.getGameInfo.gameDownloadWinURL;
-    gameInstallManager
-      .downloadAndInstall(
+
+    try {
+      await gameInstallManager.downloadAndInstall(
         window.bitmapApi,
         downloadUri,
         gameInstallManager.getInstallationPath ?? "",
-      )
-      .catch((error) => {
-        console.error("Download and Install Error:", error);
-      });
-    pushNewManager();
-  };
+      );
+    } catch (error: any) {
+      console.error("Download and Install Error:", error);
+    } finally {
+      pushNewManager();
+    }
+  }
 
   /**
    * Check Platform compatibility
@@ -138,6 +138,17 @@ export default observer(function GameInteractableButtons({
     setIsCompatible(GetIsPlatformCompatible());
     console.log(`Game Compatibility: ${bIsCompatible ? "Yes" : "No"}`);
   }, [bIsMac]);
+
+  useEffect(
+    function () {
+      const existingManager = existingInstallManagers.get(game.gameId);
+
+      if (existingManager) {
+        setGameInstallManager(existingManager);
+      }
+    },
+    [existingInstallManagers, game.gameId],
+  );
 
   return (
     <div className="mt-6 space-y-4">
@@ -252,4 +263,4 @@ export default observer(function GameInteractableButtons({
       )}
     </div>
   );
-});
+}

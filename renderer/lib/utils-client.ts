@@ -20,7 +20,12 @@ async function csrAxiosPost<T>(
   token?: string,
   contentType?: string,
 ): Promise<T> {
-  const response = await bitmapApi.axiosPost<T>(uriSubstring, body, token, contentType);
+  const response = await bitmapApi.axiosPost<T>(
+    uriSubstring,
+    body,
+    token,
+    contentType,
+  );
   return response;
 }
 
@@ -43,4 +48,9 @@ function openExternal(
   }
 }
 
-export { csrAxiosGet, csrAxiosPost, openExternal };
+async function getPlatform(context: ElectronTools) {
+  const platform = await context.getPlatform();
+  return platform;
+}
+
+export { csrAxiosGet, csrAxiosPost, openExternal, getPlatform };

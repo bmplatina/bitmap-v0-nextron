@@ -1,10 +1,7 @@
 import React from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
-import { Provider } from "react-redux";
-import { setIsMac } from "../lib/slices/platform-slice";
 import { Theme } from "@radix-ui/themes";
-import { store } from "../lib/store";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import Sidebar from "@/components/common/sidebar/sidebar";
 import TopBar from "@/components/common/sidebar/top-bar";
@@ -18,6 +15,8 @@ import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../../next-i18next.config";
 import { pretendard } from "@/lib/utils";
+import { getPlatform } from "@/lib/utils-client";
+import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
 
 function RootLayout({ Component, pageProps }: AppProps) {
   let [launcherUrl, setLauncherUrl] = React.useState("");
@@ -43,7 +42,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
 
   return (
     <React.Fragment>
-      <Provider store={store}>
+      <GameInstallManagerProvider>
         <NextToploader showSpinner={false} />
         <AuthProvider>
           <ThemeProvider
@@ -77,7 +76,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
             </Theme>
           </ThemeProvider>
         </AuthProvider>
-      </Provider>
+      </GameInstallManagerProvider>
     </React.Fragment>
   );
 }

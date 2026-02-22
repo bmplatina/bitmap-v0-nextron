@@ -1,12 +1,19 @@
 import { useTranslation } from "next-i18next";
-import LocalizedLink from "@/components/common/localized-link"
+import LocalizedLink from "@/components/common/localized-link";
 import { Flex, Separator, Text, Container } from "@radix-ui/themes";
 import Image from "next/image";
-
+import { openExternal } from "@/lib/utils-client";
 import BitmapLogo from "@/public/images/bitmaplogo-notext.png";
 
 export default function Footer() {
-  const { t } = useTranslation("Footer");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("Footer");
+
+  function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    openExternal(event, window.electronTools);
+  }
 
   return (
     <footer className="w-full mt-20 py-16 px-4 md:px-6 bg-muted/30 border-t border-border/50">
@@ -71,7 +78,8 @@ export default function Footer() {
             </LocalizedLink>
             <Separator orientation="vertical" />
             <LocalizedLink
-              href="/about"
+              href={`https://prodbybitmap.com/${locale}/about`}
+              onClick={openExternalLink}
               className="hover:text-foreground transition-colors duration-200"
             >
               <Text size="2" weight="medium">

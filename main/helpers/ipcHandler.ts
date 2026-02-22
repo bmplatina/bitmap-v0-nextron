@@ -101,7 +101,7 @@ class ipcHandle {
     });
 
     // 플랫폼 가져오기
-    ipcMain.handle("get-platform", (_event) => {
+    ipcMain.handle("get-platform", (_event): string => {
       return this.platformName;
     });
 

@@ -30,7 +30,7 @@ export interface tools {
   // Opens external link
   openExternal: (url: string) => void;
 
-  getPlatform: () => string;
+  getPlatform: () => Promise<string>;
 
   getLocale: () => "ko" | "en";
 

@@ -1,8 +1,6 @@
 "use client";
 
-import { observer } from "mobx-react-lite";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState } from "@/lib/store";
 
 import {
   Drawer,
@@ -18,13 +16,10 @@ import GameInstallationCard from "../../games/game-installation-card";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EInstallState, GameInstallManager } from "@/lib/types";
-import { addManager } from "@/lib/slices/dl-slice";
+import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 
-const BottomDrawer = observer(() => {
-  const managers: GameInstallManager[] = useSelector(
-    (state: RootState) => state.gameInstaller.managers,
-  );
-  const dispatch = useDispatch();
+export default function BottomDrawer() {
+  const { addManager, managers, bIsMac } = useGameInstallManager();
 
   const createExampleManagerWithInstalledState = () => {
     createExampleManager(true);
@@ -35,7 +30,7 @@ const BottomDrawer = observer(() => {
   };
 
   const createExampleManager = (bIsInstalled: boolean) => {
-    const exampleMgr: GameInstallManager = new GameInstallManager();
+    const exampleMgr: GameInstallManager = new GameInstallManager(bIsMac);
     exampleMgr.setGameInfo = {
       gameId: 0,
       uid: "example-game",
@@ -82,7 +77,7 @@ const BottomDrawer = observer(() => {
       : EInstallState.Installed;
     exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
 
-    dispatch(addManager(exampleMgr));
+    addManager(exampleMgr);
   };
 
   return (
@@ -110,11 +105,11 @@ const BottomDrawer = observer(() => {
           </DrawerDescription>
         </DrawerHeader>
 
-        {managers.map((manager, index) => (
-          <div key={index}>
+        {[...managers.entries()].map(([gameId, manager]) => (
+          <div key={gameId}>
             {manager.getShowInDownloadDrawer && (
               <GameInstallationCard
-                index={index}
+                gameId={gameId}
                 gameTitle={manager.getGameTitle}
                 gameImageURL={manager.getGameImageURL[0]}
                 gameDownloadProgress={manager.getDownloadProgress}
@@ -137,6 +132,4 @@ const BottomDrawer = observer(() => {
       </DrawerContent>
     </Drawer>
   );
-});
-
-export default BottomDrawer;
+}

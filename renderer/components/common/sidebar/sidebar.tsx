@@ -6,6 +6,7 @@ import { sidebarItems } from "@/lib/sidebar-items";
 import { useTranslation } from "next-i18next";
 import LanguageSwitcher from "./language-changer";
 import React from "react";
+import { openExternal } from "@/lib/utils-client";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -13,6 +14,10 @@ export default function Sidebar() {
   const { i18n, t } = useTranslation("Sidebar");
 
   const locale = (router.query.locale as string) || i18n.language || "en";
+
+  function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    openExternal(event, window.electronTools);
+  }
 
   React.useEffect(() => {
     console.log("Locale (ready): ", locale);
@@ -43,6 +48,11 @@ export default function Sidebar() {
 
                   return (
                     <LocalizedLink
+                      onClick={
+                        item.href.startsWith("http")
+                          ? openExternalLink
+                          : undefined
+                      }
                       key={item.title}
                       href={item.href}
                       target={

@@ -13,5 +13,6 @@
   "publish-dashboard": "퍼블리셔 대시보드",
   "games-pending": "대기 중인 게임",
   "accounts": "어카운트",
-  "projects": "프로젝트 파일"
+  "projects": "프로젝트 파일",
+  "settings": "설정"
 }

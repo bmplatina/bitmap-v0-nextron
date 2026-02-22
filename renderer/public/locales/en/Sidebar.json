@@ -13,5 +13,6 @@
   "publish-dashboard": "Publisher Dashboard",
   "games-pending": "Pending Games",
   "accounts": "Accounts",
-  "projects": "Project Files"
+  "projects": "Project Files",
+  "settings": "Settings"
 }
