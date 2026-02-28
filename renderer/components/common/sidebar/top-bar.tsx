@@ -21,15 +21,16 @@ import { useAuth } from "@/lib/AuthContext";
 import NotificationCenter from "./notification-center";
 import BitmapLogoBMP from "@/public/images/bitmap_bmp.png";
 import Search from "@/components/common/search/search";
+import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 
 export default function TopBar() {
   const router = useRouter();
   const { t } = useTranslation("common");
+  const { bIsMac } = useGameInstallManager();
   const { bIsLoggedIn, username, isLoading, avatarUri } = useAuth();
   // Electron 및 MacOS 환경 감지 변수 (실제 감지 코드는 구현하지 않음)
-  const bIsElectron: boolean = false; // 예시 값, 실제로는 Electron 감지 로직 필요
-  const [bIsMacOS, setIsMacOS] = useState(false); // 예시 값, 실제로는 MacOS 감지 로직 필요
-  const [titleTransform, setTitleTransform] = useState("translateX(0px)");
+  const [titleTransform, setTitleTransform] =
+    useState<string>("translateX(80px)");
 
   // 프로필 팝오버 상태 관리
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -37,9 +38,10 @@ export default function TopBar() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const handleFullscreenChange = (newFullscreenState: boolean) => {
+    if (!bIsMac) return;
     console.log("fullscreen state changed:", newFullscreenState);
     setTitleTransform(
-      bIsMacOS && !newFullscreenState ? "translateX(80px)" : "translateX(0px)",
+      !newFullscreenState ? "translateX(80px)" : "translateX(0px)",
     );
   };
 
@@ -54,15 +56,11 @@ export default function TopBar() {
   }, []);
 
   useEffect(() => {
-    const { electronTools } = window as any;
-    electronTools.getPlatform().then((currentPlatform: string) => {
-      setIsMacOS(currentPlatform === "darwin");
-      electronTools.onFullscreenChange(handleFullscreenChange);
-    });
+    window.electronTools.onFullscreenChange(handleFullscreenChange);
 
     // 컴포넌트 언마운트 시 리스너 제거
     return () => {
-      electronTools.removeFullscreenListener(handleFullscreenChange);
+      window.electronTools.removeFullscreenListener();
     };
   }, [handleFullscreenChange]);
 
@@ -130,7 +128,10 @@ export default function TopBar() {
           style={electronNoDragCss}
         />
 
-        <div className="ml-auto pl-2 flex items-center gap-2">
+        <div
+          className="ml-auto pl-2 flex items-center gap-2"
+          style={{ transform: bIsMac ? "none" : "translateX(-80px)" }}
+        >
           <Flex gap="4" className="items-center">
             {isLoading ? (
               <Spinner />
