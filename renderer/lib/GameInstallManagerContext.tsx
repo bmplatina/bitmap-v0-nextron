@@ -7,16 +7,18 @@ import React, {
 } from "react";
 import { Game, GameInstallManager } from "@/lib/types";
 import { getPlatform } from "./utils-client";
+import { makeAutoObservable, observable } from "mobx";
 
 interface GameInstallManagerContextType {
   bIsMac: boolean;
-  // 현재 활성화된 모든 매니저 목록
-  managers: Map<number, GameInstallManager>;
+  store: {
+    managers: Map<number, GameInstallManager>;
+    add: (manager: GameInstallManager) => void;
+    remove: (gameId: number) => void;
+    clear: () => void;
+  };
   // 특정 게임의 매니저를 가져오거나 없으면 생성
   getManager: (game: Game) => GameInstallManager;
-  removeManager: (gameId: number) => void;
-  clearManagers: () => void;
-  addManager: (manager: GameInstallManager) => void;
 }
 
 const GameInstallManagerContext = createContext<
@@ -30,52 +32,39 @@ export function GameInstallManagerProvider({
 }) {
   const [bIsMac, setIsMac] = useState(false);
 
-  // Map을 사용하여 게임 ID별로 매니저 인스턴스를 유일하게 관리
-  const [managers, setManagers] = useState<Map<number, GameInstallManager>>(
-    new Map(),
+  // MobX observable Map을 상태로 관리
+  const [store] = useState(() =>
+    makeAutoObservable({
+      managers: observable.map<number, GameInstallManager>(),
+      add(manager: GameInstallManager) {
+        this.managers.set(manager.getGameInfo.gameId, manager);
+      },
+      remove(gameId: number) {
+        this.managers.delete(gameId);
+      },
+      clear() {
+        this.managers.clear();
+      },
+    }),
   );
 
   const getManager = useCallback(
     (game: Game) => {
       // 1. 이미 해당 게임의 매니저가 있다면 반환
-      if (managers.has(game.gameId)) {
-        return managers.get(game.gameId)!;
+      if (store.managers.has(game.gameId)) {
+        return store.managers.get(game.gameId)!;
       }
 
       // 2. 없다면 새로 생성하여 등록
       const newManager = new GameInstallManager(bIsMac);
       newManager.setGameInfo = game; // 기본 정보 세팅
 
-      setManagers((prev) => {
-        const next = new Map(prev);
-        next.set(game.gameId, newManager);
-        return next;
-      });
+      store.add(newManager);
 
       return newManager;
     },
-    [managers],
+    [bIsMac, store],
   );
-
-  const removeManager = useCallback((gameId: number) => {
-    setManagers((prev) => {
-      const next = new Map(prev);
-      next.delete(gameId);
-      return next;
-    });
-  }, []);
-
-  const clearManagers = useCallback(() => {
-    setManagers(new Map());
-  }, []);
-
-  const addManager = useCallback((manager: GameInstallManager) => {
-    setManagers((prev) => {
-      const next = new Map(prev);
-      next.set(manager.getGameInfo.gameId, manager);
-      return next;
-    });
-  }, []);
 
   React.useEffect(
     function () {
@@ -93,11 +82,8 @@ export function GameInstallManagerProvider({
     <GameInstallManagerContext.Provider
       value={{
         bIsMac,
-        managers,
+        store,
         getManager,
-        removeManager,
-        clearManagers,
-        addManager,
       }}
     >
       {children}

@@ -1,5 +1,4 @@
 import { Spinner } from "@radix-ui/themes";
-import { useTranslation } from "next-i18next";
 import { getGameById, getGameRatesById } from "@/lib/games";
 import { useEffect, useState } from "react";
 import GameDetail from "@/components/games/game-details";
@@ -9,7 +8,6 @@ import { Game, GameRating } from "@/lib/types";
 export default function GameDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { t } = useTranslation("GamesView");
   const [game, setGame] = useState<Game | null>();
   const [gameRates, setGameRates] = useState<GameRating[]>([]);
 

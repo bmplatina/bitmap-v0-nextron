@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { observer } from "mobx-react-lite";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import { Delete, Globe, Play } from "lucide-react";
@@ -26,14 +27,10 @@ interface GameInteractableButtonsProps {
   game: Game;
 }
 
-export default function GameInteractableButtons({
+const GameInteractableButtons = observer(function ({
   game,
 }: GameInteractableButtonsProps) {
-  const {
-    managers: existingInstallManagers,
-    bIsMac,
-    addManager,
-  } = useGameInstallManager();
+  const { store, bIsMac } = useGameInstallManager();
   const {
     t,
     i18n: { language: locale },
@@ -42,19 +39,13 @@ export default function GameInteractableButtons({
   const [gameInstallManager, setGameInstallManager] =
     useState<GameInstallManager>(() => new GameInstallManager(bIsMac));
   const [bIsCompatible, setIsCompatible] = useState(false);
-  const [installationPath, setInstallationPath] = useState<string | null>(null);
-  const [downloadProgress, setDownloadProgress] = useState<number>(0);
-  const [extractProgress, setExtractProgress] = useState<number>(0);
-  const [installState, setInstallState] = useState<EInstallState>(
-    EInstallState.NotInstalled,
-  );
 
   function openExternalLink(e: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(e, window.electronTools);
   }
 
   function pushNewManager() {
-    addManager(gameInstallManager);
+    store.add(gameInstallManager);
   }
 
   /**
@@ -64,13 +55,12 @@ export default function GameInteractableButtons({
     event: React.MouseEvent<HTMLButtonElement>,
   ) {
     event.preventDefault(); // 필요한 경우
+
+    // 다운로드가 시작되면 무조건 BottomDrawer에 표시되도록 설정
+    gameInstallManager.setShowInDownloadDrawer = true;
+
     try {
-      await gameInstallManager.downloadAndInstall(
-        window.bitmapApi,
-        setDownloadProgress,
-        setExtractProgress,
-        setInstallState,
-      );
+      await gameInstallManager.downloadAndInstall(window.bitmapApi);
     } catch (error: any) {
       console.error("Download and Install Error:", error);
     } finally {
@@ -87,13 +77,13 @@ export default function GameInteractableButtons({
         console.log(
           `GameInstallManager::PlatformMac: ${gameInstallManager.getPlatformMac}`,
         );
-        return gameInstallManager.getPlatformMac;
+        return !!gameInstallManager.getPlatformMac;
       }
 
       console.log(
         `GameInstallManager::PlatformWin: ${gameInstallManager.getPlatformWin}`,
       );
-      return gameInstallManager.getPlatformWin;
+      return !!gameInstallManager.getPlatformWin;
     } else {
       console.error(
         "GameInstallManager: 클래스가 Invalid임",
@@ -116,7 +106,7 @@ export default function GameInteractableButtons({
       const path = await window.electronTools.showDialog(options);
       console.log("Path selected:", path);
       if (path) {
-        gameInstallManager.setInstallationPath(path, setInstallationPath);
+        gameInstallManager.setInstallationPath = path;
       }
     } catch (error) {
       console.error("파일 선택 중 오류 발생:", error);
@@ -132,8 +122,6 @@ export default function GameInteractableButtons({
       gameInstallManager.pullInstallState(
         window.electronTools,
         window.bitmapApi,
-        setInstallationPath,
-        setInstallState,
       );
   }, [gameInstallManager.getGameInfo]);
 
@@ -146,13 +134,13 @@ export default function GameInteractableButtons({
 
   useEffect(
     function () {
-      const existingManager = existingInstallManagers.get(game.gameId);
+      const existingManager = store.managers.get(game.gameId);
 
       if (existingManager) {
         setGameInstallManager(existingManager);
       }
     },
-    [existingInstallManagers, game.gameId],
+    [store, game.gameId],
   );
 
   return (
@@ -175,7 +163,7 @@ export default function GameInteractableButtons({
         )}
 
         {/* When is installed */}
-        {installState === EInstallState.Installed && (
+        {gameInstallManager.getInstallState === EInstallState.Installed && (
           <>
             <Button
               className="w-full"
@@ -235,19 +223,21 @@ export default function GameInteractableButtons({
                 readOnly
                 onClick={selectDirectory}
                 placeholder="Path"
-                value={installationPath ?? ""}
+                value={gameInstallManager.getInstallationPath ?? ""}
               />
 
               {gameInstallManager.getIsDownloadingOrInstallingState && (
                 <div>
-                  {installState === EInstallState.Downloading
-                    ? `다운로드 중: ${Math.round(downloadProgress)}%`
-                    : `디스크에 쓰는 중: ${extractProgress}`}
+                  {gameInstallManager.getInstallState ===
+                  EInstallState.Downloading
+                    ? `다운로드 중: ${Math.round(gameInstallManager.getDownloadProgress)}%`
+                    : `디스크에 쓰는 중: ${gameInstallManager.getExtractProgress}`}
                   <Progress
                     value={
-                      installState === EInstallState.Downloading
-                        ? Math.round(downloadProgress)
-                        : extractProgress
+                      gameInstallManager.getInstallState ===
+                      EInstallState.Downloading
+                        ? Math.round(gameInstallManager.getDownloadProgress)
+                        : gameInstallManager.getExtractProgress
                     }
                   />
                 </div>
@@ -258,7 +248,7 @@ export default function GameInteractableButtons({
                   <Button variant="secondary">{t("cancel")}</Button>
                 </DialogClose>
                 <Button onClick={handleDownloadAndInstall}>
-                  {t("rate-delete-btn")}
+                  {t("install")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -267,4 +257,6 @@ export default function GameInteractableButtons({
       </Flex>
     </div>
   );
-}
+});
+
+export default GameInteractableButtons;

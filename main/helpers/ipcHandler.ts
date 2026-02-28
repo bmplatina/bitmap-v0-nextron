@@ -12,7 +12,7 @@ const axiosGetCancelToken = axios.CancelToken;
 const source = axiosGetCancelToken.source();
 
 // Parameter store
-import Datastore from "nedb";
+import Datastore from "@seald-io/nedb";
 import type { GameInstallInfo, Settings } from "../../renderer/lib/types";
 
 /**

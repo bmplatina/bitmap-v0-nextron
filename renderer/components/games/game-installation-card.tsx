@@ -10,24 +10,27 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import { EInstallState, GameInstallManager } from "@/lib/types";
-import { useDispatch, useSelector } from "react-redux";
+import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 
 interface GameInstallationCardProps {
   manager: GameInstallManager;
 }
 
-export default function GameInstallationCard({
+const GameInstallationCard = observer(function ({
   manager,
 }: GameInstallationCardProps) {
-  const { bIsMac } = useGameInstallManager();
-  const dismiss = () => {
-    // if(managers[index]) dispatch(removeManagerByIndex(index));
-
+  const { bIsMac, store } = useGameInstallManager();
+  function dismiss() {
     if (manager) manager.setShowInDownloadDrawer = false;
-  };
+  }
 
-  const openApp = () => {
+  function removeManager() {
+    // if(managers[index]) dispatch(removeManagerByIndex(index));
+    if (manager) store.remove(manager.getGameInfo.gameId);
+  }
+
+  function openApp() {
     if (manager) {
       console.log(`Requesting to open ${manager.getGameTitle}`);
       manager.setIsMac = bIsMac;
@@ -35,18 +38,18 @@ export default function GameInstallationCard({
     } else {
       console.log(`Failed to open. Game install manager is not valid.`);
     }
-  };
+  }
 
-  const removeApp = () => {
+  function removeApp() {
     if (manager) {
       console.log(`Requesting to remove ${manager.getGameTitle}`);
       manager.setIsMac = bIsMac;
       manager.removeApp(window.bitmapApi);
-      dismiss();
+      removeManager();
     } else {
       console.log(`Failed to remove. Game install manager is not valid.`);
     }
-  };
+  }
 
   return (
     <Card className="flex items-center p-2">
@@ -108,4 +111,6 @@ export default function GameInstallationCard({
       </div>
     </Card>
   );
-}
+});
+
+export default GameInstallationCard;

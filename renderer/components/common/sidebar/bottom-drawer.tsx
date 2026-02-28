@@ -1,7 +1,4 @@
-"use client";
-
-import { useDispatch, useSelector } from "react-redux";
-
+import { observer, Observer } from "mobx-react-lite";
 import {
   Drawer,
   DrawerClose,
@@ -19,8 +16,8 @@ import { EInstallState, GameInstallManager } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useState } from "react";
 
-export default function BottomDrawer() {
-  const { addManager, managers, bIsMac } = useGameInstallManager();
+const BottomDrawer = observer(function () {
+  const { store, bIsMac } = useGameInstallManager();
 
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [extractProgress, setExtractProgress] = useState<number>(0);
@@ -82,9 +79,9 @@ export default function BottomDrawer() {
     exampleMgr.setInstallState = bIsInstalled
       ? EInstallState.Downloading
       : EInstallState.Installed;
-    exampleMgr.setInstallationPath("/Users/Shared/Downloads/ExampleGame");
+    exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
 
-    addManager(exampleMgr);
+    store.add(exampleMgr);
   };
 
   return (
@@ -116,14 +113,21 @@ export default function BottomDrawer() {
           </DrawerDescription>
         </DrawerHeader>
 
-        {[...managers.entries()].map(([gameId, mgr]) => (
-          <>
-            {mgr.getShowInDownloadDrawer && (
-              <GameInstallationCard key={gameId} manager={mgr} />
-            )}
-          </>
-        ))}
-        {/*<GameInstallationCard gameTitle="Example"/>*/}
+        <Observer>
+          {() => (
+            <div className="flex flex-col gap-2 p-4">
+              {Array.from(store.managers.values()).map(
+                (mgr) =>
+                  mgr.getShowInDownloadDrawer && (
+                    <GameInstallationCard
+                      key={mgr.getGameInfo.gameId}
+                      manager={mgr}
+                    />
+                  ),
+              )}
+            </div>
+          )}
+        </Observer>
 
         <DrawerFooter>
           {/*<Button variant="secondary" onClick={createExampleManagerWithDownloadingState}>Create Example Manager: Installing</Button>*/}
@@ -135,4 +139,6 @@ export default function BottomDrawer() {
       </DrawerContent>
     </Drawer>
   );
-}
+});
+
+export default BottomDrawer;

@@ -1,4 +1,5 @@
 import { bitmapApi, tools } from "@/types/electron";
+import { makeAutoObservable } from "mobx";
 
 interface stringLocalized {
   en: string;
@@ -228,6 +229,7 @@ interface Portfolio {
 
 class GameInstallManager {
   constructor(isPlatformMac: boolean) {
+    makeAutoObservable(this);
     this.bIsMac = isPlatformMac;
   }
 
@@ -414,16 +416,10 @@ class GameInstallManager {
     return this.installationPath;
   }
 
-  setInstallationPath(
-    newInstallationPath: string | null,
-    callback?: (newPath: string) => void,
-  ) {
+  set setInstallationPath(newInstallationPath: string | null) {
     this.installationPath = this.bIsMac
       ? `${newInstallationPath}/${this.gameBinaryName}/`
       : `${newInstallationPath}\\${this.gameBinaryName}\\`;
-    if (callback) {
-      callback(newInstallationPath ?? "");
-    }
   }
 
   get getInstallState(): EInstallState {
@@ -471,12 +467,7 @@ class GameInstallManager {
    * @param url gameDownloadPlatformUrl
    * @param savePath InstallationPath
    */
-  async downloadAndInstall(
-    context: bitmapApi,
-    downloadProgressCallback?: (progress: number) => void,
-    extractProgressCallback?: (progress: number) => void,
-    installStateCallback?: (progress: EInstallState) => void,
-  ) {
+  async downloadAndInstall(context: bitmapApi) {
     const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
 
     const savePathLocal: string | null = this.bIsMac
@@ -488,13 +479,7 @@ class GameInstallManager {
       // 다운로드 진행률 수신
       context.onDownloadProgress((progress) => {
         this.installState = EInstallState.Downloading;
-        if (installStateCallback) {
-          installStateCallback(this.installState);
-        }
         this.downloadProgress = progress;
-        if (downloadProgressCallback) {
-          downloadProgressCallback(progress);
-        }
         console.log(
           `다운로드 중: ${this.downloadProgress}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
         );
@@ -509,13 +494,7 @@ class GameInstallManager {
       // 압축 해제 진행률 수신
       context.onExtractProgress((progress) => {
         this.installState = EInstallState.Extracting;
-        if (installStateCallback) {
-          installStateCallback(this.installState);
-        }
         this.extractProgress = progress;
-        if (extractProgressCallback) {
-          extractProgressCallback(progress);
-        }
         console.log(
           `압축 해제 중: ${this.extractProgress}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
         );
@@ -560,9 +539,12 @@ class GameInstallManager {
         console.log("pushInstallState::bUpdateExisting", bUpdateExising);
         // If resolvedData valid, Update from the existing table, otherwise insert a new table
         if (bUpdateExising) {
-          context.updateGameInstallInfo(this.getGameInfo.gameId, InstallInfo);
+          context.updateGameInstallInfo(
+            this.getGameInfo.gameId,
+            JSON.parse(JSON.stringify(InstallInfo)),
+          );
         } else {
-          context.setGameInstallInfo(InstallInfo);
+          context.setGameInstallInfo(JSON.parse(JSON.stringify(InstallInfo)));
         }
       });
     } catch (error) {
@@ -571,12 +553,7 @@ class GameInstallManager {
   }
 
   // NeDB Installation Info saver
-  async pullInstallState(
-    ElectronTools: tools,
-    BitmapAPI: bitmapApi,
-    installationPathCallback?: (path: string) => void,
-    installStateCallback?: (state: EInstallState) => void,
-  ) {
+  async pullInstallState(ElectronTools: tools, BitmapAPI: bitmapApi) {
     try {
       // Declare default installation path
       const getDefaultInstallPath = ElectronTools.getElectronStoredPath();
@@ -638,13 +615,6 @@ class GameInstallManager {
       });
     } catch (error) {
       console.log(error);
-    } finally {
-      if (installStateCallback) {
-        installStateCallback(this.installState);
-      }
-      if (installationPathCallback) {
-        installationPathCallback(this.defaultInstallationPath ?? "");
-      }
     }
   }
 
