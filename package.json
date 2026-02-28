@@ -2,7 +2,7 @@
   "private": false,
   "name": "bitmap",
   "description": "Bitmap App Powered by Platina",
-  "version": "0.1.0a",
+  "version": "0.1.1a",
   "author": "Platina <platina@prodbybitmap.com>",
   "main": "app/background.js",
   "scripts": {
