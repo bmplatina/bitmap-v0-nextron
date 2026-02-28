@@ -48,9 +48,22 @@ function openExternal(
   }
 }
 
+/**
+ * onClink={openExternal} 이 설정되어 있으면 클라이언트의 기본 브라우저로 href를 새 탭에서 호출한다
+ * @param event href 자동 감지
+ */
+function openExternalByUri(uri: string, electronTools: ElectronTools) {
+  // TypeScript 안전성 확보
+  if (electronTools) {
+    electronTools.openExternal(uri);
+  } else {
+    console.warn("Electron external link function not available");
+  }
+}
+
 async function getPlatform(context: ElectronTools) {
   const platform = await context.getPlatform();
   return platform;
 }
 
-export { csrAxiosGet, csrAxiosPost, openExternal, getPlatform };
+export { csrAxiosGet, csrAxiosPost, openExternal, openExternalByUri, getPlatform };

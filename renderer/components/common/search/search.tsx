@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { Search as SearchIcon } from "lucide-react";
@@ -12,6 +10,7 @@ import { convertQwertyToHangul, getChoseong } from "es-hangul";
 import { getGames } from "@/lib/games";
 import { getAllArchiveDocs } from "@/lib/general";
 import { cn } from "@/lib/utils";
+import { openExternalByUri } from "@/lib/utils-client";
 
 interface SearchProps {
   className?: string;
@@ -20,7 +19,10 @@ interface SearchProps {
 }
 
 export default function Search({ className, placeholder, style }: SearchProps) {
-  const { t } = useTranslation("common");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("common");
   const router = useRouter();
 
   // 스크롤 상태 관리
@@ -33,6 +35,10 @@ export default function Search({ className, placeholder, style }: SearchProps) {
     (Game | DocumentArchives)[]
   >([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  function openExternal(uri: string) {
+    openExternalByUri(uri, window.electronTools);
+  }
 
   // 스크롤 감지
   useEffect(() => {
@@ -51,7 +57,9 @@ export default function Search({ className, placeholder, style }: SearchProps) {
       const firstResult = searchResults[0];
       if ("title" in firstResult) {
         // DocumentArchives 인가?
-        router.push(`/archives?title=${firstResult.title}`);
+        openExternal(
+          `https://prodbybitmap.com/${locale}/archives?title=${firstResult.title}`,
+        );
       } else {
         // Game 인가?
         router.push(`/games/detail?id=${firstResult.gameId}`);

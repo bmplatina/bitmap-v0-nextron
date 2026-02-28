@@ -1,11 +1,10 @@
-"use client";
-
 import { useTranslation } from "next-i18next";
 import LocalizedLink from "@/components/common/localized-link";
 import { Flex, Text } from "@radix-ui/themes";
 import { FileText } from "lucide-react";
 import type { DocumentArchives } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { openExternal } from "@/lib/utils-client";
 
 interface ArchiveProp {
   doc: DocumentArchives;
@@ -17,12 +16,17 @@ export default function ArchiveListView({ doc }: ArchiveProp) {
     t,
   } = useTranslation("Publish");
 
+  function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    openExternal(event, window.electronTools);
+  }
+
   return (
     <Flex align="center" gap="1">
       <LocalizedLink
         key={doc.id}
-        href={`/archives?title=${doc.title}`}
+        href={`https://prodbybitmap.com/${locale}/archives?title=${doc.title}`}
         className="flex-1 min-w-0 flex items-center gap-3 px-4 py-2 hover:bg-muted transition-colors"
+        onClick={openExternalLink}
       >
         <div className="relative w-10 h-10 flex-shrink-0 rounded flex items-center justify-center bg-muted text-muted-foreground">
           <FileText className="h-5 w-5" />
