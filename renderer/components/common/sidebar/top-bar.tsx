@@ -19,9 +19,10 @@ import {
 import { ProfilePopover } from "@/components/accounts/profile";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationCenter from "./notification-center";
-import BitmapLogoBMP from "@/public/images/bitmap_bmp.png";
+import UpdateOverlay from "@/components/common/sidebar/update-overlay";
 import Search from "@/components/common/search/search";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import BitmapLogoBMP from "@/public/images/bitmap_bmp.png";
 
 export default function TopBar() {
   const router = useRouter();
@@ -130,7 +131,7 @@ export default function TopBar() {
 
         <div
           className="ml-auto pl-2 flex items-center gap-2"
-          style={{ transform: bIsMac ? "none" : "translateX(-80px)" }}
+          style={{ ...(!bIsMac && { transform: "translateX(-100px)" }) }}
         >
           <Flex gap="4" className="items-center">
             {isLoading ? (
@@ -189,6 +190,7 @@ export default function TopBar() {
               </>
             )}
           </Flex>
+          <UpdateOverlay /> {/* 전역 알림 컴포넌트 */}
         </div>
       </div>
     </>

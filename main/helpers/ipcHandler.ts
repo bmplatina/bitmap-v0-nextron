@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
+import { autoUpdater } from "electron-updater";
 import { userStore } from "./user-store";
 import { dirname, join } from "path";
 import fs from "fs";
@@ -625,6 +626,11 @@ class ipcHandle {
       } catch (error: any) {
         return { error: error.message };
       }
+    });
+
+    // 렌더러로부터 설치 명령 수신
+    ipcMain.on("quit-and-install", () => {
+      autoUpdater.quitAndInstall();
     });
   }
 }

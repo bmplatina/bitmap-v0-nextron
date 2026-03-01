@@ -653,7 +653,29 @@ class GameInstallManager {
   }
 }
 
+interface UpdateProgress {
+  percent: number;
+  transferred: number;
+  total: number;
+  bytesPerSecond: number;
+}
+
+type UpdateStatusType =
+  | "idle"
+  | "checking"
+  | "available"
+  | "not-available"
+  | "downloading"
+  | "downloaded"
+  | "error";
+
+interface UpdateStatus {
+  message: string;
+  status: UpdateStatusType;
+}
+
 export { EInstallState, GameInstallManager };
+
 export type {
   Game,
   GameInstallInfo,
@@ -679,4 +701,7 @@ export type {
   DocumentArchives,
   Portfolio,
   Project,
+  UpdateProgress,
+  UpdateStatusType,
+  UpdateStatus,
 };

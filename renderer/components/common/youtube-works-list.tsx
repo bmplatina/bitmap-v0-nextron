@@ -1,9 +1,8 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { clamp, getYouTubeVideos } from "@/lib/utils";
 import { Flex, ScrollArea, Spinner, Text } from "@radix-ui/themes";
 import { useTranslation } from "next-i18next";
+// import YouTube from "react-youtube";
 
 interface YouTubeWorksList {
   youtubeVideos_Server?: string[];
@@ -53,6 +52,10 @@ export default function YouTubeWorksList({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
+                {/* <YouTube
+                  videoId={video}
+                  opts={{ width: "100%", height: "100%" }}
+                /> */}
               </div>
             ))}
             {youtubeSliceIndex < youtubeVideosClient.length && (

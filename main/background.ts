@@ -4,6 +4,8 @@ import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
 import serve from "electron-serve";
 import * as helpers from "./helpers";
 import i18next from "../next-i18next.config";
+import { autoUpdater, UpdateInfo, ProgressInfo } from "electron-updater";
+import log from "electron-log";
 
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
@@ -15,6 +17,10 @@ let mainWindow: BrowserWindow = null;
 
 // Deeplinks
 const protocolScheme: string = "bitmap";
+
+// 로거 설정 (업데이트 상태를 파일로 기록)
+autoUpdater.logger = log;
+(autoUpdater.logger as typeof log).transports.file.level = "info";
 
 if (bIsProd) {
   serve({ directory: "app" });
@@ -92,6 +98,18 @@ const getMainWindowWhenReady = async () => {
     mainWindow.webContents.openDevTools();
   }
 
+  // 창이 렌더링 준비를 마쳤을 때 업데이트 확인 시작
+  mainWindow.once("ready-to-show", () => {
+    log.info("앱이 실행되었습니다. 업데이트를 확인합니다.");
+    if (app.isPackaged) {
+      autoUpdater.checkForUpdatesAndNotify();
+    }
+  });
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+
   // 여기에 전체 화면 이벤트 리스너 추가
   mainWindow.on("enter-full-screen", () => {
     mainWindow.webContents.send("fullscreen-change", true);
@@ -154,9 +172,69 @@ function getIsMac(): boolean {
   return platformName === "darwin";
 }
 
+// 업데이트 확인 중
+autoUpdater.on("checking-for-update", () => {
+  log.info("업데이트 확인 중...");
+});
+
+// 새로운 업데이트가 있을 때 (UpdateInfo 타입 적용)
+autoUpdater.on("update-available", (info: UpdateInfo) => {
+  log.info(`업데이트가 가능합니다. 새 버전: ${info.version}`);
+  mainWindow?.webContents.send("update-status", {
+    status: "available",
+    message: `새 버전 ${info.version}을 다운로드합니다.`,
+  });
+});
+
+// 현재 최신 버전일 때 (UpdateInfo 타입 적용)
+autoUpdater.on("update-not-available", (info: UpdateInfo) => {
+  log.info(`현재 최신 버전(${info.version})입니다.`);
+});
+
+// 업데이트 다운로드 중 오류 발생 시
+autoUpdater.on("error", (err: Error) => {
+  log.error("업데이트 오류 발생:", err.message);
+});
+
+// 다운로드 진행 상태 (ProgressInfo 타입 적용)
+autoUpdater.on("download-progress", (progressObj: ProgressInfo) => {
+  const speed = (progressObj.bytesPerSecond / 1024 / 1024).toFixed(2); // MB/s로 변환
+  const percent = progressObj.percent.toFixed(2);
+  const transferred = (progressObj.transferred / 1024 / 1024).toFixed(2);
+  const total = (progressObj.total / 1024 / 1024).toFixed(2);
+
+  log.info(
+    `다운로드 속도: ${speed} MB/s - 진행률: ${percent}% (${transferred}MB / ${total}MB)`,
+  );
+
+  mainWindow?.webContents.send("download-progress", {
+    percent: progressObj.percent,
+    transferred: progressObj.transferred,
+    total: progressObj.total,
+    bytesPerSecond: progressObj.bytesPerSecond,
+  });
+});
+
+// 다운로드가 완료되었을 때 (UpdateInfo 타입 적용)
+autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
+  log.info(`업데이트 다운로드 완료. 다운로드된 버전: ${info.version}`);
+
+  mainWindow?.webContents.send("update-status", {
+    status: "downloaded",
+    message: "업데이트 다운로드 완료. 재시작 시 적용됩니다.",
+  });
+
+  // 사용자가 하던 작업을 저장할 수 있도록 바로 종료하지 않고,
+  // 렌더러 프로세스에 알려서 사용자에게 팝업을 띄우는 것이 좋습니다.
+  // 아래 코드는 주석 처리해 두고, 필요시 활성화합니다.
+
+  // autoUpdater.quitAndInstall();
+});
+
 const ipcImplement: helpers.ipcHandle = new helpers.ipcHandle(
   bIsProd,
   mainWindow,
   platformName,
 );
+
 ipcImplement.initializeIpc();

@@ -37,6 +37,10 @@ export interface tools {
   setLocale: (locale: "ko" | "en") => void;
 
   getElectronStoredPath: () => Promise<string>;
+
+  onUpdateStatus: (cb: (status: UpdateStatus) => void) => void;
+  onDownloadProgress: (cb: (progress: UpdateProgress) => void) => void;
+  quitAndInstall: () => void;
 }
 
 export interface bitmapApi {
