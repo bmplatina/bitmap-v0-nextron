@@ -31,9 +31,7 @@ export default function Home() {
       <div className="flex flex-col items-center w-full p-6 pt-10 text-center space-y-12">
         {/* 유튜브 영상 가로 스크롤 섹션 */}
         <div className="w-full max-w-6xl">
-          <LocalizedLink href="/about">
             <h2 className="text-2xl font-bold mb-4 text-left">{t("works")}</h2>
-          </LocalizedLink>
           <YouTubeWorksList
             bFetchFromClient
             youTubeChannelId_Client="UCL137ZWChauNFsma6ifhNdA"

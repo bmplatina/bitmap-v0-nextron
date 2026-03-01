@@ -4,6 +4,8 @@ import type {
 } from "@/types/electron";
 import { MouseEvent } from "react";
 
+const BitmapInternalLink: RegExp = /^\/(auth|games|legal)/;
+
 async function csrAxiosGet<T>(
   bitmapApi: BitmapAPI,
   uriSubstring: string,
@@ -66,4 +68,11 @@ async function getPlatform(context: ElectronTools) {
   return platform;
 }
 
-export { csrAxiosGet, csrAxiosPost, openExternal, openExternalByUri, getPlatform };
+export {
+  BitmapInternalLink,
+  csrAxiosGet,
+  csrAxiosPost,
+  openExternal,
+  openExternalByUri,
+  getPlatform,
+};

@@ -47,7 +47,7 @@ export default function YouTubeWorksList({
                 <iframe
                   width="100%"
                   height="100%"
-                  src={`https://www.youtube.com/embed/${video}`}
+                  src={`https://www.youtube.com/embed/${video}?origin=https://www.youtube.com&enablejsapi=1`}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

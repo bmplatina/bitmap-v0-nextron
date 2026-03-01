@@ -1,6 +1,14 @@
 // Default Imports
 import path, { join } from "path";
-import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  protocol,
+  session,
+  shell,
+} from "electron";
 import serve from "electron-serve";
 import * as helpers from "./helpers";
 import i18next from "../next-i18next.config";
@@ -27,6 +35,20 @@ if (bIsProd) {
 } else {
   app.setPath("userData", `${app.getPath("userData")} (development)`);
 }
+
+// 기본 프로토콜이 http와 유사하게 동작하도록 등록
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "app",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true, // CORS 허용
+      allowServiceWorkers: true,
+    },
+  },
+]);
 
 const getMainWindowWhenReady = async () => {
   if (!windowIsReady) {
@@ -75,19 +97,46 @@ const getMainWindowWhenReady = async () => {
 
   // CORS 우회 설정
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
+    try {
+      const url = new URL(details.url);
+      const host = url.hostname;
+      const isExcludeDomain =
+        host.includes("youtube.com") ||
+        host.includes("googleapis.com") ||
+        host.includes("googlevideo.com") ||
+        host.includes("ytimg.com");
+
+      if (!isExcludeDomain) {
+        details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
+      }
+    } catch (e) {
+      details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
+    }
     callback({ cancel: false, requestHeaders: details.requestHeaders });
   });
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        "Access-Control-Allow-Origin": ["*"],
-        "Access-Control-Allow-Headers": ["*"],
-        "Access-Control-Allow-Methods": ["*"],
-      },
-    });
+    let responseHeaders = details.responseHeaders || {};
+    try {
+      const url = new URL(details.url);
+      const host = url.hostname;
+      const isExcludeDomain =
+        host.includes("youtube.com") ||
+        host.includes("googleapis.com") ||
+        host.includes("googlevideo.com") ||
+        host.includes("ytimg.com");
+
+      if (!isExcludeDomain) {
+        responseHeaders = {
+          ...responseHeaders,
+          "Access-Control-Allow-Origin": ["*"],
+          "Access-Control-Allow-Headers": ["*"],
+          "Access-Control-Allow-Methods": ["*"],
+        };
+      }
+    } catch (e) {}
+
+    callback({ responseHeaders });
   });
 
   if (bIsProd) {

@@ -13,11 +13,22 @@ export default function LanguageSwitch() {
   const locale = (router.query.locale as string) || i18n.language || "en";
   const isEnglish = locale === "en";
 
-  const handleLocaleChange = (checked: boolean) => {
+  const handleLocaleChange = async (checked: boolean) => {
     const nextLocale = checked ? "en" : "ko";
 
-    const newPath = router.pathname.replace("[locale]", nextLocale);
-    router.replace(newPath);
+    // i18next 인스턴스에 언어 변경을 직접 지시하여 즉각적인 DOM 리렌더링 유도
+    await i18n.changeLanguage(nextLocale);
+
+    // Next.js 라우터 경로도 업데이트 (향후 새로고침이나 Link 이동을 위해)
+    const newAsPath = router.asPath.replace(`/${locale}`, `/${nextLocale}`);
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, locale: nextLocale },
+      },
+      newAsPath,
+      { shallow: true },
+    );
   };
 
   useEffect(

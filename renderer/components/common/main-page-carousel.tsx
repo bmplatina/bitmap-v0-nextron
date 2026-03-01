@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "next-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import LocalizedLink from "@/components/common/localized-link";
+import { useRouter } from "next/router";
+import LocalizedLink from "./localized-link";
 import { Button, Text } from "@radix-ui/themes";
 import { getCarousel, getLocalizedString, imageUriRegExp } from "@/lib/utils";
+import { BitmapInternalLink, openExternalByUri } from "@/lib/utils-client";
 import type { Carousel } from "@/lib/types";
 
 const swipeConfidenceThreshold = 10000;
@@ -23,6 +25,7 @@ export default function AutoSliderCarousel({
   carousels_Server = [],
   bFetchFromClient,
 }: CarouselProps) {
+  const router = useRouter();
   const {
     i18n: { language: locale },
     t,
@@ -36,6 +39,25 @@ export default function AutoSliderCarousel({
     carousel.length > 0
       ? ((page % carousel.length) + carousel.length) % carousel.length
       : 0;
+
+  function isExternalLink(href: string | null): boolean {
+    if (href) {
+      return href.startsWith("http");
+    }
+    return false;
+  }
+
+  function openExternalLink(href: string) {
+    openExternalByUri(href, window.electronTools);
+  }
+
+  function openBitmapLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault(); // 기본 Link 동작 방지
+    const href = carousel[index].href ?? "";
+    if (href.startsWith("/")) {
+      openExternalLink(`https://prodbybitmap.com/${locale}${href}`);
+    }
+  }
 
   useEffect(() => {
     async function fetchCarousel() {
@@ -142,11 +164,31 @@ export default function AutoSliderCarousel({
             </div>
             <br />
             {carousel[index].href !== "#" && (
-              <Button radius="full" asChild>
-                <LocalizedLink href={carousel[index].href ?? "#"}>
-                  {getLocalizedString(locale, carousel[index].button)}
-                </LocalizedLink>
-              </Button>
+              <>
+                {isExternalLink(carousel[index].href) ? (
+                  <Button
+                    radius="full"
+                    onClick={() =>
+                      openExternalLink(carousel[index].href ?? "#")
+                    }
+                  >
+                    {getLocalizedString(locale, carousel[index].button)}
+                  </Button>
+                ) : (
+                  <Button radius="full" asChild>
+                    <LocalizedLink
+                      href={carousel[index].href ?? "#"}
+                      onClick={
+                        BitmapInternalLink.test(carousel[index].href ?? "")
+                          ? undefined
+                          : openBitmapLink
+                      }
+                    >
+                      {getLocalizedString(locale, carousel[index].button)}
+                    </LocalizedLink>
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </motion.div>
