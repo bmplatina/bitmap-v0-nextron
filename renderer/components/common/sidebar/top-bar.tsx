@@ -31,7 +31,7 @@ export default function TopBar() {
   const { bIsLoggedIn, username, isLoading, avatarUri } = useAuth();
   // Electron 및 MacOS 환경 감지 변수 (실제 감지 코드는 구현하지 않음)
   const [titleTransform, setTitleTransform] =
-    useState<string>("translateX(80px)");
+    useState<string>(bIsMac ? "translateX(80px)" : "translateX(0px)");
 
   // 프로필 팝오버 상태 관리
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -131,7 +131,7 @@ export default function TopBar() {
 
         <div
           className="ml-auto pl-2 flex items-center gap-2"
-          style={{ ...(!bIsMac && { transform: "translateX(-100px)" }) }}
+          style={{ ...(!bIsMac && { transform: "translateX(-110px)" }) }}
         >
           <Flex gap="4" className="items-center">
             {isLoading ? (
