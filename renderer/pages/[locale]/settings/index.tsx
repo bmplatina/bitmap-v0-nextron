@@ -17,7 +17,7 @@ import { Flex, RadioCards, Text } from "@radix-ui/themes";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 
 export default function SettingsPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("Settings");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
