@@ -112,7 +112,6 @@ export default function TopBar() {
               willChange: "transform",
               transition: "transform 0.5s ease 0.05s",
             }),
-            mixBlendMode: "difference",
           }}
         >
           <Image
