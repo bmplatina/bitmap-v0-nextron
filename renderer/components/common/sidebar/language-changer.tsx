@@ -27,7 +27,7 @@ export default function LanguageSwitch() {
         query: { ...router.query, locale: nextLocale },
       },
       newAsPath,
-      { shallow: true },
+      { shallow: false },
     );
   };
 

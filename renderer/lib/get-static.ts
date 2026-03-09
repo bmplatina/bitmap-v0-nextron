@@ -41,7 +41,11 @@ export async function getI18nProperties(
   context: any,
   namespaces: i18nNamespaces[] = ["common"],
 ) {
-  const locale = context?.locale ?? i18next.i18n.defaultLocale;
+  const locale =
+    context?.locale ??
+    context?.params?.locale ??
+    context?.query?.locale ??
+    i18next.i18n.defaultLocale;
   return {
     ...(await serverSideTranslations(locale, namespaces, i18next)),
   };

@@ -11,7 +11,7 @@ const config = {
   localePath:
     typeof window === "undefined"
       ? path.resolve("./renderer/public/locales")
-      : "/public/locales",
+      : "/locales",
   // react: {
   //   useSuspense: true,
   // },
