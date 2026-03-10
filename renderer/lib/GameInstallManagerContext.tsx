@@ -66,17 +66,15 @@ export function GameInstallManagerProvider({
     [bIsMac, store],
   );
 
-  React.useEffect(
-    function () {
-      async function setPlatform() {
-        const platform = await getPlatform(window.electronTools);
-        setIsMac(platform === "darwin");
-        console.log("GameInstallManagerContext::bIsMac: ", bIsMac);
-      }
-      setPlatform();
-    },
-    [bIsMac],
-  );
+  React.useEffect(function () {
+    async function setPlatform() {
+      const platform = await getPlatform(window.electronTools);
+      const isMac = platform === "darwin";
+      setIsMac(isMac);
+      console.log("GameInstallManagerContext::bIsMac: ", isMac);
+    }
+    setPlatform();
+  }, []);
 
   return (
     <GameInstallManagerContext.Provider

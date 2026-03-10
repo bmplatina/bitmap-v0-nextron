@@ -13,7 +13,7 @@ export default function LanguageSwitch() {
   const locale = (router.query.locale as string) || i18n.language || "en";
   const isEnglish = locale === "en";
 
-  const handleLocaleChange = async (checked: boolean) => {
+  async function handleLocaleChange(checked: boolean) {
     const nextLocale = checked ? "en" : "ko";
 
     // i18next 인스턴스에 언어 변경을 직접 지시하여 즉각적인 DOM 리렌더링 유도
@@ -29,7 +29,7 @@ export default function LanguageSwitch() {
       newAsPath,
       { shallow: false },
     );
-  };
+  }
 
   useEffect(
     function () {
@@ -38,6 +38,11 @@ export default function LanguageSwitch() {
     },
     [locale],
   );
+
+  useEffect(function () {
+    const initialLocale = window.electronTools.getLocale();
+    handleLocaleChange(initialLocale === "en");
+  }, []);
 
   return (
     <div className="flex items-center justify-between px-2 py-2">

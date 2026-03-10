@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import {
   Card,
   CardContent,
@@ -21,6 +22,8 @@ const GameInstallationCard = observer(function ({
   manager,
 }: GameInstallationCardProps) {
   const { bIsMac, store } = useGameInstallManager();
+  const { t } = useTranslation("GamesView");
+
   function dismiss() {
     if (manager) manager.setShowInDownloadDrawer = false;
   }
@@ -65,11 +68,9 @@ const GameInstallationCard = observer(function ({
           <CardTitle>{manager.getGameTitle}</CardTitle>
           <CardDescription>
             {manager.getInstallState === EInstallState.Downloading &&
-              `다운로드 중: ${Math.round(manager.getDownloadProgress)}%`}
+              `${t("downloading")}: ${Math.round(manager.getDownloadProgress)}%`}
             {manager.getInstallState === EInstallState.Extracting &&
-              `디스크에 쓰는 중: ${manager.getExtractProgress}`}
-            {manager.getInstallState === EInstallState.Installed &&
-              `"${manager.getInstallationPath}" 에 설치됨`}
+              `${t("writing-to-disk")}: ${manager.getExtractProgress}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,7 +93,7 @@ const GameInstallationCard = observer(function ({
                 onClick={openApp}
                 disabled={!manager}
               >
-                Play
+                {t("play")}
               </Button>
               <Button
                 variant="destructive"
@@ -100,10 +101,10 @@ const GameInstallationCard = observer(function ({
                 onClick={removeApp}
                 disabled={!manager}
               >
-                Remove
+                {t("uninstall")}
               </Button>
               <Button variant="secondary" className="mr-2" onClick={dismiss}>
-                Dismiss
+                {t("dismiss")}
               </Button>
             </div>
           )}

@@ -1,4 +1,3 @@
-import { observer, Observer } from "mobx-react-lite";
 import {
   Drawer,
   DrawerClose,
@@ -9,20 +8,19 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { useTranslation } from "next-i18next";
 import GameInstallationCard from "../../games/game-installation-card";
 import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { EInstallState, GameInstallManager } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
-import { useState } from "react";
+import { Button, Text } from "@radix-ui/themes";
+import { observer } from "mobx-react-lite";
 
 const BottomDrawer = observer(function () {
   const { store, bIsMac } = useGameInstallManager();
-
-  const [downloadProgress, setDownloadProgress] = useState<number>(0);
-  const [extractProgress, setExtractProgress] = useState<number>(0);
-  const [installState, setInstallState] = useState<EInstallState>(
-    EInstallState.NotInstalled,
+  const { t } = useTranslation("GamesView");
+  const visibleManagers = Array.from(store.managers.values()).filter(
+    (mgr) => mgr.getShowInDownloadDrawer,
   );
 
   const createExampleManagerWithInstalledState = () => {
@@ -77,8 +75,8 @@ const BottomDrawer = observer(function () {
     exampleMgr.setDownloadProgress = 0;
     exampleMgr.setExtractProgress = 0;
     exampleMgr.setInstallState = bIsInstalled
-      ? EInstallState.Downloading
-      : EInstallState.Installed;
+      ? EInstallState.Installed
+      : EInstallState.Downloading;
     exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
 
     store.add(exampleMgr);
@@ -101,39 +99,30 @@ const BottomDrawer = observer(function () {
       >
         <div className="flex items-center gap-2">
           <Download className="w-5 h-5" />
-          <span>Downloads</span>
+          <Text as="span">{t("downloads")}</Text>
         </div>
       </DrawerTrigger>
 
       <DrawerContent className="left-64">
         <DrawerHeader>
-          <DrawerTitle>다운로드</DrawerTitle>
-          <DrawerDescription>
-            다운로드하고 있는 항목을 관리합니다.
-          </DrawerDescription>
+          <DrawerTitle>{t("downloads")}</DrawerTitle>
+          <DrawerDescription>{t("downloads-desc")}</DrawerDescription>
         </DrawerHeader>
 
-        <Observer>
-          {() => (
-            <div className="flex flex-col gap-2 p-4">
-              {Array.from(store.managers.values()).map(
-                (mgr) =>
-                  mgr.getShowInDownloadDrawer && (
-                    <GameInstallationCard
-                      key={mgr.getGameInfo.gameId}
-                      manager={mgr}
-                    />
-                  ),
-              )}
-            </div>
-          )}
-        </Observer>
+        <div className="flex flex-col gap-2 p-4">
+          {visibleManagers.map((mgr) => (
+            <GameInstallationCard
+              key={`${mgr.getGameInfo.gameId}-${mgr.getGameInfo.uid}`}
+              manager={mgr}
+            />
+          ))}
+        </div>
 
         <DrawerFooter>
           {/*<Button variant="secondary" onClick={createExampleManagerWithDownloadingState}>Create Example Manager: Installing</Button>*/}
           {/*<Button variant="outline" onClick={createExampleManagerWithInstalledState}>Create Example Manager: Installed</Button>*/}
           <DrawerClose>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t("dismiss")}</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

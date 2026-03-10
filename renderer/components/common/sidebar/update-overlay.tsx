@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "next-i18next";
+import { Text } from "@radix-ui/themes";
 import { UpdateProgress, UpdateStatus, UpdateStatusType } from "@/lib/types";
 
 const UpdateOverlay: React.FC = () => {
+  const { t } = useTranslation("Settings");
+
   const [status, setStatus] = useState<UpdateStatusType>("idle");
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState<UpdateProgress | null>(null);
@@ -26,8 +30,10 @@ const UpdateOverlay: React.FC = () => {
   return (
     <div className="update-overlay">
       <div className="update-card">
-        <h3>시스템 업데이트</h3>
-        <p className="message">{message}</p>
+        <h3>{t("bitmap-app-update")}</h3>
+        <Text as="p" className="message">
+          {message}
+        </Text>
 
         {status === "downloading" && progress && (
           <div className="progress-container">
@@ -51,13 +57,13 @@ const UpdateOverlay: React.FC = () => {
             className="install-button"
             onClick={() => window.electronTools.quitAndInstall()}
           >
-            지금 재시작 및 설치
+            {t("bitmap-app-update-now")}
           </button>
         )}
 
         {status === "error" && (
           <button className="close-button" onClick={() => setStatus("idle")}>
-            닫기
+            {t("dismiss")}
           </button>
         )}
       </div>
@@ -65,7 +71,7 @@ const UpdateOverlay: React.FC = () => {
       <style jsx>{`
         .update-overlay {
           position: fixed;
-          bottom: 20px;
+          bottom: 80px;
           right: 20px;
           z-index: 9999;
           width: 320px;

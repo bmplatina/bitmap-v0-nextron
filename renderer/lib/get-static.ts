@@ -54,6 +54,7 @@ export async function getI18nProperties(
 export function makeStaticProperties(namespaces: i18nNamespaces[] = []) {
   const commonNamespaces: i18nNamespaces[] = [
     ...namespaces,
+    "GamesView",
     "Sidebar",
     "common",
     "Footer",
