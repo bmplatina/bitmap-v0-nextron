@@ -12,16 +12,6 @@
     "build:win": "nextron build --win --x64",
     "postinstall": "electron-builder install-app-deps"
   },
-  "build": {
-    "appId": "com.prodbybitmap.esd",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "bmplatina",
-        "repo": "bitmap-v0-nextron"
-      }
-    ]
-  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "1.2.2",
@@ -87,7 +77,7 @@
     "@types/react": "^18.2.52",
     "@types/unzipper": "^0.10.11",
     "autoprefixer": "^10.4.19",
-    "electron": "^40.6.1",
+    "electron": "^40.8.0",
     "electron-builder": "^26.8.1",
     "i18next": "^23.11.5",
     "lottie-react": "^2.4.1",
