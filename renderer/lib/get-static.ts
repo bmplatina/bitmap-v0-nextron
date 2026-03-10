@@ -58,6 +58,7 @@ export function makeStaticProperties(namespaces: i18nNamespaces[] = []) {
     "Sidebar",
     "common",
     "Footer",
+    "Settings",
   ];
   return async function (context: any) {
     return {
