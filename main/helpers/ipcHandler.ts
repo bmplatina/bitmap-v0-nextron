@@ -385,7 +385,7 @@ class ipcHandle {
     // 데이터 업데이트
     ipcMain.handle(
       "game-install-info-update",
-      (event, gameIdIndex: number, gameInstallInfo: GameInstallInfo) => {
+      (_event, gameIdIndex: number, gameInstallInfo: GameInstallInfo) => {
         // 조건에 맞는 데이터 업데이트
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.update(
@@ -406,7 +406,7 @@ class ipcHandle {
     );
 
     // Settings
-    ipcMain.handle("settings-update", (event, newSettings: Settings) => {
+    ipcMain.handle("settings-update", (_event, newSettings: Settings) => {
       return new Promise((resolve, reject) => {
         this.settingsDb.update(
           { id: 0 },
@@ -424,7 +424,7 @@ class ipcHandle {
       });
     });
 
-    ipcMain.handle("settings-get", (event) => {
+    ipcMain.handle("settings-get", (_event) => {
       return new Promise((resolve, reject) => {
         this.settingsDb.findOne({ id: 0 }, (err, docs: GameInstallInfo) => {
           if (err) {
@@ -444,189 +444,6 @@ class ipcHandle {
         return app.getPath("userData");
       },
     );
-
-    // 🟢 로그인 처리 핸들러
-    ipcMain.handle("login", async (event, username, password) => {
-      const apiUrl = "https://wiki.prodbybitmap.com/w/api.php";
-
-      try {
-        // 1. CSRF 로그인 토큰 가져오기
-        const tokenRes = await session.defaultSession.fetch(
-          `${apiUrl}?action=query&meta=tokens&type=login&format=json`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-        );
-
-        // 2. 쿠키 확인
-        const cookies = await session.defaultSession.cookies.get({
-          url: apiUrl,
-        });
-        console.log("저장된 쿠키:", cookies);
-
-        const tokenData = await tokenRes.json();
-        const loginToken = tokenData?.query?.tokens?.logintoken;
-        console.log("로그인 토큰:", loginToken);
-
-        if (!loginToken)
-          throw new Error("CSRF 로그인 토큰을 가져올 수 없습니다.");
-
-        // 2. 로그인 요청
-        const loginRes = await session.defaultSession.fetch(apiUrl, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "login",
-            format: "json",
-            lgname: username,
-            lgpassword: password,
-            lgtoken: loginToken,
-          }),
-        });
-
-        const loginData = await loginRes.json();
-        console.log("로그인 응답:", loginData);
-
-        if (loginData?.login?.result === "Success") {
-          console.log("로그인 성공! 🎉");
-          return { success: true, username };
-        } else {
-          return { success: false, error: loginData };
-        }
-      } catch (error: any) {
-        console.error("로그인 에러:", error);
-        return { success: false, error: error.message };
-      }
-    });
-
-    ipcMain.handle(
-      "register",
-      async (event, username: string, email: string, password: string) => {
-        const apiUrl = "https://wiki.prodbybitmap.com/w/api.php";
-
-        // 1. CSRF 토큰 가져오기
-        const tokenRes = await session.defaultSession.fetch(
-          `${apiUrl}?action=query&meta=tokens&type=createaccount&format=json`,
-          {
-            method: "GET",
-            credentials: "include", // 쿠키 필요 시
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const tokenData = await tokenRes.json();
-        const csrfToken = tokenData?.query?.tokens?.createaccounttoken;
-
-        if (!csrfToken) {
-          throw new Error("CSRF 토큰을 가져올 수 없습니다.");
-        }
-
-        // 2. 계정 생성 요청
-        const accountRes = await session.defaultSession.fetch(apiUrl, {
-          method: "POST",
-          credentials: "include", // 쿠키 필요 시
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: new URLSearchParams({
-            action: "createaccount",
-            format: "json",
-            username: username,
-            password: password,
-            retype: password,
-            email: email,
-            createreturnurl: "https://wiki.prodbybitmap.com/",
-            token: csrfToken,
-          }),
-        });
-
-        const accountData = await accountRes.json();
-
-        if (accountData?.createaccount?.status === "PASS") {
-          console.log(
-            "계정이 성공적으로 생성되었습니다:",
-            accountData.createaccount.username,
-          );
-          return true;
-        } else {
-          console.error("계정 생성 실패:", accountData);
-          return false;
-        }
-      },
-    );
-
-    // 로그아웃 API 호출 핸들러
-    ipcMain.handle("logout", async () => {
-      try {
-        const apiUrl = "https://wiki.prodbybitmap.com/w/api.php";
-        // 1️⃣ CSRF 토큰 가져오기
-        const tokenRes = await session.defaultSession.fetch(
-          `${apiUrl}?action=query&meta=tokens&type=csrf&format=json`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-        );
-
-        const tokenData = await tokenRes.json();
-        const csrfToken = tokenData?.query?.tokens?.csrftoken;
-        console.log("CSRF 토큰:", csrfToken);
-
-        if (!csrfToken) throw new Error("CSRF 토큰을 가져올 수 없습니다.");
-
-        // 2️⃣ 현재 세션의 쿠키 가져오기
-        const cookies = await session.defaultSession.cookies.get({
-          url: apiUrl,
-        });
-
-        // 3️⃣ 로그아웃 요청 보내기
-        const logoutRes = await session.defaultSession.fetch(
-          `${apiUrl}?action=logout&format=json`,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "), // 쿠키 전달
-            },
-            body: new URLSearchParams({ token: csrfToken }).toString(),
-          },
-        );
-
-        const logoutData = await logoutRes.json();
-        console.log("로그아웃 응답:", logoutData);
-
-        return { success: true, data: logoutData };
-      } catch (error: any) {
-        console.error("로그아웃 오류:", error);
-        return { success: false, error: error.message };
-      }
-    });
-
-    ipcMain.handle("get-cookies", async (event, cookieName: string) => {
-      try {
-        const url = "https://wiki.prodbybitmap.com/w/api.php";
-        const cookies = await session.defaultSession.cookies.get({ url });
-        const cookie = cookies.find((c) => c.name === cookieName);
-        return cookie ? cookie.value : null;
-      } catch (error) {
-        console.error("쿠키 가져오기 실패:", error);
-        return null;
-      }
-    });
-
-    ipcMain.handle("fetch-data", async (_, url: string) => {
-      try {
-        const response = await axios.get(url);
-        return response.data;
-      } catch (error: any) {
-        return { error: error.message };
-      }
-    });
 
     // 렌더러로부터 설치 명령 수신
     ipcMain.on("quit-and-install", () => {

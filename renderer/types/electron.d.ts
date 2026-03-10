@@ -85,15 +85,6 @@ export interface bitmapApi {
   getSettings: () => Promise<any>;
 
   checkPathValid: (dirPath: string) => Promise<boolean>;
-
-  login: (username: string, password: string) => Promise<any>;
-  register: (
-    username: string,
-    email: string,
-    password: string,
-  ) => Promise<boolean>;
-  logout: () => Promise<any>;
-  getCookies: (cookieName: string) => Promise<string>;
 }
 
 declare global {

@@ -111,9 +111,6 @@ const bitmapApi = {
     ipcRenderer.invoke("set-screen-mode", screenMode),
   getScreenMode: () => ipcRenderer.invoke("get-screen-mode"),
 
-  // Bypass CORS
-  fetchData: (url: string) => ipcRenderer.invoke("fetch-data", url),
-
   // Download file
   downloadFile: (url: string, savePath: string) =>
     ipcRenderer.invoke("download-file", { url, savePath }),
@@ -167,15 +164,6 @@ const bitmapApi = {
   // Check is the given game path valid
   checkPathValid: (dirPath: string) =>
     ipcRenderer.invoke("check-executable-or-app", dirPath),
-
-  // Auth
-  login: (username: string, password: string) =>
-    ipcRenderer.invoke("login", username, password),
-  register: (username: string, email: string, password: string) =>
-    ipcRenderer.invoke("register", username, email, password),
-  logout: () => ipcRenderer.invoke("logout"),
-  getCookies: (cookieName: string) =>
-    ipcRenderer.invoke("get-cookies", cookieName),
 };
 
 contextBridge.exposeInMainWorld("ipc", handler);
