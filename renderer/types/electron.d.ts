@@ -58,8 +58,8 @@ export interface bitmapApi {
   // Token Handler
   setToken: (token: string) => void;
   getToken: () => string;
-  setScreenMode: (screenMode: string) => void;
-  getScreenMode: () => string;
+  setScreenMode: (screenMode: "light" | "system" | "dark") => void;
+  getScreenMode: () => "light" | "system" | "dark";
 
   // Get JSON data with bypassing CORS
   fetchData: (url: string) => Promise<any>;

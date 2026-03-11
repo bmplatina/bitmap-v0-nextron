@@ -26,7 +26,7 @@ export default function SettingsPage() {
     setMounted(true);
   }, []);
 
-  const setScreenMode = (newTheme: string) => {
+  const setScreenMode = (newTheme: "light" | "system" | "dark") => {
     setTheme(newTheme);
     window.bitmapApi.setScreenMode(newTheme);
   };

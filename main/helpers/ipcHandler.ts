@@ -126,9 +126,25 @@ class ipcHandle {
       return userStore.get("screenMode");
     });
 
-    ipcMain.handle("set-screen-mode", (_event, screenMode: string) => {
-      userStore.set("screenMode", screenMode);
-    });
+    ipcMain.handle(
+      "set-screen-mode",
+      (event, screenMode: "light" | "system" | "dark") => {
+        userStore.set("screenMode", screenMode);
+        if (!this.mainWindow) return;
+
+        if (screenMode === "dark") {
+          this.mainWindow.setTitleBarOverlay({
+            color: "#1a1a1a", // 배경색 (어둡게)
+            symbolColor: "#ffffff", // 아이콘색 (흰색)
+          });
+        } else {
+          this.mainWindow.setTitleBarOverlay({
+            color: "#ffffff", // 배경색 (밝게)
+            symbolColor: "#000000", // 아이콘색 (검정색)
+          });
+        }
+      },
+    );
 
     ipcMain.handle("open-external", async (_event, url: string) => {
       return shell.openExternal(url);

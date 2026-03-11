@@ -107,7 +107,7 @@ const bitmapApi = {
   setToken: (token: string) => ipcRenderer.invoke("set-token", token),
   getToken: () => ipcRenderer.invoke("get-token"),
 
-  setScreenMode: (screenMode: string) =>
+  setScreenMode: (screenMode: "light" | "system" | "dark") =>
     ipcRenderer.invoke("set-screen-mode", screenMode),
   getScreenMode: () => ipcRenderer.invoke("get-screen-mode"),
 
