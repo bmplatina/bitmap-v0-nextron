@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { Bell, BellDot, Search as SearchIcon, Menu, X } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
@@ -49,7 +49,9 @@ export default function TopBar() {
   // 스크롤 감지
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      startTransition(() => {
+        setIsScrolled(window.scrollY > 0);
+      });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();

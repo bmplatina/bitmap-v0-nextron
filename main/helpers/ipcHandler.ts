@@ -128,7 +128,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "set-screen-mode",
-      (event, screenMode: "light" | "system" | "dark") => {
+      (_, screenMode: "light" | "system" | "dark") => {
         userStore.set("screenMode", screenMode);
         if (!this.mainWindow) return;
 

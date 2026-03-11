@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, startTransition, useEffect } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { ScrollArea, Theme } from "@radix-ui/themes";
@@ -34,15 +34,21 @@ function RootLayout({ Component, pageProps }: AppProps) {
         // launcherUrl.split("//")[1]
         const substring = uri.split("//")[1];
         if (substring.startsWith("games")) {
-          router.push(`/${locale}/games/detail?id=${substring.split("/")[1]}`);
+          startTransition(() => {
+            router.push(
+              `/${locale}/games/detail?id=${substring.split("/")[1]}`,
+            );
+          });
         } else {
           console.log(`Redirecting to /${locale}/${substring}`);
-          router.push(`/${locale}/${substring}`);
+          startTransition(() => {
+            router.push(`/${locale}/${substring}`);
+          });
         }
       });
       deeplink.setWindowIsReady(true);
     })();
-  }, []);
+  }, [locale, router]);
 
   return (
     <Fragment>
