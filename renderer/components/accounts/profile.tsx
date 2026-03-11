@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -36,8 +34,11 @@ function ProfilePopover() {
   }
 
   useEffect(() => {
-    // bSetLoggedInState(localStorage.getItem("token") !== "");
-    setToken(window.bitmapApi.getToken());
+    async function getToken() {
+      const token = await window.bitmapApi.getToken();
+      setToken(token);
+    }
+    getToken();
   }, []);
 
   return (
