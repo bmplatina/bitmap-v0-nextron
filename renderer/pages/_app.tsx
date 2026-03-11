@@ -1,7 +1,7 @@
-import React from "react";
+import { Fragment, useEffect } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
-import { Theme } from "@radix-ui/themes";
+import { ScrollArea, Theme } from "@radix-ui/themes";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import Sidebar from "@/components/common/sidebar/sidebar";
 import TopBar from "@/components/common/sidebar/top-bar";
@@ -15,33 +15,37 @@ import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../../next-i18next.config";
 import { pretendard } from "@/lib/utils";
-import { getPlatform } from "@/lib/utils-client";
+import { useTranslation } from "next-i18next";
 import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
 
 function RootLayout({ Component, pageProps }: AppProps) {
-  let [launcherUrl, setLauncherUrl] = React.useState("");
   const router = useRouter();
+  const {
+    i18n: { language: locale },
+  } = useTranslation();
 
-  React.useEffect(() => {
+  useEffect(() => {
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { deeplink } = window;
 
-      deeplink.onLauncherUrl((url: string) => {
-        setLauncherUrl(url);
-        if (launcherUrl) {
-          // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
-          // launcherUrl.split("//")[1]
-          console.log(`Redirecting to ${launcherUrl.split("//")[1]}`);
-          router.push(launcherUrl.split("//")[1]);
+      deeplink.onLauncherUrl((uri: string) => {
+        // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
+        // launcherUrl.split("//")[1]
+        const substring = uri.split("//")[1];
+        if (substring.startsWith("games")) {
+          router.push(`/${locale}/games/detail?id=${substring.split("/")[1]}`);
+        } else {
+          console.log(`Redirecting to /${locale}/${substring}`);
+          router.push(`/${locale}/${substring}`);
         }
       });
       deeplink.setWindowIsReady(true);
     })();
-  }, [launcherUrl, router]);
+  }, []);
 
   return (
-    <React.Fragment>
+    <Fragment>
       <GameInstallManagerProvider>
         <NextToploader showSpinner={false} />
         <AuthProvider>
@@ -55,20 +59,22 @@ function RootLayout({ Component, pageProps }: AppProps) {
               <div
                 className={`${pretendard.variable} font-pretendard font-sans antialiased`}
               >
-                <div className="flex flex-col min-h-screen">
+                <div className="flex flex-col h-screen overflow-hidden">
                   <div className="sticky top-0 z-50 w-full">
                     <TokenHandler />
                     <TopBar />
                   </div>
-                  <div className="flex flex-1">
+                  <div className="flex flex-1 min-h-0">
                     <aside className="sticky top-12 h-[calc(100vh-48px)] hidden md:block self-start z-30">
                       <Sidebar />
                     </aside>
-                    <main className="flex-1 w-full pb-10">
-                      <Component {...pageProps} />
-                      <Footer />
-                      <BottomDrawer />
-                    </main>
+                    <ScrollArea className="flex-1 w-full h-[calc(100vh-48px)]">
+                      <main className="w-full pb-10">
+                        <Component {...pageProps} />
+                        <Footer />
+                        <BottomDrawer />
+                      </main>
+                    </ScrollArea>
                   </div>
                 </div>
               </div>
@@ -77,7 +83,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
           </ThemeProvider>
         </AuthProvider>
       </GameInstallManagerProvider>
-    </React.Fragment>
+    </Fragment>
   );
 }
 
