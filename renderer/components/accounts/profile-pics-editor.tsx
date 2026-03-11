@@ -32,7 +32,7 @@ export default function ProfilePicsEditor({
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
 
-      const token = window.bitmapApi.getToken();
+      const token = await window.bitmapApi.getToken();
       if (!token) return;
 
       const formData = new FormData();

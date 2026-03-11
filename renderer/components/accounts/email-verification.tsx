@@ -45,7 +45,7 @@ export default function EmailVerificationDialog({
   async function handleSendVerificationEmail() {
     try {
       setIsVerificationMailSending(true);
-      const token = window.bitmapApi.getToken();
+      const token = await window.bitmapApi.getToken();
 
       if (!token) throw new Error("token-required");
       const response = await sendVerifyEmail(
@@ -71,7 +71,7 @@ export default function EmailVerificationDialog({
   async function handleVerification() {
     try {
       setIsVerifying(true);
-      const token = window.bitmapApi.getToken();
+      const token = await window.bitmapApi.getToken();
 
       if (!token) throw new Error("token-required");
       const verifyResult = await verifyEmail(

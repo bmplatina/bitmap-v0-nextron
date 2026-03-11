@@ -103,7 +103,7 @@ function NotificationListContent() {
 
   React.useEffect(() => {
     async function fetchNotifications() {
-      const token = window.bitmapApi.getToken();
+      const token = await window.bitmapApi.getToken();
       try {
         setIsFetching(true);
         const data = await getNotifications(window.bitmapApi, token, scope);

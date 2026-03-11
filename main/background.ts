@@ -106,7 +106,10 @@ const getMainWindowWhenReady = async () => {
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
 
-      if (!isExcludeDomain) {
+      if (isExcludeDomain) {
+        details.requestHeaders["Referer"] = "https://www.youtube.com/";
+        details.requestHeaders["Origin"] = "https://www.youtube.com";
+      } else {
         details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
       }
     } catch (e) {

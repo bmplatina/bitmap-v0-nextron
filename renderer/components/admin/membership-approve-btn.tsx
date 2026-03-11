@@ -25,7 +25,7 @@ export default function GrantButton({ uid, action, bIsApproved }: GrantProps) {
   async function handleApprove() {
     try {
       setIsApproving(true);
-      const token = window.bitmapApi.getToken();
+      const token = await window.bitmapApi.getToken();
       if (!token) throw Error("invalid-token");
       const response =
         action === "apply"

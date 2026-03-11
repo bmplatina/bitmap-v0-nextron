@@ -83,14 +83,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 1. 앱이 켜지자마자 로그인 상태 체크
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = window.bitmapApi.getToken();
+    async function initializeAuth() {
+      const token = await window.bitmapApi.getToken();
       if (token) {
         await fetchUser(token);
       }
-      setIsLoggedIn(checkIsLoggedIn(window.bitmapApi));
+      const loginState: boolean = await checkIsLoggedIn(window.bitmapApi);
+      setIsLoggedIn(loginState);
       setIsLoading(false);
-    };
+    }
 
     initializeAuth();
   }, []);

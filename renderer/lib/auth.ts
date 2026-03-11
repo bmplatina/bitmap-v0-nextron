@@ -1,5 +1,4 @@
 import { jwtDecode } from "jwt-decode";
-import { getApiLinkByPurpose } from "./utils";
 import { csrAxiosGet, csrAxiosPost } from "./utils-client";
 import {
   AuthResponse,
@@ -9,15 +8,14 @@ import {
   UserProfile,
 } from "./types";
 import { bitmapApi, tools } from "@/types/electron";
-import { promises } from "dns";
 
-function checkIsLoggedIn(context: bitmapApi) {
+async function checkIsLoggedIn(context: bitmapApi): Promise<boolean> {
   if (typeof window === "undefined") return false; // 서버 사이드 렌더링 방지
 
-  const token = context.getToken();
-  if (!token) return false;
-
   try {
+    const token = await context.getToken();
+    if (!token) return false;
+
     const decoded = jwtDecode(token);
     // exp는 초 단위이므로 1000을 곱해 밀리초로 변환 후 현재 시간과 비교
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
