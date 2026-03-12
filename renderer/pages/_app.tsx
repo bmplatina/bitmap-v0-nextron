@@ -1,4 +1,4 @@
-import { Fragment, startTransition, useEffect } from "react";
+import { Fragment, startTransition, useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { ScrollArea, Theme } from "@radix-ui/themes";
@@ -23,6 +23,12 @@ function RootLayout({ Component, pageProps }: AppProps) {
   const {
     i18n: { language: locale },
   } = useTranslation();
+
+  const [bIsMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -49,6 +55,10 @@ function RootLayout({ Component, pageProps }: AppProps) {
       deeplink.setWindowIsReady(true);
     })();
   }, [locale, router]);
+
+  if (!bIsMounted) {
+    return null;
+  }
 
   return (
     <Fragment>
