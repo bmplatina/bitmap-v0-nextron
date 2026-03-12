@@ -63,7 +63,7 @@ export default function AccountPage() {
               <Flex direction="column" gap="2">
                 <Button size="3" asChild>
                   <LocalizedLink
-                    href="https://api.prodbybitmap.com/auth/google"
+                    href="https://api.prodbybitmap.com/auth/google/desktop"
                     onClick={openExternalLink}
                   >
                     <Image
