@@ -19,9 +19,17 @@ export default function Sidebar() {
     openExternal(event, window.electronTools);
   }
 
+  function getPathName(): string {
+    const pathName = router.asPath.split(locale)[1];
+    if (pathName.length === 1) return "/";
+    else if (pathName.includes("games")) return "/games";
+
+    return pathName.endsWith("/") ? pathName.slice(0, -1) : pathName;
+  }
+
   React.useEffect(() => {
-    console.log("Locale (ready): ", locale);
-  }, [locale]);
+    console.log("Locale (ready): ", locale, getPathName());
+  }, [locale, router.asPath]);
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
@@ -60,7 +68,7 @@ export default function Sidebar() {
                       }
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        router.asPath === item.href
+                        getPathName() === item.href
                           ? "bg-accent text-accent-foreground"
                           : "text-muted-foreground",
                       )}
