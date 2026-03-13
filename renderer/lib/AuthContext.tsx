@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { checkIsLoggedIn, getMyProfile } from "./auth"; // 위에서 만든 함수
 import { useRouter } from "next/router";
-import { getApiLinkByPurpose } from "./utils";
+import { useTranslation } from "next-i18next";
 import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
@@ -43,6 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [uid, setUid] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const {
+    i18n: { language: locale },
+  } = useTranslation();
 
   const fetchUser = async (token: string) => {
     if (!token) return;
@@ -102,14 +105,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.bitmapApi.setToken(token);
     setIsLoggedIn(true);
     await fetchUser(token); // 유저 정보를 다 가져올 때까지 기다림
-    router.push("/");
+    router.push(`/${locale}/`);
   };
 
   // 3. 로그아웃 함수
   const logout = () => {
     window.bitmapApi.setToken("");
     setIsLoggedIn(false);
-    router.push("/"); // 로그아웃 후 이동
+    router.push(`/${locale}/`); // 로그아웃 후 이동
     // window.location.reload(); // 필요하다면 새로고침으로 상태 초기화
   };
 
