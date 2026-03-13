@@ -63,6 +63,12 @@ const getMainWindowWhenReady = async () => {
 
   await app.whenReady();
 
+  // 유튜브 152-4 오류 해결을 위해 User-Agent에서 Electron 문자열 제거
+  const defaultUserAgent = session.defaultSession.getUserAgent();
+  session.defaultSession.setUserAgent(
+    defaultUserAgent.replace(/Electron\/[^\s]+\s/g, ""),
+  );
+
   ipcMain.once("window-is-ready", () => {
     windowIsReady = true;
   });
@@ -95,22 +101,40 @@ const getMainWindowWhenReady = async () => {
   const locale = helpers.userStore.get("locale", i18next.i18n.defaultLocale);
   console.log("Using locale:", locale);
 
-  // CORS 우회 설정
+  // iframe 내부에서 열리는 외부 링크 (유튜브 제목 등)를 기본 브라우저로 리디렉션
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      shell.openExternal(url);
+    }
+    return { action: "deny" };
+  });
+
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    // 내부 탐색(app:// 또는 localhost)이 아닐 경우 기본 브라우저에서 열기
+    if (url.startsWith("http") && !url.includes("localhost") && !url.includes("youtube-nocookie.com/embed")) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
+
+  // CORS 및 유튜브 우회 설정
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     try {
       const url = new URL(details.url);
       const host = url.hostname;
-      const isExcludeDomain =
+      const isYouTube =
         host.includes("youtube.com") ||
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
 
-      if (isExcludeDomain) {
-        details.requestHeaders["Referer"] = "https://www.youtube.com/";
-        details.requestHeaders["Origin"] = "https://www.youtube.com";
+      if (isYouTube) {
+        details.requestHeaders["Referer"] = "https://www.youtube-nocookie.com/";
+        details.requestHeaders["Origin"] = "https://www.youtube-nocookie.com";
       } else {
-        details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
+        if (!details.requestHeaders["Origin"]) {
+          details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
+        }
       }
     } catch (e) {
       details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
@@ -123,13 +147,17 @@ const getMainWindowWhenReady = async () => {
     try {
       const url = new URL(details.url);
       const host = url.hostname;
-      const isExcludeDomain =
+      const isYouTube =
         host.includes("youtube.com") ||
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
 
-      if (!isExcludeDomain) {
+      if (isYouTube) {
+        delete responseHeaders["x-frame-options"];
+        delete responseHeaders["X-Frame-Options"];
+        delete responseHeaders["content-security-policy"];
+      } else {
         responseHeaders = {
           ...responseHeaders,
           "Access-Control-Allow-Origin": ["*"],
@@ -177,11 +205,22 @@ app.on("window-all-closed", () => {
 });
 
 function checkLauncherUrl(getMainWindow) {
+  // 프로토콜 등록 (개발 환경 대응)
+  if (!app.isPackaged) {
+    app.setAsDefaultProtocolClient(protocolScheme, process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  } else {
+    app.setAsDefaultProtocolClient(protocolScheme);
+  }
+
   if (process.platform === "darwin") {
-    app.on("open-url", async (_event, url) => {
+    app.on("open-url", async (event, url) => {
+      event.preventDefault();
       const mainWindow = await getMainWindow();
       mainWindow.webContents.send("launcher-url", url);
-      mainWindow.isMinimized() && mainWindow.restore();
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
     });
   }
 
@@ -192,29 +231,26 @@ function checkLauncherUrl(getMainWindow) {
       return false;
     }
 
-    // app.setAsDefaultProtocolClient('your-custom-protocol-scheme')
-    app.setAsDefaultProtocolClient(protocolScheme);
-
     app.on("second-instance", async (_event, args) => {
       const mainWindow = await getMainWindow();
 
-      const url = args.find((arg) =>
-        // arg.startsWith(`${'your-custom-protocol-scheme'}://`)
-        arg.startsWith(`${protocolScheme}://`),
-      );
-      url && mainWindow.webContents.send("launcher-url", url);
+      const url = args.find((arg) => arg.startsWith(`${protocolScheme}://`));
+      if (url) {
+        mainWindow.webContents.send("launcher-url", url);
+      }
 
-      mainWindow.isMinimized() && mainWindow.restore();
+      if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     });
 
     const url = process.argv.find((arg) =>
       arg.startsWith(`${protocolScheme}://`),
     );
-    url &&
+    if (url) {
       getMainWindow().then((mainWindow) =>
         mainWindow.webContents.send("launcher-url", url),
       );
+    }
   }
 
   return true;
