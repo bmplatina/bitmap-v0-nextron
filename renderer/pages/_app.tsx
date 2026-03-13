@@ -1,4 +1,4 @@
-import { Fragment, startTransition, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { ScrollArea, Theme } from "@radix-ui/themes";
@@ -17,6 +17,7 @@ import nextI18NextConfig from "../../next-i18next.config";
 import { pretendard } from "@/lib/utils";
 import { useTranslation } from "next-i18next";
 import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
+import DeeplinkHandler from "@/lib/DeeplinkHandler";
 
 function RootLayout({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -30,32 +31,6 @@ function RootLayout({ Component, pageProps }: AppProps) {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { deeplink } = window;
-
-      deeplink.onLauncherUrl((uri: string) => {
-        // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
-        // launcherUrl.split("//")[1]
-        const substring = uri.split("//")[1];
-        if (substring.startsWith("games")) {
-          startTransition(() => {
-            router.push(
-              `/${locale}/games/detail?id=${substring.split("/")[1]}`,
-            );
-          });
-        } else {
-          console.log(`Redirecting to /${locale}/${substring}`);
-          startTransition(() => {
-            router.push(`/${locale}/${substring}`);
-          });
-        }
-      });
-      deeplink.setWindowIsReady(true);
-    })();
-  }, [locale, router]);
-
   if (!bIsMounted) {
     return null;
   }
@@ -65,6 +40,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
       <GameInstallManagerProvider>
         <NextToploader showSpinner={false} />
         <AuthProvider>
+          <DeeplinkHandler />
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

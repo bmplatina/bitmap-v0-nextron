@@ -13,13 +13,16 @@ export default function DeeplinkHandler() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    (async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let isMounted = true;
 
+    // React의 Suspense hydration 완료를 보장하기 위해 약간의 지연(setTimeout)을 사용합니다.
+    const initTimer = setTimeout(() => {
       window.deeplink.onLauncherUrl((uri: string) => {
-        // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
-        // launcherUrl.split("//")[1]
-        const substring = uri.split("bitmap://")[1];
+        if (!isMounted) return;
+
+        const substring = uri.split("bitmap://")[1] || uri.split("//")[1];
+        if (!substring) return;
+
         // 게임 페이지 리디렉션 bitmap://games/${id}
         if (substring.startsWith("games")) {
           startTransition(() => {
@@ -40,9 +43,15 @@ export default function DeeplinkHandler() {
           });
         }
       });
+
       window.deeplink.setWindowIsReady(true);
-    })();
-  }, [locale, router, login]);
+    }, 100);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(initTimer);
+    };
+  }, [locale, router.isReady, login, router]);
 
   return null;
 }
