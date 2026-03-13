@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect } from "react";
 import { useTranslation } from "next-i18next";
 import { useAuth } from "./AuthContext";
 
@@ -9,20 +9,14 @@ export default function DeeplinkHandler() {
     i18n: { language: locale },
   } = useTranslation();
   const { login } = useAuth();
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted || !router.isReady) return;
+    if (!router.isReady) return;
 
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { deeplink } = window;
 
-      deeplink.onLauncherUrl((uri: string) => {
+      window.deeplink.onLauncherUrl((uri: string) => {
         // const formattedUrl = launcherUrl.startsWith('/') ? launcherUrl : `/${launcherUrl}`;
         // launcherUrl.split("//")[1]
         const substring = uri.split("bitmap://")[1];
@@ -46,9 +40,9 @@ export default function DeeplinkHandler() {
           });
         }
       });
-      deeplink.setWindowIsReady(true);
+      window.deeplink.setWindowIsReady(true);
     })();
-  }, [locale, router, isMounted]);
+  }, [locale, router, login]);
 
   return null;
 }
