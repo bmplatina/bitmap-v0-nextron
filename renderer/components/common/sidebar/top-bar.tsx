@@ -77,38 +77,18 @@ export default function TopBar() {
     return !authPageRegExp.test(router.pathname) && !bIsLoggedIn;
   }
 
-  const electronDragCss: React.CSSProperties & { WebkitAppRegion?: string } = {
-    WebkitAppRegion: "drag",
-  };
-
-  const electronNoDragCss: React.CSSProperties & { WebkitAppRegion?: string } =
-    {
-      WebkitAppRegion: "none",
-    };
-
   return (
     <>
       <div
-        className={`h-12 border-b flex items-center px-4 w-full relative z-50 transition-all duration-300 ${
-          isScrolled ? "border-border/50" : "bg-background border-border"
+        className={`h-12 border-b flex items-center px-4 w-full relative z-50 transition-all duration-300 electron-drag ${
+          isScrolled ? "border-border/50 apple-blur" : "bg-background border-border"
         }`}
-        style={
-          isScrolled
-            ? {
-                WebkitBackdropFilter: "saturate(180%) blur(20px)",
-                backdropFilter: "saturate(180%) blur(20px)",
-                backgroundColor: "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
-                ...electronDragCss,
-              }
-            : electronDragCss
-        }
       >
         {/* 로고 이미지 */}
         <LocalizedLink
           href="/"
-          className="flex items-center"
+          className="flex items-center electron-nodrag"
           style={{
-            ...electronNoDragCss,
             ...(bIsMac && {
               transform: titleTransform,
               willChange: "transform",
@@ -128,8 +108,7 @@ export default function TopBar() {
 
         {/* 검색 폼 */}
         <Search
-          className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full"
-          style={electronNoDragCss}
+          className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full electron-nodrag"
         />
 
         <div
@@ -157,7 +136,7 @@ export default function TopBar() {
                         <IconButton
                           variant="ghost"
                           radius="full"
-                          style={electronNoDragCss}
+                          className="electron-nodrag"
                         >
                           <Avatar
                             src={
@@ -172,13 +151,7 @@ export default function TopBar() {
                         </IconButton>
                       </Popover.Trigger>
                       <Popover.Content
-                        style={{
-                          WebkitBackdropFilter: "saturate(180%) blur(20px)",
-                          backdropFilter: "saturate(180%) blur(20px)",
-                          backgroundColor:
-                            "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
-                        }}
-                        className="text-center"
+                        className="text-center apple-blur"
                       >
                         <ProfilePopover />
                       </Popover.Content>
@@ -186,7 +159,7 @@ export default function TopBar() {
                   </>
                 )}
                 {getIsSigninButtonActive() && (
-                  <Button radius="full" asChild style={electronNoDragCss}>
+                  <Button radius="full" asChild className="electron-nodrag">
                     <LocalizedLink href="/auth">{t("signin")}</LocalizedLink>
                   </Button>
                 )}

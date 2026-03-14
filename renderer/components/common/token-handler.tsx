@@ -27,14 +27,7 @@ export default function TokenHandler() {
 
   if (!bIsEmailVerified && bIsLoggedIn) {
     return (
-      <div
-        className="h-12 bg-background border-b flex items-center px-4 w-full relative z-50"
-        style={{
-          WebkitBackdropFilter: "saturate(180%) blur(20px)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          backgroundColor: "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
-        }}
-      >
+      <div className="h-12 bg-background border-b flex items-center px-4 w-full relative z-50 apple-blur">
         <div className="mr-auto text-sm md:text-base">
           <Text weight="bold">{username}</Text>
           <Text wrap="pretty">{t("email-verification-incomplete-top")}</Text>

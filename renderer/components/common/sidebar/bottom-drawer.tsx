@@ -86,15 +86,10 @@ const BottomDrawer = observer(function () {
     <Drawer>
       {/* Footer 스타일의 트리거 */}
       <DrawerTrigger
-        style={{
-          WebkitBackdropFilter: "saturate(180%) blur(20px)",
-          backdropFilter: "saturate(180%) blur(20px)",
-          backgroundColor: "var(--topbar-bg, rgba(255, 255, 255, 0.72))",
-        }}
         className="fixed bottom-0 left-64 right-0 z-50
                            bg-background border-t
                            flex items-center justify-center
-                           p-4 hover:bg-accent
+                           p-4 hover:bg-accent apple-blur
                            transition-all duration-200"
       >
         <div className="flex items-center gap-2">
