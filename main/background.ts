@@ -124,6 +124,7 @@ const getMainWindowWhenReady = async () => {
       const host = url.hostname;
       const isYouTube =
         host.includes("youtube.com") ||
+        host.includes("youtube-nocookie.com") ||
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
@@ -149,6 +150,7 @@ const getMainWindowWhenReady = async () => {
       const host = url.hostname;
       const isYouTube =
         host.includes("youtube.com") ||
+        host.includes("youtube-nocookie.com") ||
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
