@@ -234,7 +234,7 @@ class GameInstallManager {
   }
 
   private bIsMac: boolean = true;
-  private bShowInDownloadDrawer = true;
+  private bShowInDownloadDrawer = false;
 
   // Installation Infos
   private defaultInstallationPath: string | null = "";
@@ -554,6 +554,11 @@ class GameInstallManager {
 
   // NeDB Installation Info saver
   async pullInstallState(ElectronTools: tools, BitmapAPI: bitmapApi) {
+    if (this.getIsDownloadingOrInstallingState) {
+      console.log("Already downloading/installing, skipping pullInstallState to preserve state.");
+      return;
+    }
+
     try {
       // Declare default installation path
       const getDefaultInstallPath = ElectronTools.getElectronStoredPath();

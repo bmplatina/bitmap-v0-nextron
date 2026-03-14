@@ -58,13 +58,14 @@ const GameInteractableButtons = observer(function ({
 
     // 다운로드가 시작되면 무조건 BottomDrawer에 표시되도록 설정
     gameInstallManager.setShowInDownloadDrawer = true;
+    
+    // 다운로드가 시작되기 전에 store에 등록하여 BottomDrawer에 즉시 표시되도록 함
+    pushNewManager();
 
     try {
       await gameInstallManager.downloadAndInstall(window.bitmapApi);
     } catch (error: any) {
       console.error("Download and Install Error:", error);
-    } finally {
-      pushNewManager();
     }
   }
 
