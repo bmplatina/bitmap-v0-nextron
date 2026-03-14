@@ -20,9 +20,9 @@ export default function Sidebar() {
   }
 
   function getPathName(): string {
+    if (router.asPath === `/${locale}/`) return "/";
     const pathName = router.asPath.split(locale)[1];
-    if (pathName.length === 1) return "/";
-    else if (pathName.includes("games")) return "/games";
+    if (pathName.includes("games")) return "/games";
 
     return pathName.endsWith("/") ? pathName.slice(0, -1) : pathName;
   }

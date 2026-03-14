@@ -81,7 +81,9 @@ export default function TopBar() {
     <>
       <div
         className={`h-12 border-b flex items-center px-4 w-full relative z-50 transition-all duration-300 electron-drag ${
-          isScrolled ? "border-border/50 apple-blur" : "bg-background border-border"
+          isScrolled
+            ? "border-border/50 apple-blur"
+            : "bg-background border-border"
         }`}
       >
         {/* 로고 이미지 */}
@@ -107,9 +109,7 @@ export default function TopBar() {
         </LocalizedLink>
 
         {/* 검색 폼 */}
-        <Search
-          className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full electron-nodrag"
-        />
+        <Search className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full electron-nodrag" />
 
         <div
           className="ml-auto pl-2 flex items-center gap-2"
@@ -123,7 +123,11 @@ export default function TopBar() {
                 {bIsLoggedIn && (
                   <>
                     <NotificationCenter>
-                      <IconButton variant="ghost" radius="full">
+                      <IconButton
+                        variant="ghost"
+                        radius="full"
+                        className="electron-nodrag"
+                      >
                         <Bell className="h-5 w-5" />
                       </IconButton>
                     </NotificationCenter>
@@ -150,9 +154,7 @@ export default function TopBar() {
                           />
                         </IconButton>
                       </Popover.Trigger>
-                      <Popover.Content
-                        className="text-center apple-blur"
-                      >
+                      <Popover.Content className="text-center apple-blur">
                         <ProfilePopover />
                       </Popover.Content>
                     </Popover.Root>

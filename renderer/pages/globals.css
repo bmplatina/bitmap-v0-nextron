@@ -18,7 +18,7 @@ body {
     -webkit-app-region: drag;
   }
   .electron-nodrag {
-    -webkit-app-region: no-drag;
+    -webkit-app-region: no-drag !important;
   }
   .apple-blur {
     -webkit-backdrop-filter: saturate(180%) blur(20px);
