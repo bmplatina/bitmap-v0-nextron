@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { makeStaticProperties } from "@/lib/get-static";
+import { Flex } from "@radix-ui/themes";
+import BitmapAppAnim from "@/components/common/bitmap-app/bitmap-app-anim";
 
 export default function Index() {
   const router = useRouter();
@@ -12,7 +14,15 @@ export default function Index() {
     router.replace(`/${locale}/`);
   }, [router, locale]);
 
-  return null;
+  return (
+    <Flex
+      align="center"
+      justify="center"
+      className="w-screen h-screen electron-drag"
+    >
+      <BitmapAppAnim text="BITMAP APP" />
+    </Flex>
+  );
 }
 
 export const getStaticProps = makeStaticProperties([]);
