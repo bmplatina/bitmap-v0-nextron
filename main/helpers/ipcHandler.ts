@@ -271,12 +271,23 @@ class ipcHandle {
         // 파일을 하나씩 해제하며 진행률 계산
         await new Promise<void>((resolve, reject) => {
           zip
-            .pipe(unzipper.Extract({ path: extractPath }))
+            .pipe(unzipper.Parse())
             .on("entry", (entry) => {
-              extractedFiles++;
-              const progress = Math.round((extractedFiles / totalFiles) * 100);
-              event.sender.send("extract-progress", progress); // 진행률 전송
-              entry.autodrain(); // 필요하지 않은 경우 스트림 자동 소멸
+              const fileName = entry.path;
+              const type = entry.type; // 'Directory' or 'File'
+              const fullPath = join(extractPath, fileName);
+
+              if (type === "Directory") {
+                fs.mkdirSync(fullPath, { recursive: true });
+                entry.autodrain();
+              } else {
+                fs.mkdirSync(dirname(fullPath), { recursive: true });
+                entry.pipe(fs.createWriteStream(fullPath)).on("finish", () => {
+                  extractedFiles++;
+                  const progress = Math.round((extractedFiles / totalFiles) * 100);
+                  event.sender.send("extract-progress", progress); // 진행률 전송
+                });
+              }
             })
             .on("close", resolve) // 압축 해제 완료
             .on("error", reject); // 에러 발생
