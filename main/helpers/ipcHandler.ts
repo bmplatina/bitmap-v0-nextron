@@ -79,8 +79,8 @@ class ipcHandle {
       if (currentMode === "system" && this.mainWindow) {
         const isDarkMode = nativeTheme.shouldUseDarkColors;
         this.mainWindow.setTitleBarOverlay({
-          color: isDarkMode ? "#00000000" : "#ffffff00",
-          symbolColor: isDarkMode ? "#ffffff" : "#000000",
+          color: isDarkMode ? "#00000000" : "#FFFFFF00",
+          symbolColor: isDarkMode ? "#FFFFFFFF" : "#000000FF",
         });
       }
     });
@@ -150,12 +150,12 @@ class ipcHandle {
         if (isDarkMode) {
           this.mainWindow.setTitleBarOverlay({
             color: "#00000000", // 배경색 (투명 - 다크)
-            symbolColor: "#ffffff", // 아이콘색 (흰색)
+            symbolColor: "#FFFFFFFF", // 아이콘색 (흰색)
           });
         } else {
           this.mainWindow.setTitleBarOverlay({
-            color: "#ffffff00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
-            symbolColor: "#000000", // 아이콘색 (검정색)
+            color: "#FFFFFF00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
+            symbolColor: "#000000FF", // 아이콘색 (검정색)
           });
         }
       },

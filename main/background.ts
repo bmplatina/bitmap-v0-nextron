@@ -81,8 +81,8 @@ const getMainWindowWhenReady = async () => {
   nativeTheme.themeSource = savedScreenMode;
   
   const isDarkMode = savedScreenMode === "dark" || (savedScreenMode === "system" && nativeTheme.shouldUseDarkColors);
-  const initialSymbolColor = isDarkMode ? "#ffffff" : "#000000";
-  const initialOverlayColor = isDarkMode ? "#00000000" : "#ffffff00";
+  const initialSymbolColor = isDarkMode ? "#FFFFFFFF" : "#000000FF";
+  const initialOverlayColor = isDarkMode ? "#00000000" : "#FFFFFF00";
 
   mainWindow = helpers.createWindow("main", {
     title: "Bitmap",
