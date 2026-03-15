@@ -24,8 +24,8 @@ const UpdateOverlay: React.FC = () => {
     });
   }, []);
 
-  // 업데이트가 필요 없는 평상시에는 아무것도 렌더링하지 않음
-  if (status === "idle" || status === "not-available") return null;
+  // 업데이트가 필요 없는 평상시(또는 확인 중)에는 아무것도 렌더링하지 않음
+  if (status === "idle" || status === "not-available" || status === "checking") return null;
 
   return (
     <div className="update-overlay">

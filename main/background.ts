@@ -29,6 +29,9 @@ const protocolScheme: string = "bitmap";
 // 로거 설정 (업데이트 상태를 파일로 기록)
 autoUpdater.logger = log;
 (autoUpdater.logger as typeof log).transports.file.level = "info";
+autoUpdater.autoDownload = true; // 자동 다운로드 명시적 설정
+autoUpdater.autoInstallOnAppQuit = true; // 앱 종료 시 자동 설치
+autoUpdater.allowPrerelease = true; // 알파/베타 버전 업데이트 허용 (현재 버전이 -alpha이므로 필수)
 
 if (bIsProd) {
   serve({ directory: "app" });
@@ -265,12 +268,16 @@ function getIsMac(): boolean {
 // 업데이트 확인 중
 autoUpdater.on("checking-for-update", () => {
   log.info("업데이트 확인 중...");
+  mainWindow?.webContents.send("app-update-status", {
+    status: "checking",
+    message: "업데이트를 확인 중입니다.",
+  });
 });
 
 // 새로운 업데이트가 있을 때 (UpdateInfo 타입 적용)
 autoUpdater.on("update-available", (info: UpdateInfo) => {
   log.info(`업데이트가 가능합니다. 새 버전: ${info.version}`);
-  mainWindow?.webContents.send("update-status", {
+  mainWindow?.webContents.send("app-update-status", {
     status: "available",
     message: `새 버전 ${info.version}을 다운로드합니다.`,
   });
@@ -279,11 +286,19 @@ autoUpdater.on("update-available", (info: UpdateInfo) => {
 // 현재 최신 버전일 때 (UpdateInfo 타입 적용)
 autoUpdater.on("update-not-available", (info: UpdateInfo) => {
   log.info(`현재 최신 버전(${info.version})입니다.`);
+  mainWindow?.webContents.send("app-update-status", {
+    status: "not-available",
+    message: `현재 최신 버전(${info.version})입니다.`,
+  });
 });
 
 // 업데이트 다운로드 중 오류 발생 시
 autoUpdater.on("error", (err: Error) => {
   log.error("업데이트 오류 발생:", err.message);
+  mainWindow?.webContents.send("app-update-status", {
+    status: "error",
+    message: `업데이트 중 오류 발생: ${err.message}`,
+  });
 });
 
 // 다운로드 진행 상태 (ProgressInfo 타입 적용)
@@ -297,7 +312,7 @@ autoUpdater.on("download-progress", (progressObj: ProgressInfo) => {
     `다운로드 속도: ${speed} MB/s - 진행률: ${percent}% (${transferred}MB / ${total}MB)`,
   );
 
-  mainWindow?.webContents.send("download-progress", {
+  mainWindow?.webContents.send("app-update-download-progress", {
     percent: progressObj.percent,
     transferred: progressObj.transferred,
     total: progressObj.total,
@@ -309,7 +324,7 @@ autoUpdater.on("download-progress", (progressObj: ProgressInfo) => {
 autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
   log.info(`업데이트 다운로드 완료. 다운로드된 버전: ${info.version}`);
 
-  mainWindow?.webContents.send("update-status", {
+  mainWindow?.webContents.send("app-update-status", {
     status: "downloaded",
     message: "업데이트 다운로드 완료. 재시작 시 적용됩니다.",
   });

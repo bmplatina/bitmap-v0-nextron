@@ -30,6 +30,8 @@ mac:
   target:
     - target: dmg
       arch: [universal]
+    - target: zip
+      arch: [universal]
   icon: resources/Bitmap_IconComposer.icon
 
 linux:

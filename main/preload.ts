@@ -63,11 +63,11 @@ const electronTools = {
 
   // 업데이트 상태 수신
   onUpdateStatus: (callback: (status: any) => void) =>
-    ipcRenderer.on("update-status", (_, value) => callback(value)),
+    ipcRenderer.on("app-update-status", (_, value) => callback(value)),
 
   // 다운로드 진행률 수신
   onDownloadProgress: (callback: (progress: any) => void) =>
-    ipcRenderer.on("download-progress", (_, value) => callback(value)),
+    ipcRenderer.on("app-update-download-progress", (_, value) => callback(value)),
 
   // 업데이트 설치 명령 전달
   quitAndInstall: () => ipcRenderer.send("quit-and-install"),
