@@ -78,8 +78,11 @@ const getMainWindowWhenReady = async () => {
   });
 
   const savedScreenMode = helpers.userStore.get("screenMode") || "system";
+  nativeTheme.themeSource = savedScreenMode;
+  
   const isDarkMode = savedScreenMode === "dark" || (savedScreenMode === "system" && nativeTheme.shouldUseDarkColors);
   const initialSymbolColor = isDarkMode ? "#ffffff" : "#000000";
+  const initialOverlayColor = isDarkMode ? "#00000000" : "#ffffff00";
 
   mainWindow = helpers.createWindow("main", {
     title: "Bitmap",
@@ -95,7 +98,7 @@ const getMainWindowWhenReady = async () => {
     },
     titleBarOverlay: {
       height: 48,
-      color: "#00000000",
+      color: initialOverlayColor,
       symbolColor: initialSymbolColor,
     },
     frame: false, // platformName === 'darwin',

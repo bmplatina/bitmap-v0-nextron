@@ -79,7 +79,7 @@ class ipcHandle {
       if (currentMode === "system" && this.mainWindow) {
         const isDarkMode = nativeTheme.shouldUseDarkColors;
         this.mainWindow.setTitleBarOverlay({
-          color: "#00000000",
+          color: isDarkMode ? "#00000000" : "#ffffff00",
           symbolColor: isDarkMode ? "#ffffff" : "#000000",
         });
       }
@@ -141,18 +141,20 @@ class ipcHandle {
       "set-screen-mode",
       (_, screenMode: "light" | "system" | "dark") => {
         userStore.set("screenMode", screenMode);
+        nativeTheme.themeSource = screenMode;
+        
         if (!this.mainWindow) return;
 
         const isDarkMode = screenMode === "dark" || (screenMode === "system" && nativeTheme.shouldUseDarkColors);
 
         if (isDarkMode) {
           this.mainWindow.setTitleBarOverlay({
-            color: "#00000000", // 배경색 (투명)
+            color: "#00000000", // 배경색 (투명 - 다크)
             symbolColor: "#ffffff", // 아이콘색 (흰색)
           });
         } else {
           this.mainWindow.setTitleBarOverlay({
-            color: "#00000000", // 배경색 (투명)
+            color: "#ffffff00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
             symbolColor: "#000000", // 아이콘색 (검정색)
           });
         }
