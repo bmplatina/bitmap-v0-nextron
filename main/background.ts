@@ -8,6 +8,7 @@ import {
   protocol,
   session,
   shell,
+  nativeTheme,
 } from "electron";
 import serve from "electron-serve";
 import * as helpers from "./helpers";
@@ -76,6 +77,10 @@ const getMainWindowWhenReady = async () => {
     windowIsReady = true;
   });
 
+  const savedScreenMode = helpers.userStore.get("screenMode") || "system";
+  const isDarkMode = savedScreenMode === "dark" || (savedScreenMode === "system" && nativeTheme.shouldUseDarkColors);
+  const initialSymbolColor = isDarkMode ? "#ffffff" : "#000000";
+
   mainWindow = helpers.createWindow("main", {
     title: "Bitmap",
     width: 1440,
@@ -91,7 +96,7 @@ const getMainWindowWhenReady = async () => {
     titleBarOverlay: {
       height: 48,
       color: "#00000000",
-      symbolColor: "#FFFFFFFF",
+      symbolColor: initialSymbolColor,
     },
     frame: false, // platformName === 'darwin',
     webPreferences: {

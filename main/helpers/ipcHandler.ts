@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, session, shell, nativeTheme } from "electron";
 import { autoUpdater } from "electron-updater";
 import { userStore } from "./user-store";
 import { dirname, join } from "path";
@@ -74,6 +74,17 @@ class ipcHandle {
   }
 
   initializeIpc() {
+    nativeTheme.on('updated', () => {
+      const currentMode = userStore.get("screenMode") || "system";
+      if (currentMode === "system" && this.mainWindow) {
+        const isDarkMode = nativeTheme.shouldUseDarkColors;
+        this.mainWindow.setTitleBarOverlay({
+          color: "#00000000",
+          symbolColor: isDarkMode ? "#ffffff" : "#000000",
+        });
+      }
+    });
+
     // 신호등 버튼
     ipcMain.on("app-close", (event) => {
       this.mainWindow.close();
@@ -132,14 +143,16 @@ class ipcHandle {
         userStore.set("screenMode", screenMode);
         if (!this.mainWindow) return;
 
-        if (screenMode === "dark") {
+        const isDarkMode = screenMode === "dark" || (screenMode === "system" && nativeTheme.shouldUseDarkColors);
+
+        if (isDarkMode) {
           this.mainWindow.setTitleBarOverlay({
-            color: "#1a1a1a", // 배경색 (어둡게)
+            color: "#00000000", // 배경색 (투명)
             symbolColor: "#ffffff", // 아이콘색 (흰색)
           });
         } else {
           this.mainWindow.setTitleBarOverlay({
-            color: "#ffffff", // 배경색 (밝게)
+            color: "#00000000", // 배경색 (투명)
             symbolColor: "#000000", // 아이콘색 (검정색)
           });
         }
