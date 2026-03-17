@@ -100,9 +100,7 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
             </div>
           </Suspense>
 
-          <GameInteractableButtons
-            game={game}
-          />
+          <GameInteractableButtons game={game} />
         </div>
 
         {/* 오른쪽 컬럼 - 상세 정보 */}
@@ -196,9 +194,9 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
           )}
 
           <div className="my-8">
-            <Text as="label" size="7" weight="bold" className="mb-4">{`${t(
-              "information-of",
-            )} ${game.gameTitle}`}</Text>
+            <Text as="label" size="7" weight="bold" className="mb-4">
+              {t("information-of", { gameName: game.gameTitle })}
+            </Text>
             <SmartMarkdown
               content={getLocalizedString(locale, game.gameDescription)}
             />
