@@ -16,6 +16,8 @@ import i18next from "../next-i18next.config";
 import { autoUpdater, UpdateInfo, ProgressInfo } from "electron-updater";
 import log from "electron-log";
 
+type screenMode = "light" | "dark" | "system";
+
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
 const platformName = process.platform;
@@ -77,10 +79,13 @@ const getMainWindowWhenReady = async () => {
     windowIsReady = true;
   });
 
-  const savedScreenMode = helpers.userStore.get("screenMode") || "system";
+  const savedScreenMode: screenMode =
+    (helpers.userStore.get("screenMode") as screenMode) || "system";
   nativeTheme.themeSource = savedScreenMode;
-  
-  const isDarkMode = savedScreenMode === "dark" || (savedScreenMode === "system" && nativeTheme.shouldUseDarkColors);
+
+  const isDarkMode =
+    savedScreenMode === "dark" ||
+    (savedScreenMode === "system" && nativeTheme.shouldUseDarkColors);
   const initialSymbolColor = isDarkMode ? "#FFFFFFFF" : "#000000FF";
   const initialOverlayColor = isDarkMode ? "#00000000" : "#FFFFFF00";
 
@@ -122,7 +127,11 @@ const getMainWindowWhenReady = async () => {
 
   mainWindow.webContents.on("will-navigate", (event, url) => {
     // 내부 탐색(app:// 또는 localhost)이 아닐 경우 기본 브라우저에서 열기
-    if (url.startsWith("http") && !url.includes("localhost") && !url.includes("youtube-nocookie.com/embed")) {
+    if (
+      url.startsWith("http") &&
+      !url.includes("localhost") &&
+      !url.includes("youtube-nocookie.com/embed")
+    ) {
       event.preventDefault();
       shell.openExternal(url);
     }
