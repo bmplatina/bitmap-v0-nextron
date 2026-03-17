@@ -2,7 +2,7 @@ import { Game } from "@/lib/types";
 import { Suspense } from "react";
 import { useTranslation } from "next-i18next";
 import GameCard from "./game-card";
-import { Skeleton, Spinner } from "@radix-ui/themes";
+import { Flex, Skeleton, Spinner } from "@radix-ui/themes";
 
 interface GameCardProps {
   games: Game[];
@@ -16,15 +16,9 @@ export default function GameCardCollection({ games }: GameCardProps) {
       <h1 className="text-3xl font-bold mb-6">{t("explore")}</h1>
 
       {games.length === 0 ? (
-        <div className="text-center py-12">
-          {/* <p className="text-xl text-muted-foreground">
-            현재 사용 가능한 게임이 없습니다.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            게임 데이터를 불러오는 중 문제가 발생했거나 등록된 게임이 없습니다.
-          </p> */}
-          <Spinner />
-        </div>
+        <Flex align="center" justify="center" className="min-h-[400px] w-full">
+          <Spinner size="3" />
+        </Flex>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {games.map((game) => (
