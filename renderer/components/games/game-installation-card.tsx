@@ -1,18 +1,17 @@
 import { useTranslation } from "next-i18next";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  Button,
+  Flex,
+  Box,
+  Text,
+  Progress,
+  IconButton,
+} from "@radix-ui/themes";
 import Image from "next/image";
-import { Progress } from "@/components/ui/progress";
 import { EInstallState, GameInstallManager } from "@/lib/types";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import { X, Play, Trash2 } from "lucide-react";
 
 interface GameInstallationCardProps {
   manager: GameInstallManager;
@@ -29,7 +28,6 @@ const GameInstallationCard = observer(function ({
   }
 
   function removeManager() {
-    // if(managers[index]) dispatch(removeManagerByIndex(index));
     if (manager) store.remove(manager.getGameInfo.gameId);
   }
 
@@ -55,62 +53,114 @@ const GameInstallationCard = observer(function ({
   }
 
   return (
-    <Card className="flex items-center p-2">
-      <Image
-        src={manager.getGameImageURL[0] || "/images/unknownImage.png"}
-        alt=""
-        width={100}
-        height={141}
-        className="aspect-[1/1.414] object-cover rounded-md ml-2"
-      />
-      <div className="flex-grow">
-        <CardHeader>
-          <CardTitle>{manager.getGameTitle}</CardTitle>
-          <CardDescription>
-            {manager.getInstallState === EInstallState.Downloading &&
-              `${t("downloading")}: ${Math.round(manager.getDownloadProgress)}%`}
-            {manager.getInstallState === EInstallState.Extracting &&
-              `${t("writing-to-disk")}: ${manager.getExtractProgress}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {manager.getInstallState !== EInstallState.Installed && (
-            <Progress
-              value={
-                manager.getInstallState === EInstallState.Downloading
-                  ? Math.round(manager.getDownloadProgress)
-                  : manager.getExtractProgress
-              }
-            />
-          )}
-        </CardContent>
-        <CardFooter>
-          {manager && manager.getInstallState === EInstallState.Installed && (
-            <div>
-              <Button
-                variant="default"
-                className="mr-2"
-                onClick={openApp}
-                disabled={!manager}
+    <Box
+      className="bg-card text-card-foreground shadow-sm relative overflow-hidden"
+      style={{
+        border: "1px solid var(--gray-a6)",
+        borderRadius: "var(--radius-4)",
+        padding: "12px",
+      }}
+    >
+      <Flex gap="4" align="center">
+        {/* Game Image */}
+        <Box
+          style={{
+            minWidth: "60px",
+            height: "85px",
+            position: "relative",
+            borderRadius: "var(--radius-2)",
+            overflow: "hidden",
+            boxShadow: "var(--shadow-2)",
+          }}
+        >
+          <Image
+            src={manager.getGameImageURL[0] || "/images/unknownImage.png"}
+            alt=""
+            fill
+            className="object-cover"
+          />
+        </Box>
+
+        {/* Content */}
+        <Flex
+          direction="column"
+          className="flex-grow"
+          justify="between"
+          style={{ minHeight: "85px" }}
+        >
+          <Flex justify="between" align="start">
+            <Box>
+              <Text
+                as="div"
+                size="3"
+                weight="bold"
+                style={{ lineHeight: "1.2", marginBottom: "4px" }}
               >
-                {t("play")}
-              </Button>
-              <Button
-                variant="destructive"
-                className="mr-2"
-                onClick={removeApp}
-                disabled={!manager}
-              >
-                {t("uninstall")}
-              </Button>
-              <Button variant="secondary" className="mr-2" onClick={dismiss}>
-                {t("dismiss")}
-              </Button>
-            </div>
-          )}
-        </CardFooter>
-      </div>
-    </Card>
+                {manager.getGameTitle}
+              </Text>
+              <Text as="div" size="2" color="gray">
+                {manager.getInstallState === EInstallState.Downloading &&
+                  t("downloading", {
+                    progress: Math.round(manager.getDownloadProgress),
+                  })}
+                {manager.getInstallState === EInstallState.Extracting &&
+                  t("writing-to-disk", {
+                    progress: manager.getExtractProgress,
+                  })}
+                {manager.getInstallState === EInstallState.Installed &&
+                  t("play")}
+              </Text>
+            </Box>
+
+            {/* Dismiss Button (Top Right) */}
+            <IconButton
+              size="1"
+              variant="ghost"
+              color="gray"
+              onClick={dismiss}
+              style={{ margin: "-4px -4px 0 0" }}
+            >
+              <X size={16} />
+            </IconButton>
+          </Flex>
+
+          <Box mt="2">
+            {/* Progress Bar */}
+            {manager.getInstallState !== EInstallState.Installed && (
+              <Progress
+                value={
+                  manager.getInstallState === EInstallState.Downloading
+                    ? Math.round(manager.getDownloadProgress)
+                    : manager.getExtractProgress
+                }
+                size="2"
+                style={{ height: "6px" }}
+              />
+            )}
+
+            {/* Action Buttons for Installed State */}
+            {manager.getInstallState === EInstallState.Installed && (
+              <Flex gap="2" mt="2">
+                <Button size="2" onClick={openApp} disabled={!manager}>
+                  <Play size={16} className="mr-1" />
+                  {t("play")}
+                </Button>
+                <Button
+                  size="2"
+                  variant="soft"
+                  color="red"
+                  onClick={removeApp}
+                  disabled={!manager}
+                >
+                  <Trash2 size={16} className="mr-1" />
+                  {t("uninstall")}
+                </Button>
+              </Flex>
+            )}
+          </Box>
+        </Flex>
+      </Flex>
+    </Box>
   );
 });
 

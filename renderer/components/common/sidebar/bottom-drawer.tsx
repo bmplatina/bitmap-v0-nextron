@@ -1,127 +1,94 @@
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { useTranslation } from "next-i18next";
-import GameInstallationCard from "../../games/game-installation-card";
+import GameInstallationCard from "@/components/games/game-installation-card";
 import { Download } from "lucide-react";
 import { EInstallState, GameInstallManager } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
-import { Button, Text } from "@radix-ui/themes";
+import { Button, Text, Flex, Box, ScrollArea, Popover, IconButton, Badge } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 
 const BottomDrawer = observer(function () {
   const { store, bIsMac } = useGameInstallManager();
   const { t } = useTranslation("GamesView");
+  const [open, setOpen] = useState(false);
+  
   const visibleManagers = Array.from(store.managers.values()).filter(
     (mgr) => mgr.getShowInDownloadDrawer,
   );
 
-  const createExampleManagerWithInstalledState = () => {
-    createExampleManager(true);
-  };
-
-  const createExampleManagerWithDownloadingState = () => {
-    createExampleManager(false);
-  };
-
-  const createExampleManager = (bIsInstalled: boolean) => {
-    const exampleMgr: GameInstallManager = new GameInstallManager(bIsMac);
-    exampleMgr.setGameInfo = {
-      gameId: 0,
-      uid: "example-game",
-      isApproved: true,
-      gameTitle: "Example Game",
-      gameLatestRevision: 0,
-      gamePlatformWindows: false,
-      gamePlatformMac: true,
-      gameEngine: "Unreal",
-      gameGenre: { ko: "Action", en: "Action" },
-      gameDeveloper: "Example Developer",
-      gamePublisher: "Example Publisher",
-      isEarlyAccess: false,
-      isReleased: false,
-      gameReleasedDate: "2021-01-01",
-      gameWebsite: "https://example.com",
-      gameVideoURL: "dsdfdfssdf",
-      gameDownloadMacURL: "dsdfdfssdf",
-      requirementsMac: "dsdfdfssdf",
-      gameDownloadWinURL: "https://example.com",
-      requirementsWindows: "dsdfdfssdf",
-      gameImageURL: ["https://example.com"],
-      gameBinaryName: "ExampleGame",
-      gameHeadline: {
-        ko: "Example Game Headline",
-        en: "Example Game Headline",
-      },
-      gameDescription: {
-        ko: "Example Game Description",
-        en: "Example Game Description",
-      },
-    };
-    // gameTitle={manager.getGameTitle}
-    // gameImageURL={manager.getGameImageURL}
-    // gameDownloadProgress={manager.getDownloadProgress}
-    // gameExtractProgress={manager.getExtractProgress}
-    // gameInstallState={manager.getInstallState}
-    // gameInstallationPath={manager.getInstallationPath}
-
-    exampleMgr.setDownloadProgress = 0;
-    exampleMgr.setExtractProgress = 0;
-    exampleMgr.setInstallState = bIsInstalled
-      ? EInstallState.Installed
-      : EInstallState.Downloading;
-    exampleMgr.setInstallationPath = "/Users/Shared/Downloads/ExampleGame";
-
-    store.add(exampleMgr);
-  };
+  const activeDownloadsCount = visibleManagers.filter(
+    (mgr) => mgr.getInstallState === EInstallState.Downloading || mgr.getInstallState === EInstallState.Extracting
+  ).length;
 
   return (
-    <Drawer>
-      {/* Footer 스타일의 트리거 */}
-      <DrawerTrigger
-        className="fixed bottom-0 left-64 right-0 z-50
-                           bg-background border-t
-                           flex items-center justify-center
-                           p-4 hover:bg-accent apple-blur
-                           transition-all duration-200"
-      >
-        <div className="flex items-center gap-2">
-          <Download className="w-5 h-5" />
-          <Text as="span">{t("downloads")}</Text>
-        </div>
-      </DrawerTrigger>
+    <Box className="fixed bottom-6 right-6 z-50">
+      <Popover.Root open={open} onOpenChange={setOpen}>
+        <Popover.Trigger>
+          <Button 
+            size="3" 
+            variant="solid" 
+            color="gray"
+            highContrast
+            style={{ 
+              borderRadius: "var(--radius-full)", 
+              boxShadow: "var(--shadow-4)",
+              padding: "0 20px",
+              height: "48px",
+              cursor: "pointer"
+            }}
+          >
+            <Flex align="center" gap="2">
+              <Download size={20} />
+              <Text weight="medium">{t("downloads")}</Text>
+              {activeDownloadsCount > 0 && (
+                <Badge color="blue" variant="solid" radius="full">
+                  {activeDownloadsCount}
+                </Badge>
+              )}
+            </Flex>
+          </Button>
+        </Popover.Trigger>
 
-      <DrawerContent className="left-64">
-        <DrawerHeader>
-          <DrawerTitle>{t("downloads")}</DrawerTitle>
-          <DrawerDescription>{t("downloads-desc")}</DrawerDescription>
-        </DrawerHeader>
+        <Popover.Content 
+          side="top" 
+          align="end" 
+          sideOffset={16}
+          className="apple-blur"
+          style={{ 
+            width: "400px", 
+            padding: 0,
+            borderRadius: "var(--radius-4)",
+            boxShadow: "var(--shadow-5)",
+            overflow: "hidden",
+            backgroundColor: "transparent" // Override default popover background to show blur
+          }}
+        >
+          <Flex direction="column" style={{ maxHeight: "60vh" }}>
+            <Box p="4" style={{ borderBottom: "1px solid var(--gray-a4)" }}>
+              <Text size="4" weight="bold" as="div">{t("downloads")}</Text>
+              <Text size="2" color="gray">{t("downloads-desc")}</Text>
+            </Box>
 
-        <div className="flex flex-col gap-2 p-4">
-          {visibleManagers.map((mgr) => (
-            <GameInstallationCard
-              key={`${mgr.getGameInfo.gameId}-${mgr.getGameInfo.uid}`}
-              manager={mgr}
-            />
-          ))}
-        </div>
-
-        <DrawerFooter>
-          {/*<Button variant="secondary" onClick={createExampleManagerWithDownloadingState}>Create Example Manager: Installing</Button>*/}
-          {/*<Button variant="outline" onClick={createExampleManagerWithInstalledState}>Create Example Manager: Installed</Button>*/}
-          <DrawerClose>
-            <Button variant="outline">{t("dismiss")}</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+            <ScrollArea type="auto" scrollbars="vertical" style={{ flexGrow: 1 }}>
+              <Flex direction="column" gap="3" p="4">
+                {visibleManagers.map((mgr) => (
+                  <GameInstallationCard
+                    key={`${mgr.getGameInfo.gameId}-${mgr.getGameInfo.uid}`}
+                    manager={mgr}
+                  />
+                ))}
+                {visibleManagers.length === 0 && (
+                  <Flex align="center" justify="center" py="8" direction="column" gap="3">
+                    <Download size={48} color="var(--gray-8)" />
+                    <Text color="gray" size="2">다운로드 중인 항목이 없습니다.</Text>
+                  </Flex>
+                )}
+              </Flex>
+            </ScrollArea>
+          </Flex>
+        </Popover.Content>
+      </Popover.Root>
+    </Box>
   );
 });
 
