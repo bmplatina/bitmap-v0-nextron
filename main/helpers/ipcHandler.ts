@@ -1,7 +1,15 @@
-import { app, BrowserWindow, dialog, ipcMain, session, shell, nativeTheme } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  session,
+  shell,
+  nativeTheme,
+} from "electron";
 import { autoUpdater } from "electron-updater";
 import { userStore } from "./user-store";
-import { dirname, join } from "path";
+import path, { dirname, join } from "path";
 import fs from "fs";
 import { exec } from "child_process";
 
@@ -74,7 +82,7 @@ class ipcHandle {
   }
 
   initializeIpc() {
-    nativeTheme.on('updated', () => {
+    nativeTheme.on("updated", () => {
       const currentMode = userStore.get("screenMode") || "system";
       if (currentMode === "system" && this.mainWindow) {
         const isDarkMode = nativeTheme.shouldUseDarkColors;
@@ -142,10 +150,12 @@ class ipcHandle {
       (_, screenMode: "light" | "system" | "dark") => {
         userStore.set("screenMode", screenMode);
         nativeTheme.themeSource = screenMode;
-        
+
         if (!this.mainWindow) return;
 
-        const isDarkMode = screenMode === "dark" || (screenMode === "system" && nativeTheme.shouldUseDarkColors);
+        const isDarkMode =
+          screenMode === "dark" ||
+          (screenMode === "system" && nativeTheme.shouldUseDarkColors);
 
         if (isDarkMode) {
           this.mainWindow.setTitleBarOverlay({
@@ -286,7 +296,9 @@ class ipcHandle {
                 fs.mkdirSync(dirname(fullPath), { recursive: true });
                 entry.pipe(fs.createWriteStream(fullPath)).on("finish", () => {
                   extractedFiles++;
-                  const progress = Math.round((extractedFiles / totalFiles) * 100);
+                  const progress = Math.round(
+                    (extractedFiles / totalFiles) * 100,
+                  );
                   event.sender.send("extract-progress", progress); // 진행률 전송
                 });
               }
@@ -315,8 +327,55 @@ class ipcHandle {
       }
     });
 
+    ipcMain.handle(
+      "create-shortcut",
+      async (_event, installationPath: string, title: string) => {
+        try {
+          if (this.platformName === "win32") {
+            // 1. 파일명으로 쓸 수 없는 특수문자 제거 (안정성 강화)
+            const safeTitle = title.replace(/[\\/:*?"<>|]/g, "");
+            const shortcutPath = path.join(
+              app.getPath("desktop"),
+              `${safeTitle}.lnk`,
+            );
+
+            const shortcutOptions = {
+              target: installationPath,
+              cwd: path.dirname(installationPath),
+              args: "--open-settings",
+              description: `${title} 실행 바로가기`,
+              // 실행 파일 자체에 아이콘이 있다면 그대로 유지, 없다면 별도 경로 지정 필요
+              icon: installationPath,
+              iconIndex: 0,
+            };
+
+            // 2. 생성 시도 및 결과 반환
+            const success = shell.writeShortcutLink(
+              shortcutPath,
+              "create", // 이미 있으면 덮어쓰고 싶다면 'replace' 권장
+              shortcutOptions,
+            );
+
+            return { success, path: shortcutPath };
+          } else if (this.platformName === "darwin") {
+            const shortcutPath = path.join(app.getPath("desktop"), `${title}`); // 기존에 링크가 있다면 삭제 (오류 방지)
+            if (fs.existsSync(shortcutPath)) {
+              fs.unlinkSync(shortcutPath);
+            }
+            // 심볼릭 링크 생성 (원본 경로, 생성될 경로)
+            fs.symlinkSync(installationPath, shortcutPath);
+            console.log("맥 가상본(심볼릭 링크) 생성 완료");
+            return { success: true, path: shortcutPath };
+          }
+        } catch (error) {
+          console.error("바로가기 생성 중 오류 발생:", error);
+          return { success: false, error: error.message };
+        }
+      },
+    );
+
     // Open File
-    ipcMain.handle("run-command", (event, command) => {
+    ipcMain.handle("run-command", (_event, command) => {
       return new Promise<string>((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
           if (error) {
@@ -333,7 +392,7 @@ class ipcHandle {
     // Check Is Installed
     ipcMain.handle(
       "check-executable-or-app",
-      (event, dirPath: string): boolean => {
+      (_event, dirPath: string): boolean => {
         try {
           const extensionName =
             this.platformName === "darwin" ? ".app/" : ".exe";
@@ -348,7 +407,7 @@ class ipcHandle {
     );
 
     // Delete file
-    ipcMain.handle("remove-file", (event, targetPath: string): boolean => {
+    ipcMain.handle("remove-file", (_event, targetPath: string): boolean => {
       // 파일 또는 디렉터리가 존재하는지 확인
       if (fs.existsSync(targetPath)) {
         const stats = fs.statSync(targetPath);
@@ -482,8 +541,22 @@ class ipcHandle {
 
     ipcMain.handle(
       "get-electron-appdata-path",
-      async (event): Promise<string> => {
+      async (_event): Promise<string> => {
         return app.getPath("userData");
+      },
+    );
+
+    ipcMain.handle(
+      "get-default-game-installation-path",
+      async (_event): Promise<string> => {
+        return userStore.get("defaultGamePath");
+      },
+    );
+
+    ipcMain.handle(
+      "set-default-game-installation-path",
+      async (_event, newPath: string): Promise<void> => {
+        userStore.set("defaultGamePath", newPath);
       },
     );
 

@@ -467,7 +467,7 @@ class GameInstallManager {
    * @param url gameDownloadPlatformUrl
    * @param savePath InstallationPath
    */
-  async downloadAndInstall(context: bitmapApi) {
+  async downloadAndInstall(context: bitmapApi, bCreateShortcut: boolean) {
     const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
 
     const savePathLocal: string | null = this.bIsMac
@@ -513,6 +513,9 @@ class GameInstallManager {
       console.log(
         `설치 완료: EInstallState.Installed: ${this.installState === EInstallState.Installed}`,
       );
+      if (bCreateShortcut) {
+        await context.createShortcut(extractedPath, this.gameTitle);
+      }
     } catch (error) {
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
@@ -555,21 +558,24 @@ class GameInstallManager {
   // NeDB Installation Info saver
   async pullInstallState(ElectronTools: tools, BitmapAPI: bitmapApi) {
     if (this.getIsDownloadingOrInstallingState) {
-      console.log("Already downloading/installing, skipping pullInstallState to preserve state.");
+      console.log(
+        "Already downloading/installing, skipping pullInstallState to preserve state.",
+      );
       return;
     }
 
     try {
       // Declare default installation path
-      const getDefaultInstallPath = ElectronTools.getElectronStoredPath();
-      getDefaultInstallPath.then((appPath) => {
-        console.log("getDefaultInstallPath: ", appPath);
-        let DefaultInstallationPathLocal = this.bIsMac
-          ? `/Users/Shared/Bitmap Production/${this.game.gameBinaryName}`
-          : `${appPath}\\BitmapApps\\${this.game.gameBinaryName}`;
+      const defaultPath =
+        (await BitmapAPI.getDefaultGameInstallationPath()) ||
+        (await ElectronTools.getElectronStoredPath());
 
-        this.defaultInstallationPath = DefaultInstallationPathLocal;
-      });
+      console.log("getDefaultInstallPath: ", defaultPath);
+      let DefaultInstallationPathLocal = this.bIsMac
+        ? `${defaultPath}/${this.game.gameBinaryName}`
+        : `${defaultPath}\\BitmapApps\\${this.game.gameBinaryName}`;
+
+      this.defaultInstallationPath = DefaultInstallationPathLocal;
 
       const getResultLocal = BitmapAPI.getGameInstallInfoByIndex(
         this.game.gameId,
@@ -592,7 +598,7 @@ class GameInstallManager {
         // Otherwise, initialize property
         else {
           console.log("pullInstallState: Otherwise, initialize property");
-          this.installationPath = "";
+          this.installationPath = this.defaultInstallationPath;
           this.installState = EInstallState.NotInstalled;
           this.currentVersion = 0;
         }

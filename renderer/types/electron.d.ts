@@ -64,6 +64,11 @@ export interface bitmapApi {
   downloadFile: (url: string | null, savePath: string) => string;
   onDownloadProgress: (callback: (progress: number) => void) => number;
   extractZip: (filePath: string) => string;
+  // Create Shortcut
+  createShortcut: (
+    installationPath: string,
+    title: string,
+  ) => Promise<{ success: boolean; path: string }>;
   onExtractProgress: (callback: (progress: number) => void) => number;
 
   runCommand: (command: string) => Promise<string>;
@@ -82,6 +87,10 @@ export interface bitmapApi {
   getSettings: () => Promise<any>;
 
   checkPathValid: (dirPath: string) => Promise<boolean>;
+
+  getDefaultGameInstallationPath: () => Promise<string>;
+
+  setDefaultGameInstallationPath: (newPath: string) => Promise<void>;
 }
 
 declare global {

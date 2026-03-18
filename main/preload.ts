@@ -67,7 +67,9 @@ const electronTools = {
 
   // 다운로드 진행률 수신
   onDownloadProgress: (callback: (progress: any) => void) =>
-    ipcRenderer.on("app-update-download-progress", (_, value) => callback(value)),
+    ipcRenderer.on("app-update-download-progress", (_, value) =>
+      callback(value),
+    ),
 
   // 업데이트 설치 명령 전달
   quitAndInstall: () => ipcRenderer.send("quit-and-install"),
@@ -122,6 +124,10 @@ const bitmapApi = {
   // Extract *.zip file
   extractZip: (filePath: string) => ipcRenderer.invoke("extract-zip", filePath),
 
+  // Create Shortcut
+  createShortcut: (installationPath: string, title: string) =>
+    ipcRenderer.invoke("create-shortcut", installationPath, title),
+
   // Get extraction progress
   onExtractProgress: (callback: (progress: number) => void) =>
     ipcRenderer.on("extract-progress", (_, progress) => callback(progress)),
@@ -164,6 +170,14 @@ const bitmapApi = {
   // Check is the given game path valid
   checkPathValid: (dirPath: string) =>
     ipcRenderer.invoke("check-executable-or-app", dirPath),
+
+  // Get Default Game Installation Path
+  getDefaultGameInstallationPath: () =>
+    ipcRenderer.invoke("get-default-game-installation-path"),
+
+  // Get Default Game Installation Path
+  setDefaultGameInstallationPath: (newPath: string) =>
+    ipcRenderer.invoke("set-default-game-installation-path", newPath),
 };
 
 contextBridge.exposeInMainWorld("ipc", handler);

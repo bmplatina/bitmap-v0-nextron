@@ -21,10 +21,7 @@ export default function GameCard({ game }: GameCardProps) {
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all hover:shadow-lg">
-      <LocalizedLink
-        href={`/${locale}/games/detail?id=${game.gameId}`}
-        className="block"
-      >
+      <LocalizedLink href={`/games/detail?id=${game.gameId}`} className="block">
         <div className="relative aspect-[1/1.414] w-full cursor-pointer hover:opacity-90 transition-opacity">
           <Image
             src={

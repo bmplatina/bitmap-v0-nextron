@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { startTransition, useEffect, useMemo, useState } from "react";
-import { Bell, BellDot, Search as SearchIcon, Menu, X } from "lucide-react";
+import { Bell, ChevronLeft, Search as SearchIcon, Menu, X } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
 import { imageUriRegExp } from "@/lib/utils";
@@ -87,8 +87,7 @@ export default function TopBar() {
         }`}
       >
         {/* 로고 이미지 */}
-        <LocalizedLink
-          href="/"
+        <div
           className="flex items-center electron-nodrag"
           style={{
             ...(bIsMac && {
@@ -98,15 +97,26 @@ export default function TopBar() {
             }),
           }}
         >
-          <Image
-            src={BitmapLogoBMP}
-            alt="Bitmap"
-            width={120}
-            height={32}
-            className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity invert dark:invert-0 object-contain"
-            priority
-          />
-        </LocalizedLink>
+          <LocalizedLink href="/" className="flex items-center">
+            <Image
+              src={BitmapLogoBMP}
+              alt="Bitmap"
+              width={120}
+              height={32}
+              className="h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity invert dark:invert-0 object-contain"
+              priority
+            />
+          </LocalizedLink>
+          <IconButton
+            variant="ghost"
+            radius="full"
+            className="electron-nodrag"
+            onClick={() => window.history.back()}
+            disabled={window.history.length <= 1}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </IconButton>
+        </div>
 
         {/* 검색 폼 */}
         <Search className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full electron-nodrag" />
