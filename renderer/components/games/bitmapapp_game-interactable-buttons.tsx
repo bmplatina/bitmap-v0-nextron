@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import { Delete, Globe, Play } from "lucide-react";
 import { openExternal } from "@/lib/utils-client";
-import { EInstallState, Game, GameInstallManager } from "@/lib/types";
+import { EInstallState, GameWithSize, GameInstallManager } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import AppleLogo from "@/public/images/platforms/platformMac.png";
 import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
@@ -21,7 +21,7 @@ import {
 } from "@radix-ui/themes";
 
 interface GameInteractableButtonsProps {
-  game: Game;
+  game: GameWithSize;
 }
 
 const GameInteractableButtons = observer(function ({
@@ -238,19 +238,24 @@ const GameInteractableButtons = observer(function ({
                   </Box>
 
                   <Separator />
-                  <Flex align="center">
-                    <Image
-                      src={
-                        gameInstallManager.getGameImageURL[1] ||
-                        gameInstallManager.getGameImageURL[0]
-                      }
-                      width="150"
-                      height="85"
-                      alt="Game Image"
-                      className="object-cover object-top rounded-lg"
-                    />
-                    <Text size="3" weight="bold" ml="4" align="center" as="div">
-                      {gameInstallManager.getGameTitle}
+                  <Flex align="center" justify="between">
+                    <Flex align="center">
+                      <Image
+                        src={
+                          gameInstallManager.getGameImageURL[1] ||
+                          gameInstallManager.getGameImageURL[0]
+                        }
+                        width="150"
+                        height="85"
+                        alt="Game Image"
+                        className="object-cover object-top rounded-lg"
+                      />
+                      <Text size="3" weight="bold" ml="4" as="div">
+                        {gameInstallManager.getGameTitle}
+                      </Text>
+                    </Flex>
+                    <Text size="2" color="gray">
+                      {game.size[bIsMac ? 1 : 0]} GB
                     </Text>
                   </Flex>
                   <Separator />
@@ -262,6 +267,12 @@ const GameInteractableButtons = observer(function ({
                         checked={bCreateShortcut}
                         onCheckedChange={(checked) =>
                           setCreateShortcut(checked as boolean)
+                        }
+                        disabled={
+                          gameInstallManager.getInstallState ===
+                            EInstallState.Downloading ||
+                          gameInstallManager.getInstallState ===
+                            EInstallState.Extracting
                         }
                       />{" "}
                       {t("add-shortcut")}
@@ -293,15 +304,18 @@ const GameInteractableButtons = observer(function ({
                         <Text size="2" weight="medium">
                           {gameInstallManager.getInstallState ===
                           EInstallState.Downloading
-                            ? t("downloading", { progress: "" })
-                            : t("writing-to-disk", { progress: "" })}
-                        </Text>
-                        <Text size="3" weight="bold" color="blue">
-                          {gameInstallManager.getInstallState ===
-                          EInstallState.Downloading
-                            ? Math.round(gameInstallManager.getDownloadProgress)
-                            : gameInstallManager.getExtractProgress}
-                          %
+                            ? t("downloading", {
+                                progress: Math.round(
+                                  gameInstallManager.getDownloadProgress,
+                                ),
+                              })
+                            : gameInstallManager.getInstallState ===
+                                EInstallState.Extracting
+                              ? t("writing-to-disk", {
+                                  progress:
+                                    gameInstallManager.getExtractProgress,
+                                })
+                              : ""}
                         </Text>
                       </Flex>
                       <Progress
@@ -329,6 +343,12 @@ const GameInteractableButtons = observer(function ({
                     </Dialog.Close>
                     <Button
                       onClick={handleDownloadAndInstall}
+                      disabled={
+                        gameInstallManager.getInstallState ===
+                          EInstallState.Downloading ||
+                        gameInstallManager.getInstallState ===
+                          EInstallState.Extracting
+                      }
                       size="2"
                       variant="solid"
                       color="blue"

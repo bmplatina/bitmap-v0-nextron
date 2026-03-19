@@ -1,6 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
-import type { Game, GameRating, UserProfile } from "@/lib/types";
-import { Button } from "@/components/ui/button";
+import type { GameRating, GameWithSize, UserProfile } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import {
@@ -22,11 +21,10 @@ import { Box, Flex, ScrollArea, Tabs, Text } from "@radix-ui/themes";
 import { Separator } from "../ui/separator";
 import GameRateSubmitter from "./game-rate-submitter";
 import GameRateViewer from "./game-rate-viewer";
-import LocalizedLink from "@/components/common/localized-link";
 import GameInteractableButtons from "./bitmapapp_game-interactable-buttons";
 
 type GameDetailProps = {
-  game: Game;
+  game: GameWithSize;
   gameRates: GameRating[];
 };
 

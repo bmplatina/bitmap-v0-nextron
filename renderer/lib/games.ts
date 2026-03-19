@@ -1,4 +1,4 @@
-import { Game, GameRating, GameRatingRequest } from "@/lib/types";
+import { Game, GameRating, GameRatingRequest, GameWithSize } from "@/lib/types";
 import { getApiLinkByPurpose } from "@/lib/utils";
 import { csrAxiosGet, csrAxiosPost } from "./utils-client";
 import { bitmapApi } from "@/types/electron";
@@ -35,12 +35,10 @@ async function getGames(
 async function getGameById(
   context: bitmapApi,
   id: string,
-): Promise<Game | null> {
+): Promise<GameWithSize | null> {
   try {
-    const data = await csrAxiosGet<Game[]>(context, "games/list");
-
-    const game = data.find((g) => g.gameId.toString() === id);
-    return game || null;
+    const data = await csrAxiosGet<GameWithSize>(context, `games/pick/${id}`);
+    return data || null;
   } catch (error) {
     console.error("게임 데이터를 가져오는 중 오류 발생:", error);
     return null;

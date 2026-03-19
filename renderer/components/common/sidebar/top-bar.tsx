@@ -37,14 +37,21 @@ export default function TopBar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   // 스크롤 상태 관리
   const [isScrolled, setIsScrolled] = useState(false);
+  // 히스토리 개수
+  const [historyLength, setHistoryLength] = useState(window.history.length);
 
-  const handleFullscreenChange = (newFullscreenState: boolean) => {
+  function handleFullscreenChange(newFullscreenState: boolean) {
     if (!bIsMac) return;
     console.log("fullscreen state changed:", newFullscreenState);
     setTitleTransform(
       !newFullscreenState ? "translateX(80px)" : "translateX(0px)",
     );
-  };
+  }
+
+  function handleBackPage() {
+    window.history.back();
+    setHistoryLength(window.history.length);
+  }
 
   // 스크롤 감지
   useEffect(() => {
@@ -111,8 +118,8 @@ export default function TopBar() {
             variant="ghost"
             radius="full"
             className="electron-nodrag"
-            onClick={() => window.history.back()}
-            disabled={window.history.length <= 1}
+            onClick={handleBackPage}
+            disabled={historyLength <= 1}
           >
             <ChevronLeft className="h-5 w-5" />
           </IconButton>

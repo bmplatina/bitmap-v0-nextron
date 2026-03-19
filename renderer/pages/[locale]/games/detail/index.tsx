@@ -3,12 +3,12 @@ import { getGameById, getGameRatesById } from "@/lib/games";
 import { useEffect, useState } from "react";
 import GameDetail from "@/components/games/game-details";
 import { useRouter } from "next/router";
-import { Game, GameRating } from "@/lib/types";
+import { GameRating, GameWithSize } from "@/lib/types";
 
 export default function GameDetailPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [game, setGame] = useState<Game | null>();
+  const [game, setGame] = useState<GameWithSize | null>();
   const [gameRates, setGameRates] = useState<GameRating[]>([]);
 
   useEffect(() => {

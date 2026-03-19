@@ -60,6 +60,10 @@ interface Game {
   gameDescription: stringLocalized;
 }
 
+interface GameWithSize extends Game {
+  size: number[];
+}
+
 interface GameInstallInfo extends Game {
   gameInstallationPath: string;
   gameInstalledVersion: number;
@@ -514,7 +518,10 @@ class GameInstallManager {
         `설치 완료: EInstallState.Installed: ${this.installState === EInstallState.Installed}`,
       );
       if (bCreateShortcut) {
-        await context.createShortcut(extractedPath, this.gameTitle);
+        await context.createShortcut(
+          `${extractedPath}/${this.gameBinaryName}.${this.bIsMac ? "app" : "exe"}`,
+          this.gameTitle,
+        );
       }
     } catch (error) {
       this.installState = EInstallState.InstallError;
@@ -689,6 +696,7 @@ export { EInstallState, GameInstallManager };
 
 export type {
   Game,
+  GameWithSize,
   GameInstallInfo,
   Metadata,
   Settings,
