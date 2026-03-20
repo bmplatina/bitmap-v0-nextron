@@ -16,8 +16,6 @@ import i18next from "../next-i18next.config";
 import { autoUpdater, UpdateInfo, ProgressInfo } from "electron-updater";
 import log from "electron-log";
 
-type screenMode = "light" | "dark" | "system";
-
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
 const platformName = process.platform;
@@ -79,8 +77,9 @@ const getMainWindowWhenReady = async () => {
     windowIsReady = true;
   });
 
-  const savedScreenMode: screenMode =
-    (helpers.userStore.get("screenMode") as screenMode) || "system";
+  const savedScreenMode: helpers.types.screenMode =
+    (helpers.userStore.get("screenMode") as helpers.types.screenMode) ||
+    "system";
   nativeTheme.themeSource = savedScreenMode;
 
   const isDarkMode =
@@ -355,7 +354,6 @@ autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
 
 const ipcImplement: helpers.ipcHandle = new helpers.ipcHandle(
   bIsProd,
-  mainWindow,
   platformName,
 );
 

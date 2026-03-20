@@ -9,6 +9,7 @@ import {
 } from "electron";
 import { autoUpdater } from "electron-updater";
 import { userStore } from "./user-store";
+import * as types from "./types";
 import path, { dirname, join } from "path";
 import fs from "fs";
 import { exec } from "child_process";
@@ -30,14 +31,9 @@ import type { GameInstallInfo, Settings } from "../../renderer/lib/types";
  * @param platformName OS Name
  */
 class ipcHandle {
-  constructor(
-    bIsProduction: boolean,
-    MAIN_WINDOW: BrowserWindow,
-    processPlatform: string,
-  ) {
+  constructor(bIsProduction: boolean, processPlatform: string) {
     // Electron
     this.bIsProd = bIsProduction;
-    this.mainWindow = MAIN_WINDOW;
     this.platformName = processPlatform;
 
     // neDB state store
@@ -60,7 +56,6 @@ class ipcHandle {
 
   // Electron
   private readonly bIsProd: boolean;
-  private readonly mainWindow: BrowserWindow;
   private readonly platformName: string;
 
   // neDB state store
@@ -82,41 +77,36 @@ class ipcHandle {
   }
 
   initializeIpc() {
-    nativeTheme.on("updated", () => {
-      const currentMode = userStore.get("screenMode") || "system";
-      if (currentMode === "system" && this.mainWindow) {
-        const isDarkMode = nativeTheme.shouldUseDarkColors;
-        this.mainWindow.setTitleBarOverlay({
-          color: isDarkMode ? "#00000000" : "#FFFFFF00",
-          symbolColor: isDarkMode ? "#FFFFFFFF" : "#000000FF",
-        });
-      }
-    });
-
     // 신호등 버튼
     ipcMain.on("app-close", (event) => {
-      this.mainWindow.close();
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      mainWindow.close();
     });
 
     ipcMain.on("app-minimize", (event) => {
-      this.mainWindow.minimize();
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      mainWindow.minimize();
     });
 
     ipcMain.on("app-maximize", (event) => {
-      if (this.mainWindow.isMaximized()) {
-        this.mainWindow.restore();
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+
+      if (mainWindow.isMaximized()) {
+        mainWindow.restore();
       } else {
-        this.mainWindow.maximize();
+        mainWindow.maximize();
       }
     });
 
     ipcMain.handle("is-maximized", (event) => {
-      return this.mainWindow.isMaximized();
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      return mainWindow.isMaximized();
     });
 
     // 파일 경로 지정
     ipcMain.handle("show-dialog", async (event, options) => {
-      const result = await dialog.showOpenDialog(this.mainWindow, options);
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      const result = await dialog.showOpenDialog(mainWindow, options);
       return result.filePaths[0]; // 사용자가 선택한 파일 경로
     });
 
@@ -145,31 +135,40 @@ class ipcHandle {
       return userStore.get("screenMode");
     });
 
-    ipcMain.handle(
-      "set-screen-mode",
-      (_, screenMode: "light" | "system" | "dark") => {
-        userStore.set("screenMode", screenMode);
-        nativeTheme.themeSource = screenMode;
+    ipcMain.handle("set-screen-mode", (event, screenMode: types.screenMode) => {
+      userStore.set("screenMode", screenMode);
+      nativeTheme.themeSource = screenMode;
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
 
-        if (!this.mainWindow) return;
+      if (!mainWindow) {
+        console.error("set-screen-mode: mainWindow is null");
+        return;
+      }
 
-        const isDarkMode =
-          screenMode === "dark" ||
-          (screenMode === "system" && nativeTheme.shouldUseDarkColors);
+      if (this.platformName !== "win32") {
+        console.warn(
+          "set-screen-mode: setTitleBarOverlay method is not supported on",
+          this.platformName,
+        );
+        return;
+      }
 
-        if (isDarkMode) {
-          this.mainWindow.setTitleBarOverlay({
-            color: "#00000000", // 배경색 (투명 - 다크)
-            symbolColor: "#FFFFFFFF", // 아이콘색 (흰색)
-          });
-        } else {
-          this.mainWindow.setTitleBarOverlay({
-            color: "#FFFFFF00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
-            symbolColor: "#000000FF", // 아이콘색 (검정색)
-          });
-        }
-      },
-    );
+      const isDarkMode =
+        screenMode === "dark" ||
+        (screenMode === "system" && nativeTheme.shouldUseDarkColors);
+
+      if (isDarkMode) {
+        mainWindow.setTitleBarOverlay({
+          color: "#00000000", // 배경색 (투명 - 다크)
+          symbolColor: "#FFFFFFFF", // 아이콘색 (흰색)
+        });
+      } else {
+        mainWindow.setTitleBarOverlay({
+          color: "#FFFFFF00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
+          symbolColor: "#000000FF", // 아이콘색 (검정색)
+        });
+      }
+    });
 
     ipcMain.handle("open-external", async (_event, url: string) => {
       return shell.openExternal(url);
