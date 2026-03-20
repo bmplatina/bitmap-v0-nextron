@@ -109,7 +109,7 @@ const getMainWindowWhenReady = async () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       webviewTag: true,
-      devTools: !bIsProd, // devTools: bIsDev,
+      devTools: true, // !bIsProd, // devTools: bIsDev,
     },
   });
 
@@ -129,7 +129,8 @@ const getMainWindowWhenReady = async () => {
     if (
       url.startsWith("http") &&
       !url.includes("localhost") &&
-      !url.includes("youtube-nocookie.com/embed")
+      !url.includes("youtube-nocookie.com/embed") &&
+      !url.includes("youtube.com/embed")
     ) {
       event.preventDefault();
       shell.openExternal(url);
@@ -149,8 +150,8 @@ const getMainWindowWhenReady = async () => {
         host.includes("ytimg.com");
 
       if (isYouTube) {
-        details.requestHeaders["Referer"] = "https://www.youtube-nocookie.com/";
-        details.requestHeaders["Origin"] = "https://www.youtube-nocookie.com";
+        details.requestHeaders["Referer"] = "http://localhost/";
+        details.requestHeaders["Origin"] = "http://localhost";
       } else {
         if (!details.requestHeaders["Origin"]) {
           details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
