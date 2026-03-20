@@ -233,6 +233,7 @@ class ipcHandle {
 
     // download
     ipcMain.handle("download-file", async (event, { url, savePath }) => {
+      const startTime = Date.now();
       // 디렉터리 없을 시 생성
       const directory = dirname(savePath);
       if (!fs.existsSync(directory)) {
@@ -248,7 +249,14 @@ class ipcHandle {
           onDownloadProgress: (progressEvent) => {
             const progress =
               (progressEvent.loaded / progressEvent.total!) * 100;
+
+            const currentTime = Date.now();
+            const durationInSeconds = (currentTime - startTime) / 1000; // 초 단위
+            const speedInBytesPerSecond =
+              progressEvent.loaded / durationInSeconds;
+            const speedInMbps = (speedInBytesPerSecond * 8) / (1024 * 1024); // Mbps 변환
             event.sender.send("download-progress", progress);
+            event.sender.send("download-speed", speedInMbps.toFixed(2));
           },
         });
 
