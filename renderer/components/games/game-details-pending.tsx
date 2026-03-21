@@ -183,7 +183,7 @@ export default function GameDetail({
                   {game.gameVideoURL && (
                     <div className="shrink-0 w-[500px] aspect-video relative rounded-lg overflow-hidden bg-muted">
                       <iframe
-                        src={`https://www.youtube.com/embed/${game.gameVideoURL}`}
+                        src={`https://www.youtube.com/embed/${game.gameVideoURL}?origin=http://localhost`}
                         className="absolute inset-0 w-full h-full"
                         allowFullScreen
                       />

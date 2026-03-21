@@ -39,10 +39,41 @@ const LocalizedLink = ({
     return href;
   }
 
+  const getLocalizedHref = (originalHref: any): any => {
+    // 1. href가 문자열이 아닌 경우(객체 형태 등)는 그대로 반환
+    if (typeof originalHref !== "string") return originalHref;
+
+    // 2. 외부 링크(http), 앵커(#), 메일, 전화 링크는 변환하지 않음
+    if (
+      originalHref.startsWith("http") ||
+      originalHref.startsWith("#") ||
+      originalHref.startsWith("mailto:") ||
+      originalHref.startsWith("tel:")
+    ) {
+      return originalHref;
+    }
+
+    // 3. 경로 정규화 (항상 /로 시작하도록)
+    const normalizedPath = originalHref.startsWith("/")
+      ? originalHref
+      : `/${originalHref}`;
+
+    // 4. 이미 현재 언어로 시작하는 경우 중복 방지 (예: /ko/about -> /ko/about)
+    if (
+      normalizedPath.startsWith(`/${locale}/`) ||
+      normalizedPath === `/${locale}`
+    ) {
+      return normalizedPath;
+    }
+
+    // 5. 최종 로컬라이즈 경로 반환 (예: /about -> /ko/about)
+    return `/${locale}${normalizedPath}`.replace(/\/$/, ""); // 마지막 슬래시 제거 처리
+  };
+
   return (
     <Link
       onClick={onClick}
-      href={getHref(href)}
+      href={getLocalizedHref(href)}
       target={target}
       rel={rel}
       style={style}

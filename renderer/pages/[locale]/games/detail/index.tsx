@@ -1,3 +1,4 @@
+import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Spinner } from "@radix-ui/themes";
 import { getGameById, getGameRatesById } from "@/lib/games";
 import { useEffect, useState } from "react";
@@ -38,3 +39,6 @@ export default function GameDetailPage() {
 
   return <GameDetail game={game} gameRates={gameRates ?? []} />;
 }
+
+export const getStaticProps = makeStaticProperties(["GamesView"]);
+export { getStaticPaths };
