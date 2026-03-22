@@ -150,8 +150,8 @@ const getMainWindowWhenReady = async () => {
         host.includes("ytimg.com");
 
       if (isYouTube) {
-        details.requestHeaders["Referer"] = "http://localhost/";
-        details.requestHeaders["Origin"] = "http://localhost";
+        details.requestHeaders["Referer"] = "https://www.youtube-nocookie.com/";
+        details.requestHeaders["Origin"] = "https://www.youtube-nocookie.com";
       } else {
         if (!details.requestHeaders["Origin"]) {
           details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";

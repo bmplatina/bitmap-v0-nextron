@@ -47,9 +47,7 @@ export default function YouTubeWorksList({
                 <iframe
                   width="100%"
                   height="100%"
-                  src={`https://www.youtube-nocookie.com/embed/${video}?origin=${encodeURIComponent(
-                    "http://localhost",
-                  )}&enablejsapi=1`}
+                  src={`https://www.youtube-nocookie.com/embed/${video}?origin=https://www.youtube-nocookie.com`}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
