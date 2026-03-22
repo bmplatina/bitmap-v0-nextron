@@ -1,38 +1,34 @@
-<p align="center"><img src="https://i.imgur.com/a9QWW0v.png"></p>
+# Bitmap Application: Team Bitmap Web Application and ESD
 
-## Usage
+한국어 버전의 설명 문서는 [README_ko.md](https://github.com/bmplatina/bitmap/blob/main/README_ko.md)을 참조해주세요.
 
-### Create an App
+Welcome to Bitmap! We're preparing service platform for our teammates, and free ESD (Electronic Software Distribution) for everyone. Hope you're interested in.
 
-```
-# with npx
-$ npx create-nextron-app my-app --example with-tailwindcss
+Bitmap Application and ESD Project (Bitmap App) is an Application project which is developed with Node.js, Next.js, Electron, and Nextron (boilerplate for Next.js+Electron integration)
 
-# with yarn
-$ yarn create nextron-app my-app --example with-tailwindcss
+# Getting started
 
-# with pnpm
-$ pnpm dlx create-nextron-app my-app --example with-tailwindcss
-```
+- [API Document](https://developer.prodbybitmap.com)
+- [Roadmaps](https://github.com/bmplatina/bitmap/wiki/Roadmaps)
 
-### Install Dependencies
+## Build from sources
 
-```
-$ cd my-app
-
-# using yarn or npm
-$ yarn (or `npm install`)
-
-# using pnpm
-$ pnpm install --shamefully-hoist
+```bash
+$ yarn install # Install dependencies
+$ yarn build:win # Build Windows binary
+$ yarn build:mac # Build macOS Universal Binary
 ```
 
-### Use it
+# Features
 
-```
-# development mode
-$ yarn dev (or `npm run dev` or `pnpm run dev`)
+- [Bitmap Website](https://prodbybitmap.com) based design
+- Download, play, uninstall published games
+- Auto update
 
-# production build
-$ yarn build (or `npm run build` or `pnpm run build`)
-```
+# Contributions
+
+Any contribution is welcome. I only have experience in developing console applications using C/C++, and Unreal Engine Blueprints. I'm just new to HTML, CSS, and JavaScript so I totally need community's help.
+
+# Contact
+
+Jaehyeok Lee (as known as Platina, founder of Bitmap): <platina@prodbybitmap.com>
