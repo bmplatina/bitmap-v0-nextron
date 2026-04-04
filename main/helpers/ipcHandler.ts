@@ -234,6 +234,9 @@ class ipcHandle {
     // download
     ipcMain.handle("download-file", async (event, { url, savePath }) => {
       const startTime = Date.now();
+      let lastTime = startTime; // 실시간 계산용 이전 시간
+      let lastLoaded = 0; // 실시간 계산용 이전 데이터양
+
       // 디렉터리 없을 시 생성
       const directory = dirname(savePath);
       if (!fs.existsSync(directory)) {
@@ -247,16 +250,39 @@ class ipcHandle {
           responseType: "stream",
           cancelToken: source.token,
           onDownloadProgress: (progressEvent) => {
-            const progress =
-              (progressEvent.loaded / progressEvent.total!) * 100;
-
             const currentTime = Date.now();
-            const durationInSeconds = (currentTime - startTime) / 1000; // 초 단위
-            const speedInBytesPerSecond =
-              progressEvent.loaded / durationInSeconds;
-            const speedInMbps = (speedInBytesPerSecond * 8) / (1024 * 1024); // Mbps 변환
-            event.sender.send("download-progress", progress);
-            event.sender.send("download-speed", speedInMbps.toFixed(2));
+            const timeDiff = (currentTime - lastTime) / 1000; // 초 단위 구간 시간
+
+            // 1. 실시간 속도 계산 (1초 주기로 업데이트)
+            if (timeDiff >= 1.0) {
+              const loadedDiff = progressEvent.loaded - lastLoaded;
+              const instantSpeedInMbps =
+                (loadedDiff * 8) / (timeDiff * 1024 * 1024);
+
+              event.sender.send(
+                "download-speed-realtime",
+                instantSpeedInMbps.toFixed(2),
+              );
+
+              // 다음 계산을 위해 현재 상태 저장
+              lastTime = currentTime;
+              lastLoaded = progressEvent.loaded;
+            }
+
+            // 2. 진행률 및 평균 속도 계산
+            const progress =
+              (progressEvent.loaded / (progressEvent.total || 1)) * 100;
+            const totalDurationInSeconds = (currentTime - startTime) / 1000;
+
+            if (totalDurationInSeconds > 0) {
+              const avgSpeedInBytesPerSecond =
+                progressEvent.loaded / totalDurationInSeconds;
+              const avgSpeedInMbps =
+                (avgSpeedInBytesPerSecond * 8) / (1024 * 1024);
+
+              event.sender.send("download-progress", progress);
+              event.sender.send("download-speed-avg", avgSpeedInMbps.toFixed(2));
+            }
           },
         });
 

@@ -121,6 +121,19 @@ const bitmapApi = {
   onDownloadProgress: (callback: (progress: number) => void) =>
     ipcRenderer.on("download-progress", (_, progress) => callback(progress)),
 
+  // Get download average speed
+  onDownloadAvgSpeed: (callback: (progress: number) => void) =>
+    ipcRenderer.on("download-speed-avg", (_, progress) => callback(progress)),
+
+  // Get download average speed
+  onDownloadRealtimeSpeed: (callback: (progress: number) => void) =>
+    ipcRenderer.on("download-speed-realtime", (_, progress) =>
+      callback(progress),
+    ),
+
+  // Cancel Download
+  cancelDownload: () => ipcRenderer.invoke("download-cancel"),
+
   // Extract *.zip file
   extractZip: (filePath: string) => ipcRenderer.invoke("extract-zip", filePath),
 

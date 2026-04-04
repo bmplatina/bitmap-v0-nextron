@@ -63,6 +63,10 @@ export interface bitmapApi {
 
   downloadFile: (url: string | null, savePath: string) => string;
   onDownloadProgress: (callback: (progress: number) => void) => number;
+  onDownloadAvgSpeed: (callback: (progress: number) => void) => number;
+  onDownloadRealtimeSpeed: (callback: (progress: number) => void) => number;
+  cancelDownload: () => void;
+  // Extract *.zip file
   extractZip: (filePath: string) => string;
   // Create Shortcut
   createShortcut: (

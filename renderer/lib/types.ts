@@ -245,6 +245,8 @@ class GameInstallManager {
   private installationPath: string | null = "";
   private installState: EInstallState = EInstallState.NotInstalled;
   private downloadProgress: number = 0;
+  private downloadSpeedAvg: number = 0;
+  private downloadSpeedRealtime: number = 0;
   private extractProgress: number = 0;
   private currentVersion: number = 0;
   private bIsUpdatable: boolean = false;
@@ -438,16 +440,16 @@ class GameInstallManager {
     return this.downloadProgress;
   }
 
-  set setDownloadProgress(newDownloadProgress: number) {
-    this.downloadProgress = newDownloadProgress;
+  get getDownloadSpeedAvg(): number {
+    return this.downloadSpeedAvg;
+  }
+
+  get getDownloadSpeedRealtime(): number {
+    return this.downloadSpeedRealtime;
   }
 
   get getExtractProgress(): number {
     return this.extractProgress;
-  }
-
-  set setExtractProgress(newExtractProgress: number) {
-    this.extractProgress = newExtractProgress;
   }
 
   get getCurrentVersion(): number {
@@ -460,10 +462,6 @@ class GameInstallManager {
 
   get getIsUpdatable(): boolean {
     return this.bIsUpdatable;
-  }
-
-  set setIsUpdatable(newIsUpdatable: boolean) {
-    this.bIsUpdatable = newIsUpdatable;
   }
 
   /**
@@ -479,6 +477,8 @@ class GameInstallManager {
       : `${this.installationPath}\\${url?.split("/")[url?.split("/").length - 1]}`;
     console.log(`URL: ${url}, SavePath: ${savePathLocal}`);
 
+    let archivePath: string = "";
+
     try {
       // 다운로드 진행률 수신
       context.onDownloadProgress((progress) => {
@@ -489,12 +489,26 @@ class GameInstallManager {
         );
       });
 
-      // 다운로드 요청
-      const filePath = await context.downloadFile(url, savePathLocal);
-      console.log(
-        `다운로드 완료: ${filePath}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
-      );
+      context.onDownloadAvgSpeed((progress) => {
+        this.downloadSpeedAvg = progress;
+      });
 
+      context.onDownloadRealtimeSpeed((progress) => {
+        this.downloadSpeedRealtime = progress;
+      });
+      // 다운로드 요청
+      archivePath = await context.downloadFile(url, savePathLocal);
+
+      console.log(
+        `다운로드 완료: ${archivePath}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
+      );
+    } catch (error) {
+      this.installState = EInstallState.InstallError;
+      console.error("오류 발생:", error);
+      throw Error(error as string);
+    }
+
+    try {
       // 압축 해제 진행률 수신
       context.onExtractProgress((progress) => {
         this.installState = EInstallState.Extracting;
@@ -505,7 +519,7 @@ class GameInstallManager {
       });
 
       // 압축 해제 요청
-      const extractedPath = await context.extractZip(filePath);
+      const extractedPath = await context.extractZip(archivePath);
       console.log(
         `압축 해제 완료: ${extractedPath}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
       );
@@ -523,7 +537,7 @@ class GameInstallManager {
           this.gameTitle,
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
     }
