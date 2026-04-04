@@ -469,7 +469,10 @@ class GameInstallManager {
    * @param url gameDownloadPlatformUrl
    * @param savePath InstallationPath
    */
-  async downloadAndInstall(context: bitmapApi, bCreateShortcut: boolean) {
+  async downloadAndInstall(
+    context: bitmapApi,
+    bCreateShortcut: boolean,
+  ): Promise<string> {
     const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
 
     const savePathLocal: string | null = this.bIsMac
@@ -480,9 +483,9 @@ class GameInstallManager {
     let archivePath: string = "";
 
     try {
+      this.installState = EInstallState.Downloading;
       // 다운로드 진행률 수신
       context.onDownloadProgress((progress) => {
-        this.installState = EInstallState.Downloading;
         this.downloadProgress = progress;
         console.log(
           `다운로드 중: ${this.downloadProgress}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
@@ -505,13 +508,14 @@ class GameInstallManager {
     } catch (error) {
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
-      throw Error(error as string);
+      return error as string;
     }
 
     try {
+      this.installState = EInstallState.Extracting;
+
       // 압축 해제 진행률 수신
       context.onExtractProgress((progress) => {
-        this.installState = EInstallState.Extracting;
         this.extractProgress = progress;
         console.log(
           `압축 해제 중: ${this.extractProgress}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
@@ -521,7 +525,7 @@ class GameInstallManager {
       // 압축 해제 요청
       const extractedPath = await context.extractZip(archivePath);
       console.log(
-        `압축 해제 완료: ${extractedPath}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
+        `압축 해제 완료: ${extractedPath}, EInstallState: ${this.installState}`,
       );
 
       this.installState = EInstallState.Installed; // 작업 완료
@@ -540,7 +544,10 @@ class GameInstallManager {
     } catch (error: any) {
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
+      return error as string;
     }
+
+    return "success";
   }
 
   /**
