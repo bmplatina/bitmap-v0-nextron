@@ -1,12 +1,9 @@
 import {
   BookOpen,
   Code,
-  Download,
   Home,
   GamepadIcon,
   PlusCircle,
-  Clock,
-  User,
   Settings,
   Youtube,
 } from "lucide-react";
@@ -50,6 +47,13 @@ export const sidebarItems = [
         appIcon: GamepadIcon,
         href: "/games",
       },
+      {
+        title: "library",
+        icon: <BookOpen className="h-5 w-5" />,
+        bRequire: "login",
+        appIcon: BookOpen,
+        href: "/library",
+      },
     ],
   },
   {
@@ -63,13 +67,6 @@ export const sidebarItems = [
         appIcon: PlusCircle,
         href: "https://prodbybitmap.com/publish",
       },
-      // {
-      //   title: "games-pending",
-      //   icon: <Clock className="h-5 w-5" />,
-      //   bRequire: "login",
-      //   appIcon: Clock,
-      //   href: "/publish/games/waiting",
-      // },
     ],
   },
   {

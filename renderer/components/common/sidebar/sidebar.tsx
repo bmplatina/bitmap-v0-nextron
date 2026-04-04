@@ -15,21 +15,20 @@ export default function Sidebar() {
 
   const locale = (router.query.locale as string) || i18n.language || "en";
 
+  // 현재 경로에서 /[locale] 부분을 제거하여 "/games", "/settings" 등 베이스 경로만 추출
+  // 예: "/[locale]/games" -> "/games", "/[locale]" -> "/"
+  const currentPath =
+    router.pathname === "/[locale]"
+      ? "/"
+      : router.pathname.replace("/[locale]", "") || "/";
+
   function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(event, window.electronTools);
   }
 
-  function getPathName(): string {
-    if (router.asPath === `/${locale}/`) return "/";
-    const pathName = router.asPath.split(locale)[1];
-    if (pathName.includes("games")) return "/games";
-
-    return pathName.endsWith("/") ? pathName.slice(0, -1) : pathName;
-  }
-
   React.useEffect(() => {
-    console.log("Locale (ready): ", locale, getPathName());
-  }, [locale, router.asPath]);
+    console.log("Current Base Path: ", currentPath);
+  }, [currentPath]);
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
@@ -54,6 +53,14 @@ export default function Sidebar() {
                     return null;
                   if (item.bRequire === "teammate" && !bIsTeammate) return null;
 
+                  // 활성 상태 확인 로직
+                  // 1. 홈("/")은 정확히 일치할 때만
+                  // 2. 다른 메뉴는 해당 경로로 시작할 때 하이라이트 (예: /games/detail 도 /games 하이라이트)
+                  const isActive =
+                    item.href === "/"
+                      ? currentPath === "/"
+                      : currentPath.startsWith(item.href);
+
                   return (
                     <LocalizedLink
                       onClick={
@@ -68,8 +75,8 @@ export default function Sidebar() {
                       }
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                        getPathName() === item.href
-                          ? "bg-accent text-accent-foreground"
+                        isActive
+                          ? "bg-accent text-accent-foreground font-medium"
                           : "text-muted-foreground",
                       )}
                     >
