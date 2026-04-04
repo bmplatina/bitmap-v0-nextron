@@ -70,7 +70,11 @@ const getMainWindowWhenReady = async () => {
   // 유튜브 152-4 오류 해결을 위해 User-Agent에서 Electron 문자열 제거
   const defaultUserAgent = session.defaultSession.getUserAgent();
   session.defaultSession.setUserAgent(
-    defaultUserAgent.replace(/Electron\/[^\s]+\s/g, ""),
+    platformName === "darwin"
+      ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15"
+      : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "",
+    //defaultUserAgent.replace(/Electron\/[^\s]+\s/g, ""),
   );
 
   ipcMain.once("window-is-ready", () => {
