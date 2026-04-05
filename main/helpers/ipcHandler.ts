@@ -281,7 +281,10 @@ class ipcHandle {
                 (avgSpeedInBytesPerSecond * 8) / (1024 * 1024);
 
               event.sender.send("download-progress", progress);
-              event.sender.send("download-speed-avg", avgSpeedInMbps.toFixed(2));
+              event.sender.send(
+                "download-speed-avg",
+                avgSpeedInMbps.toFixed(2),
+              );
             }
           },
         });
@@ -475,10 +478,28 @@ class ipcHandle {
       },
     );
 
+    // 데이터 모두 가져오기
+    ipcMain.handle(
+      "game-install-info-get-all",
+      (_event): Promise<GameInstallInfo[]> => {
+        return new Promise((resolve, reject) => {
+          this.gameInstallInfoDb.find({}, (err, docs: GameInstallInfo[]) => {
+            if (err) {
+              console.error(err);
+              reject(err);
+            } else {
+              console.log("GetByIndex Succeed: ", typeof docs, docs);
+              resolve(docs);
+            }
+          });
+        });
+      },
+    );
+
     // 데이터 가져오기
     ipcMain.handle(
       "game-install-info-get-by-index",
-      (_, gameIdIndex: number): Promise<any> => {
+      (_, gameIdIndex: number): Promise<GameInstallInfo> => {
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.findOne(
             { gameId: gameIdIndex },

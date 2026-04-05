@@ -157,6 +157,8 @@ const bitmapApi = {
     ipcRenderer.invoke("game-install-info-insert", value),
 
   // electron-store:get
+  getGameInstallInfoAll: () =>
+    ipcRenderer.invoke("game-install-info-get-all"),
   getGameInstallInfoByIndex: (gameIdIndex: number) =>
     ipcRenderer.invoke("game-install-info-get-by-index", gameIdIndex),
 

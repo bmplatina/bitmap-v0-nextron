@@ -1,3 +1,4 @@
+import { GameInstallInfo } from "@/lib/types";
 import Electron = require("electron");
 import { ipcRenderer, IpcRendererEvent } from "electron";
 import { Platform } from "electron-builder";
@@ -80,7 +81,8 @@ export interface bitmapApi {
   removeFile: (targetPath: string) => Promise<boolean>;
 
   setGameInstallInfo: (value: GameInstallInfo) => Promise<any>;
-  getGameInstallInfoByIndex: (gameIdIndex: number) => Promise<any>;
+  getGameInstallInfoAll: () => Promise<GameInstallInfo[]>;
+  getGameInstallInfoByIndex: (gameIdIndex: number) => Promise<GameInstallInfo>;
   deleteGameInstallInfo: (gameIdIndex: number) => Promise<any>;
   updateGameInstallInfo: (
     gameIdIndex: number,
