@@ -1,6 +1,6 @@
 # Bitmap Application: Team Bitmap Web Application and ESD
 
-한국어 버전의 설명 문서는 [README_ko.md](https://github.com/bmplatina/bitmap/blob/main/README_ko.md)을 참조해주세요.
+한국어 버전의 설명 문서는 [README_ko.md](https://github.com/bmplatina/bitmap-v0-nextron/blob/main/README_ko.md)을 참조해주세요.
 
 Welcome to Bitmap! We're preparing service platform for our teammates, and free ESD (Electronic Software Distribution) for everyone. Hope you're interested in.
 
