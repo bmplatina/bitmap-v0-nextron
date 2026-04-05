@@ -1,37 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import { ContextMenu, Button, Container } from "@radix-ui/themes";
+import { ContextMenu, Container, Box, Flex } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
-import {
-  EInstallState,
-  GameInstallInfo,
-  GameInstallManager,
-} from "@/lib/types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { GameInstallManager } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface GameListButtonProps {
   gameMgr: GameInstallManager;
+  gameIdCallback: (gameId: number) => void;
 }
 
-const GameListButton = observer(function ({ gameMgr }: GameListButtonProps) {
+const GameListButton = observer(function ({
+  gameMgr,
+  gameIdCallback,
+}: GameListButtonProps) {
   const { t } = useTranslation("GamesView");
   const isActive = false; // 활성 상태 로직은 추후 구현
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <Button
-          variant="ghost"
+        <button
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+            "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none",
             isActive
               ? "bg-accent text-accent-foreground font-medium"
               : "text-muted-foreground",
           )}
+          onClick={() => gameIdCallback(gameMgr.getGameInfo.gameId)}
         >
-          {gameMgr?.getGameTitle || t("unknown_game")}
-        </Button>
+          {/* 아이콘이 필요한 경우 여기에 추가할 수 있습니다 */}
+          <Image
+            src={
+              gameMgr.getGameImageURL[2] ||
+              gameMgr.getGameImageURL[0] ||
+              "/placeholder.svg?height=40&width=40"
+            }
+            alt={gameMgr.getGameTitle}
+            width={50}
+            height={50}
+            className="object-cover"
+          />
+          {gameMgr.getGameTitle || t("unknown_game")}
+        </button>
       </ContextMenu.Trigger>
       <ContextMenu.Content>
         <ContextMenu.Item shortcut="⌘ E" disabled>
@@ -72,54 +86,64 @@ const LibraryPage = observer(function () {
   const [gameManagers, setGameManagers] = React.useState<GameInstallManager[]>(
     [],
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
 
-  React.useEffect(function () {
-    async function fetchInstallInfos() {
-      try {
-        const payloads = await window.bitmapApi.getGameInstallInfoAll();
+  React.useEffect(
+    function () {
+      async function fetchInstallInfos() {
+        try {
+          const payloads = await window.bitmapApi.getGameInstallInfoAll();
 
-        // 1. 모든 페이로드 데이터를 스토어에 먼저 주입
-        payloads.forEach((payload) => {
-          const manager = new GameInstallManager(bIsMac);
-          manager.setGameInfo = payload;
-          manager.setInstallationPath = payload.gameInstallationPath;
-          manager.setInstallState = payload.gameInstallState;
-          manager.setCurrentVersion = payload.gameInstalledVersion;
-          store.add(manager);
-        });
-
-        // 2. 루프 완료 후 중복 제거 및 경로 조건 필터링을 거쳐 상태 업데이트
-        setGameManagers(() => {
-          const allManagers = Array.from(store.managers.values());
-          const uniqueByTitle = new Map<string, GameInstallManager>();
-
-          allManagers.forEach((mgr) => {
-            const title = mgr.getGameTitle;
-            const path = mgr.getInstallationPath;
-
-            // 조건:
-            // 1. 설치 경로(getInstallationPath)가 비어있지 않아야 함 (남기기 위한 필수 조건)
-            // 2. 제목(getGameTitle)이 중복되는 경우 하나만 남김
-            if (path && !uniqueByTitle.has(title)) {
-              uniqueByTitle.set(title, mgr);
-            }
+          // 1. 모든 페이로드 데이터를 스토어에 먼저 주입
+          payloads.forEach((payload) => {
+            const manager = new GameInstallManager(bIsMac);
+            manager.setGameInfo = payload;
+            manager.setInstallationPath = payload.gameInstallationPath;
+            manager.setInstallState = payload.gameInstallState;
+            manager.setCurrentVersion = payload.gameInstalledVersion;
+            store.add(manager);
           });
 
-          return Array.from(uniqueByTitle.values());
-        });
-      } catch (error) {
-        console.error("Failed to fetch game install infos:", error);
+          // 2. 루프 완료 후 중복 제거 및 경로 조건 필터링을 거쳐 상태 업데이트
+          setGameManagers(() => {
+            const allManagers = Array.from(store.managers.values());
+            const uniqueByTitle = new Map<string, GameInstallManager>();
+
+            allManagers.forEach((mgr) => {
+              const title = mgr.getGameTitle;
+              const path = mgr.getInstallationPath;
+
+              // 조건:
+              // 1. 설치 경로(getInstallationPath)가 비어있지 않아야 함 (남기기 위한 필수 조건)
+              // 2. 제목(getGameTitle)이 중복되는 경우 하나만 남김
+              if (path && !uniqueByTitle.has(title)) {
+                uniqueByTitle.set(title, mgr);
+              }
+            });
+
+            return Array.from(uniqueByTitle.values());
+          });
+        } catch (error) {
+          console.error("Failed to fetch game install infos:", error);
+        }
       }
-    }
-    fetchInstallInfos();
-  }, [bIsMac, store]);
+      fetchInstallInfos();
+    },
+    [bIsMac, store],
+  );
 
   return (
-    <Container>
-      <div className="w-64 h-full bg-background border-r flex-col flex">
-        {/* 사이드바 콘텐츠 */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2">
+    <div className="flex h-full w-full relative overflow-hidden bg-background">
+      {/* Collapsible Sidebar (Overlay) */}
+      <div
+        className={cn(
+          "absolute top-0 left-0 h-full apple-blur border-r flex-col flex transition-transform duration-300 ease-in-out z-20 shadow-xl w-64",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex-1 overflow-y-auto p-4 w-64">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
             {t("games")}
           </h3>
           <div className="space-y-1">
@@ -127,12 +151,44 @@ const LibraryPage = observer(function () {
               <GameListButton
                 key={manager.getGameInfo.gameId}
                 gameMgr={manager}
+                gameIdCallback={setSelectedGameId}
               />
             ))}
           </div>
         </div>
       </div>
-    </Container>
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className={cn(
+          "absolute top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-6 h-12 bg-background border border-border rounded-r-md shadow-md hover:bg-accent transition-all duration-300 focus:outline-none",
+          isSidebarOpen ? "left-64" : "left-0",
+        )}
+        aria-label="Toggle Sidebar"
+      >
+        {isSidebarOpen ? (
+          <ChevronLeft size={16} className="text-muted-foreground" />
+        ) : (
+          <ChevronRight size={16} className="text-muted-foreground" />
+        )}
+      </button>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col w-full h-full bg-background overflow-y-auto">
+        <Container size="4" className="h-full">
+          <Flex direction="column" p="6" gap="4" className="h-full">
+            {/* Library Content Goes Here */}
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              {t(
+                "select_game_to_view_details",
+                "Select a game to view details",
+              )}
+            </div>
+          </Flex>
+        </Container>
+      </div>
+    </div>
   );
 });
 
