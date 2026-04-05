@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import { ContextMenu, Container, Box, Flex } from "@radix-ui/themes";
+import { AspectRatio, ContextMenu, Container, Flex } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
@@ -18,7 +18,7 @@ const GameListButton = observer(function ({
   gameMgr,
   gameIdCallback,
 }: GameListButtonProps) {
-  const { t } = useTranslation("GamesView");
+  const { t } = useTranslation(["GamesView", "Sidebar"]);
   const isActive = false; // 활성 상태 로직은 추후 구현
   return (
     <ContextMenu.Root>
@@ -48,8 +48,11 @@ const GameListButton = observer(function ({
         </button>
       </ContextMenu.Trigger>
       <ContextMenu.Content>
-        <ContextMenu.Item shortcut="⌘ E" disabled>
-          Edit
+        <ContextMenu.Item
+          color="green"
+          onClick={() => gameMgr.openApp(window.bitmapApi)}
+        >
+          {t("play")}
         </ContextMenu.Item>
         <ContextMenu.Item shortcut="⌘ D" disabled>
           Duplicate
@@ -65,7 +68,11 @@ const GameListButton = observer(function ({
             <ContextMenu.Item disabled>Move to project…</ContextMenu.Item>
             <ContextMenu.Item disabled>Move to folder…</ContextMenu.Item>
             <ContextMenu.Separator />
-            <ContextMenu.Item shortcut="⌘ ⌫" color="red">
+            <ContextMenu.Item
+              shortcut="⌘ ⌫"
+              color="red"
+              onClick={() => gameMgr.removeApp(window.bitmapApi)}
+            >
               {t("uninstall")}
             </ContextMenu.Item>
           </ContextMenu.SubContent>
@@ -134,7 +141,7 @@ const LibraryPage = observer(function () {
   );
 
   return (
-    <div className="flex h-full w-full relative overflow-hidden bg-background">
+    <div className="flex h-[calc(100vh-4rem)] w-full relative overflow-hidden">
       {/* Collapsible Sidebar (Overlay) */}
       <div
         className={cn(
@@ -175,7 +182,7 @@ const LibraryPage = observer(function () {
       </button>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col w-full h-full bg-background overflow-y-auto">
+      <div className="flex-1 flex flex-col w-full h-full overflow-y-auto">
         <Container size="4" className="h-full">
           <Flex direction="column" p="6" gap="4" className="h-full">
             {/* Library Content Goes Here */}
