@@ -116,9 +116,12 @@ const GameInteractableButtons = observer(function ({
     }
   }
 
-  useEffect(function () {
-    gameInstallManager.setGameInfo = game;
-  }, []);
+  useEffect(
+    function () {
+      gameInstallManager.setGameInfo = game;
+    },
+    [game, gameInstallManager],
+  );
 
   useEffect(() => {
     if (gameInstallManager)
@@ -126,14 +129,14 @@ const GameInteractableButtons = observer(function ({
         window.electronTools,
         window.bitmapApi,
       );
-  }, [gameInstallManager.getGameInfo]);
+  }, [gameInstallManager, game]);
 
   useEffect(() => {
     // gameInstallManager.setIsMac = bIsMac;
     console.log("Is Mac: ", gameInstallManager.getIsMac);
     setIsCompatible(GetIsPlatformCompatible());
     console.log(`Game Compatibility: ${bIsCompatible ? "Yes" : "No"}`);
-  }, [bIsMac]);
+  }, [bIsMac, gameInstallManager, game]);
 
   useEffect(
     function () {

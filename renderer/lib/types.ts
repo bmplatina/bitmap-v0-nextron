@@ -64,7 +64,7 @@ interface GameWithSize extends Game {
   size: number[];
 }
 
-interface GameInstallInfo extends Game {
+interface GameInstallInfo extends GameWithSize {
   gameInstallationPath: string;
   gameInstalledVersion: number;
   gameInstallState: EInstallState;
@@ -252,7 +252,7 @@ class GameInstallManager {
   private bIsUpdatable: boolean = false;
 
   // Interface Game
-  private game: Game = {
+  private game: GameWithSize = {
     gameId: 0,
     isApproved: false,
     uid: "",
@@ -277,6 +277,7 @@ class GameInstallManager {
     gameBinaryName: "",
     gameHeadline: { ko: "", en: "" },
     gameDescription: { ko: "", en: "" },
+    size: [0, 0],
   };
 
   private gameId: number = 0;
@@ -303,6 +304,7 @@ class GameInstallManager {
   private gameBinaryName: string = "";
   private gameHeadline: stringLocalized = { ko: "", en: "" };
   private gameDescription: stringLocalized = { ko: "", en: "" };
+  private gameSize: number[] = [0, 0];
 
   set setShowInDownloadDrawer(bNewVisibility: boolean) {
     this.bShowInDownloadDrawer = bNewVisibility;
@@ -312,7 +314,7 @@ class GameInstallManager {
     return this.bShowInDownloadDrawer;
   }
 
-  set setGameInfo(newGame: Game | null) {
+  set setGameInfo(newGame: GameWithSize | null) {
     if (newGame === null) {
       console.warn("Attempting to set game info with null value");
       return;
@@ -341,11 +343,12 @@ class GameInstallManager {
     this.gameBinaryName = newGame.gameBinaryName;
     this.gameHeadline = newGame.gameHeadline;
     this.gameDescription = newGame.gameDescription;
+    this.gameSize = newGame.size;
 
     this.game = newGame;
   }
 
-  get getGameInfo(): Game {
+  get getGameInfo(): GameWithSize {
     if (!this.game) {
       this.game = {
         gameId: this.gameId,
@@ -372,6 +375,7 @@ class GameInstallManager {
         gameBinaryName: this.gameBinaryName,
         gameHeadline: this.gameHeadline,
         gameDescription: this.gameDescription,
+        size: this.gameSize,
       };
     }
 

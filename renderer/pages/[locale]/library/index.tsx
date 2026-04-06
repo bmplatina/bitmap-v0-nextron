@@ -34,7 +34,7 @@ const GameListButton = observer(function ({
       <ContextMenu.Trigger>
         <button
           className={cn(
-            "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none",
+            "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none text-left",
             bIsSelected
               ? "bg-accent text-accent-foreground font-medium"
               : "text-muted-foreground",
@@ -97,7 +97,7 @@ const GameListButton = observer(function ({
 });
 
 const LibraryPage = observer(function () {
-  const { t } = useTranslation("GamesView");
+  const { t } = useTranslation("Sidebar");
   const { bIsMac, store } = useGameInstallManager();
   const [gameManagers, setGameManagers] = React.useState<GameInstallManager[]>(
     [],
@@ -111,9 +111,13 @@ const LibraryPage = observer(function () {
 
   function setGameDetail(newGameId: number) {
     setSelectedGameId(newGameId);
-    getGameById(window.bitmapApi, newGameId.toString()).then((payload) => {
-      if (payload) setLibraryViewedGameInfo(payload);
-    });
+    // getGameById(window.bitmapApi, newGameId.toString()).then((payload) => {
+    //   if (payload) setLibraryViewedGameInfo(payload);
+    // });
+    const gameInfo = gameManagers.find(
+      (mgr) => mgr.getGameInfo.gameId === newGameId,
+    )?.getGameInfo;
+    setLibraryViewedGameInfo(gameInfo);
     getGameRatesById(window.bitmapApi, newGameId.toString()).then((payload) => {
       if (payload) setLibraryViewedGameRating(payload);
     });
@@ -174,21 +178,29 @@ const LibraryPage = observer(function () {
             : "-translate-x-full md:-translate-x-[200%] opacity-0 pointer-events-none",
         )}
       >
-        <div className="flex-1 overflow-y-auto p-4 w-64">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
-            {t("games")}
-          </h3>
-          <div className="space-y-1">
-            {gameManagers.map((manager) => (
-              <GameListButton
-                key={manager.getGameInfo.gameId}
-                gameMgr={manager}
-                gameIdCallback={setGameDetail}
-                bIsSelected={selectedGameId === manager.getGameInfo.gameId}
-              />
-            ))}
-          </div>
-        </div>
+        <ScrollArea
+          type="auto"
+          scrollbars="vertical"
+          className="flex-1 p-4 w-64"
+        >
+          {gameManagers.length > 0 && (
+            <>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
+                {t("games")}
+              </h3>
+              <div className="space-y-1">
+                {gameManagers.map((manager) => (
+                  <GameListButton
+                    key={manager.getGameInfo.gameId}
+                    gameMgr={manager}
+                    gameIdCallback={setGameDetail}
+                    bIsSelected={selectedGameId === manager.getGameInfo.gameId}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </ScrollArea>
       </div>
 
       {/* Toggle Button */}
@@ -233,5 +245,5 @@ const LibraryPage = observer(function () {
 
 export default LibraryPage;
 
-export const getStaticProps = makeStaticProperties(["GamesView"]);
+export const getStaticProps = makeStaticProperties(["GamesView", "Sidebar"]);
 export { getStaticPaths };

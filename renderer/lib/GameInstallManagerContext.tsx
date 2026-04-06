@@ -5,7 +5,7 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import { Game, GameInstallManager } from "@/lib/types";
+import { GameInstallManager, GameWithSize } from "@/lib/types";
 import { getPlatform } from "./utils-client";
 import { makeAutoObservable, observable } from "mobx";
 
@@ -18,7 +18,7 @@ interface GameInstallManagerContextType {
     clear: () => void;
   };
   // 특정 게임의 매니저를 가져오거나 없으면 생성
-  getManager: (game: Game) => GameInstallManager;
+  getManager: (game: GameWithSize) => GameInstallManager;
 }
 
 const GameInstallManagerContext = createContext<
@@ -49,7 +49,7 @@ export function GameInstallManagerProvider({
   );
 
   const getManager = useCallback(
-    (game: Game) => {
+    (game: GameWithSize) => {
       // 1. 이미 해당 게임의 매니저가 있다면 반환
       if (store.managers.has(game.gameId)) {
         return store.managers.get(game.gameId)!;
