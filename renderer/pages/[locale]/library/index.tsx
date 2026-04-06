@@ -1,32 +1,41 @@
 import React, { useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import { AspectRatio, ContextMenu, Container, Flex } from "@radix-ui/themes";
+import {
+  AspectRatio,
+  ContextMenu,
+  Container,
+  Flex,
+  ScrollArea,
+} from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { GameInstallManager } from "@/lib/types";
+import { GameInstallManager, GameWithSize, GameRating } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import GameDetail from "@/components/games/game-details";
+import { getGameById, getGameRatesById } from "@/lib/games";
 
 interface GameListButtonProps {
   gameMgr: GameInstallManager;
+  bIsSelected: boolean;
   gameIdCallback: (gameId: number) => void;
 }
 
 const GameListButton = observer(function ({
   gameMgr,
+  bIsSelected,
   gameIdCallback,
 }: GameListButtonProps) {
   const { t } = useTranslation(["GamesView", "Sidebar"]);
-  const isActive = false; // 활성 상태 로직은 추후 구현
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
         <button
           className={cn(
             "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none",
-            isActive
+            bIsSelected
               ? "bg-accent text-accent-foreground font-medium"
               : "text-muted-foreground",
           )}
@@ -40,8 +49,8 @@ const GameListButton = observer(function ({
               "/placeholder.svg?height=40&width=40"
             }
             alt={gameMgr.getGameTitle}
-            width={50}
-            height={50}
+            width={25}
+            height={25}
             className="object-cover"
           />
           {gameMgr.getGameTitle || t("unknown_game")}
@@ -95,6 +104,20 @@ const LibraryPage = observer(function () {
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
+  const [libraryViewedGameInfo, setLibraryViewedGameInfo] =
+    useState<GameWithSize>();
+  const [libraryViewedGameRating, setLibraryViewedGameRating] =
+    useState<GameRating[]>();
+
+  function setGameDetail(newGameId: number) {
+    setSelectedGameId(newGameId);
+    getGameById(window.bitmapApi, newGameId.toString()).then((payload) => {
+      if (payload) setLibraryViewedGameInfo(payload);
+    });
+    getGameRatesById(window.bitmapApi, newGameId.toString()).then((payload) => {
+      if (payload) setLibraryViewedGameRating(payload);
+    });
+  }
 
   React.useEffect(
     function () {
@@ -141,12 +164,14 @@ const LibraryPage = observer(function () {
   );
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full relative overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] w-full relative overflow-hidden bg-background">
       {/* Collapsible Sidebar (Overlay) */}
       <div
         className={cn(
-          "absolute top-0 left-0 h-full apple-blur border-r flex-col flex transition-transform duration-300 ease-in-out z-20 shadow-xl w-64",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed top-[4rem] left-0 md:left-64 h-[calc(100vh-4rem)] apple-blur border-r flex-col flex transition-all duration-300 ease-in-out z-40 shadow-xl w-64",
+          isSidebarOpen
+            ? "translate-x-0 opacity-100"
+            : "-translate-x-full md:-translate-x-[200%] opacity-0 pointer-events-none",
         )}
       >
         <div className="flex-1 overflow-y-auto p-4 w-64">
@@ -158,7 +183,8 @@ const LibraryPage = observer(function () {
               <GameListButton
                 key={manager.getGameInfo.gameId}
                 gameMgr={manager}
-                gameIdCallback={setSelectedGameId}
+                gameIdCallback={setGameDetail}
+                bIsSelected={selectedGameId === manager.getGameInfo.gameId}
               />
             ))}
           </div>
@@ -169,8 +195,8 @@ const LibraryPage = observer(function () {
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className={cn(
-          "absolute top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-6 h-12 bg-background border border-border rounded-r-md shadow-md hover:bg-accent transition-all duration-300 focus:outline-none",
-          isSidebarOpen ? "left-64" : "left-0",
+          "fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-6 h-12 apple-blur border border-border rounded-r-md shadow-md hover:bg-accent/50 transition-all duration-300 focus:outline-none",
+          isSidebarOpen ? "left-64 md:left-[32rem]" : "left-0 md:left-64",
         )}
         aria-label="Toggle Sidebar"
       >
@@ -185,13 +211,19 @@ const LibraryPage = observer(function () {
       <div className="flex-1 flex flex-col w-full h-full overflow-y-auto">
         <Container size="4" className="h-full">
           <Flex direction="column" p="6" gap="4" className="h-full">
-            {/* Library Content Goes Here */}
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              {t(
-                "select_game_to_view_details",
-                "Select a game to view details",
-              )}
-            </div>
+            {libraryViewedGameInfo && libraryViewedGameRating ? (
+              <GameDetail
+                game={libraryViewedGameInfo}
+                gameRates={libraryViewedGameRating}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                {t(
+                  "select_game_to_view_details",
+                  "Select a game to view details",
+                )}
+              </div>
+            )}
           </Flex>
         </Container>
       </div>
