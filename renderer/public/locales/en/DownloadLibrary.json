@@ -1,0 +1,20 @@
+{
+  "downloading": "Downloading data…",
+  "installing": "Installing files…",
+  "downloading-spped-current": "Current Speed",
+  "downloading-spped-average": "Average Speed",
+  "progress": "Progress",
+  "queue": "Queue",
+  "queue-empty": "There are no pending downloads.",
+
+  "nothing-chosen": "Select from sidebar to view details.",
+  "games": "Games",
+  "play": "Play",
+  "add-to-favorites": "Add to Favorites",
+  "remove-from-favorites": "Remove from Favorites",
+  "manage": "Manage",
+  "add-shortcut": "Add Shortcut to Desktop",
+  "open-local": "Explore Local Files",
+  "uninstall": "Uninstall",
+  "properties": "Properties…"
+}

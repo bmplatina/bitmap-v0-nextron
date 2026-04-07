@@ -52,7 +52,7 @@ const SpeedChart = observer(({ manager }: { manager: GameInstallManager }) => {
 
 const DownloadManagerPage = observer(function () {
   const { store } = useGameInstallManager();
-  const { t } = useTranslation("GamesView");
+  const { t } = useTranslation("DownloadLibrary");
 
   const visibleManagers = Array.from(store.managers.values()).filter(
     (mgr) => mgr.getShowInDownloadDrawer,
@@ -71,8 +71,8 @@ const DownloadManagerPage = observer(function () {
           <Flex direction="column" gap="3">
             <Text size="1" color="gray" weight="bold" style={{ opacity: 0.6 }}>
               {activeMgr.getInstallState === EInstallState.Downloading
-                ? "데이터 다운로드 중"
-                : "파일 설치 중"}
+                ? t("downloading")
+                : t("installing")}
             </Text>
             <Text size="5" weight="bold">
               {activeMgr.getGameTitle}
@@ -89,7 +89,7 @@ const DownloadManagerPage = observer(function () {
               >
                 <Flex direction="column">
                   <Text size="1" color="gray">
-                    현재 속도
+                    {t("downloading-spped-current")}
                   </Text>
                   <Text size="4" weight="bold">
                     {activeMgr.getDownloadSpeedRealtime} Mbps
@@ -97,7 +97,7 @@ const DownloadManagerPage = observer(function () {
                 </Flex>
                 <Flex direction="column">
                   <Text size="1" color="gray">
-                    평균 속도
+                    {t("downloading-spped-average")}
                   </Text>
                   <Text size="2" color="gray">
                     {activeMgr.getDownloadSpeedAvg} Mbps
@@ -106,7 +106,7 @@ const DownloadManagerPage = observer(function () {
                 <Flex direction="column" gap="1" mt="1">
                   <Flex justify="between">
                     <Text size="1" color="gray">
-                      진행률
+                      {t("progress")}
                     </Text>
                     <Text size="1" weight="bold">
                       {Math.round(activeMgr.getDownloadProgress)}%
@@ -134,7 +134,7 @@ const DownloadManagerPage = observer(function () {
           >
             <Download size={48} color="var(--gray-8)" />
             <Text color="gray" size="2">
-              다운로드 중인 항목이 없습니다.
+              {t("queue-empty")}
             </Text>
           </Flex>
         )}
@@ -145,5 +145,5 @@ const DownloadManagerPage = observer(function () {
 
 export default DownloadManagerPage;
 
-export const getStaticProps = makeStaticProperties(["GamesView"]);
+export const getStaticProps = makeStaticProperties(["DownloadLibrary"]);
 export { getStaticPaths };

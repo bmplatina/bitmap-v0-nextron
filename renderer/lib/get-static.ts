@@ -13,6 +13,7 @@ type i18nNamespaces =
   | "BitmapDeveloper"
   | "BitmapTeammate"
   | "common"
+  | "DownloadLibrary"
   | "Footer"
   | "GameSubmit"
   | "GamesView"

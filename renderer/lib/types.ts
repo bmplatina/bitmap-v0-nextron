@@ -609,53 +609,52 @@ class GameInstallManager {
 
       this.defaultInstallationPath = DefaultInstallationPathLocal;
 
-      const getResultLocal = BitmapAPI.getGameInstallInfoByIndex(
+      const getResultLocal = await BitmapAPI.getGameInstallInfoByIndex(
         this.game.gameId,
       );
-      getResultLocal.then((resolvedData: GameInstallInfo) => {
-        console.log("pullInstallState::resolvedData", resolvedData);
-        // If getting from store succeed, allocate it to property
-        if (!!resolvedData) {
-          console.log(
-            "pullInstallState: If getting from store succeed, allocate it to property",
-            resolvedData,
-          );
-          this.installState = resolvedData.gameInstallState;
-          this.installationPath = resolvedData.gameInstallationPath;
-          this.currentVersion = resolvedData.gameInstalledVersion;
-          if (this.game.gameLatestRevision > this.currentVersion) {
-            this.bIsUpdatable = true;
-          }
+
+      console.log("pullInstallState::resolvedData", getResultLocal);
+      // If getting from store succeed, allocate it to property
+      if (!!getResultLocal) {
+        console.log(
+          "pullInstallState: If getting from store succeed, allocate it to property",
+          getResultLocal,
+        );
+        this.installState = getResultLocal.gameInstallState;
+        this.installationPath = getResultLocal.gameInstallationPath;
+        this.currentVersion = getResultLocal.gameInstalledVersion;
+        if (this.game.gameLatestRevision > this.currentVersion) {
+          this.bIsUpdatable = true;
         }
-        // Otherwise, initialize property
-        else {
-          console.log("pullInstallState: Otherwise, initialize property");
-          this.installationPath = this.defaultInstallationPath;
-          this.installState = EInstallState.NotInstalled;
-          this.currentVersion = 0;
-        }
+      }
+      // Otherwise, initialize property
+      else {
+        console.log("pullInstallState: Otherwise, initialize property");
+        this.installationPath = this.defaultInstallationPath;
+        this.installState = EInstallState.NotInstalled;
+        this.currentVersion = 0;
+      }
 
-        // Check is installation path valid
-        if (this.installationPath) {
-          const literalInstallationPath = this.bIsMac
-            ? `${this.installationPath}/${this.game.gameBinaryName}`
-            : `${this.installationPath}\\${this.game.gameBinaryName}`;
+      // Check is installation path valid
+      if (this.installationPath) {
+        const literalInstallationPath = this.bIsMac
+          ? `${this.installationPath}/${this.game.gameBinaryName}`
+          : `${this.installationPath}\\${this.game.gameBinaryName}`;
 
-          BitmapAPI.checkPathValid(literalInstallationPath).then(
-            (bIsValid: boolean) => {
-              console.log(
-                `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
-              );
-              this.installState = bIsValid
-                ? EInstallState.Installed
-                : EInstallState.NotInstalled;
-            },
-          );
-        } else this.installState = EInstallState.NotInstalled;
+        BitmapAPI.checkPathValid(literalInstallationPath).then(
+          (bIsValid: boolean) => {
+            console.log(
+              `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
+            );
+            this.installState = bIsValid
+              ? EInstallState.Installed
+              : EInstallState.NotInstalled;
+          },
+        );
+      } else this.installState = EInstallState.NotInstalled;
 
-        // Sync installation state
-        this.pushInstallState(BitmapAPI);
-      });
+      // Sync installation state
+      this.pushInstallState(BitmapAPI);
     } catch (error) {
       console.log(error);
     }
@@ -690,6 +689,7 @@ class GameInstallManager {
       if (await context.removeFile(this.installationPath)) {
         this.installState = EInstallState.NotInstalled;
         this.installationPath = this.defaultInstallationPath;
+        context.deleteGameInstallInfo(this.gameId);
         await this.pushInstallState(context);
       }
     }

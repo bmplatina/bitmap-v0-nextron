@@ -12,6 +12,8 @@ import { EInstallState, GameInstallManager } from "@/lib/types";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { X, Play, Trash2 } from "lucide-react";
+import { useRouter } from "next/router";
+import LocalizedLink from "../common/localized-link";
 
 interface GameInstallationCardProps {
   manager: GameInstallManager;
@@ -20,8 +22,12 @@ interface GameInstallationCardProps {
 const GameInstallationCard = observer(function ({
   manager,
 }: GameInstallationCardProps) {
+  const router = useRouter();
   const { bIsMac, store } = useGameInstallManager();
-  const { t } = useTranslation("GamesView");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("GamesView");
 
   function dismiss() {
     if (manager) manager.setShowInDownloadDrawer = false;
@@ -52,6 +58,14 @@ const GameInstallationCard = observer(function ({
     }
   }
 
+  function openPage() {
+    if (router.pathname.includes("downloads")) {
+      return `/library?gameId=${manager.getGameInfo.gameId}`;
+    }
+    return "/downloads";
+    // router.push(`/${locale}/library?gameId=${manager.getGameInfo.gameId}`);
+  }
+
   return (
     <Box
       className="bg-card text-card-foreground shadow-sm relative overflow-hidden"
@@ -73,12 +87,14 @@ const GameInstallationCard = observer(function ({
             boxShadow: "var(--shadow-2)",
           }}
         >
-          <Image
-            src={manager.getGameImageURL[0] || "/images/unknownImage.png"}
-            alt=""
-            fill
-            className="object-cover"
-          />
+          <LocalizedLink href={openPage()}>
+            <Image
+              src={manager.getGameImageURL[0] || "/images/unknownImage.png"}
+              alt=""
+              fill
+              className="object-cover"
+            />
+          </LocalizedLink>
         </Box>
 
         {/* Content */}

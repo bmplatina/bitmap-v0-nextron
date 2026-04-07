@@ -12,23 +12,32 @@ import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { GameInstallManager, GameWithSize, GameRating } from "@/lib/types";
+import { GameInstallManager, GameWithSize, GameRating, EInstallState } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import GameDetail from "@/components/games/game-details";
-import { getGameById, getGameRatesById } from "@/lib/games";
+import { getGameRatesById } from "@/lib/games";
+import { useRouter } from "next/router";
 
 interface GameListButtonProps {
   gameMgr: GameInstallManager;
   bIsSelected: boolean;
   gameIdCallback: (gameId: number) => void;
+  removeCallback: () => void;
 }
 
 const GameListButton = observer(function ({
   gameMgr,
   bIsSelected,
   gameIdCallback,
+  removeCallback,
 }: GameListButtonProps) {
-  const { t } = useTranslation(["GamesView", "Sidebar"]);
+  const { t } = useTranslation("DownloadLibrary");
+
+  async function removeApp() {
+    await gameMgr.removeApp(window.bitmapApi);
+    removeCallback();
+  }
+
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
@@ -63,41 +72,32 @@ const GameListButton = observer(function ({
         >
           {t("play")}
         </ContextMenu.Item>
-        <ContextMenu.Item shortcut="⌘ D" disabled>
-          Duplicate
-        </ContextMenu.Item>
+        <ContextMenu.Item disabled>{t("add-to-favorites")}</ContextMenu.Item>
         <ContextMenu.Separator />
-        <ContextMenu.Item shortcut="⌘ N" disabled>
-          Archive
-        </ContextMenu.Item>
 
         <ContextMenu.Sub>
           <ContextMenu.SubTrigger>{t("manage")}</ContextMenu.SubTrigger>
           <ContextMenu.SubContent>
-            <ContextMenu.Item disabled>Move to project…</ContextMenu.Item>
-            <ContextMenu.Item disabled>Move to folder…</ContextMenu.Item>
+            <ContextMenu.Item disabled>{t("add-shortcut")}</ContextMenu.Item>
+            <ContextMenu.Item disabled>{t("open-local")}</ContextMenu.Item>
             <ContextMenu.Separator />
-            <ContextMenu.Item
-              shortcut="⌘ ⌫"
-              color="red"
-              onClick={() => gameMgr.removeApp(window.bitmapApi)}
-            >
+            <ContextMenu.Item shortcut="⌘ ⌫" color="red" onClick={removeApp}>
               {t("uninstall")}
             </ContextMenu.Item>
           </ContextMenu.SubContent>
         </ContextMenu.Sub>
 
         <ContextMenu.Separator />
-        <ContextMenu.Item disabled>Share</ContextMenu.Item>
-        <ContextMenu.Item disabled>Add to favorites</ContextMenu.Item>
-        <ContextMenu.Separator />
+        <ContextMenu.Item disabled>{t("properties")}</ContextMenu.Item>
       </ContextMenu.Content>
     </ContextMenu.Root>
   );
 });
 
 const LibraryPage = observer(function () {
-  const { t } = useTranslation("Sidebar");
+  const router = useRouter();
+  const { t } = useTranslation("DownloadLibrary");
+  const { gameId } = router.query;
   const { bIsMac, store } = useGameInstallManager();
   const [gameManagers, setGameManagers] = React.useState<GameInstallManager[]>(
     [],
@@ -123,48 +123,78 @@ const LibraryPage = observer(function () {
     });
   }
 
-  React.useEffect(
-    function () {
-      async function fetchInstallInfos() {
-        try {
-          const payloads = await window.bitmapApi.getGameInstallInfoAll();
+  async function fetchInstallInfos() {
+    try {
+      const payloads = await window.bitmapApi.getGameInstallInfoAll();
 
-          // 1. 모든 페이로드 데이터를 스토어에 먼저 주입
-          payloads.forEach((payload) => {
-            const manager = new GameInstallManager(bIsMac);
-            manager.setGameInfo = payload;
-            manager.setInstallationPath = payload.gameInstallationPath;
-            manager.setInstallState = payload.gameInstallState;
-            manager.setCurrentVersion = payload.gameInstalledVersion;
-            store.add(manager);
-          });
-
-          // 2. 루프 완료 후 중복 제거 및 경로 조건 필터링을 거쳐 상태 업데이트
-          setGameManagers(() => {
-            const allManagers = Array.from(store.managers.values());
-            const uniqueByTitle = new Map<string, GameInstallManager>();
-
-            allManagers.forEach((mgr) => {
-              const title = mgr.getGameTitle;
-              const path = mgr.getInstallationPath;
-
-              // 조건:
-              // 1. 설치 경로(getInstallationPath)가 비어있지 않아야 함 (남기기 위한 필수 조건)
-              // 2. 제목(getGameTitle)이 중복되는 경우 하나만 남김
-              if (path && !uniqueByTitle.has(title)) {
-                uniqueByTitle.set(title, mgr);
-              }
-            });
-
-            return Array.from(uniqueByTitle.values());
-          });
-        } catch (error) {
-          console.error("Failed to fetch game install infos:", error);
+      // 1. 이미 설치된 상태인 매니저만 메모리에서 제거하여 DB 데이터와 동기화 준비
+      // (진행 중인 다운로드 상태 등은 유지)
+      for (const [id, manager] of store.managers.entries()) {
+        if (manager.getInstallState === EInstallState.Installed) {
+          store.managers.delete(id);
         }
       }
+
+      // 2. DB 페이로드 데이터를 스토어에 주입
+      payloads.forEach((payload) => {
+        if (!store.managers.has(payload.gameId)) {
+          const manager = new GameInstallManager(bIsMac);
+          manager.setGameInfo = payload;
+          manager.setInstallationPath = payload.gameInstallationPath;
+          manager.setInstallState = payload.gameInstallState;
+          manager.setCurrentVersion = payload.gameInstalledVersion;
+          store.add(manager);
+        }
+      });
+
+      // 3. 사이드바 상태 업데이트 (NotInstalled 상태 제외)
+      setGameManagers(() => {
+        const allManagers = Array.from(store.managers.values());
+        const uniqueByTitle = new Map<string, GameInstallManager>();
+
+        allManagers.forEach((mgr) => {
+          const title = mgr.getGameTitle;
+          const state = mgr.getInstallState;
+
+          // 조건: NotInstalled가 아니고 중복되지 않은 제목만 표시
+          if (state !== EInstallState.NotInstalled && !uniqueByTitle.has(title)) {
+            uniqueByTitle.set(title, mgr);
+          }
+        });
+
+        const updatedList = Array.from(uniqueByTitle.values());
+
+        // 현재 선택된 게임이 리스트에서 사라졌다면 상세정보 초기화
+        if (
+          selectedGameId &&
+          !updatedList.some((m) => m.getGameInfo.gameId === selectedGameId)
+        ) {
+          setSelectedGameId(null);
+          setLibraryViewedGameInfo(undefined);
+          setLibraryViewedGameRating(undefined);
+        }
+
+        return updatedList;
+      });
+    } catch (error) {
+      console.error("Failed to fetch game install infos:", error);
+    }
+  }
+
+  React.useEffect(
+    function () {
       fetchInstallInfos();
     },
     [bIsMac, store],
+  );
+
+  React.useEffect(
+    function () {
+      if (gameId) {
+        setGameDetail(Number(gameId));
+      }
+    },
+    [gameId],
   );
 
   return (
@@ -195,6 +225,7 @@ const LibraryPage = observer(function () {
                     gameMgr={manager}
                     gameIdCallback={setGameDetail}
                     bIsSelected={selectedGameId === manager.getGameInfo.gameId}
+                    removeCallback={fetchInstallInfos}
                   />
                 ))}
               </div>
@@ -230,10 +261,7 @@ const LibraryPage = observer(function () {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                {t(
-                  "select_game_to_view_details",
-                  "Select a game to view details",
-                )}
+                {t("nothing-chosen")}
               </div>
             )}
           </Flex>
@@ -245,5 +273,8 @@ const LibraryPage = observer(function () {
 
 export default LibraryPage;
 
-export const getStaticProps = makeStaticProperties(["GamesView", "Sidebar"]);
+export const getStaticProps = makeStaticProperties([
+  "DownloadLibrary",
+  "Sidebar",
+]);
 export { getStaticPaths };

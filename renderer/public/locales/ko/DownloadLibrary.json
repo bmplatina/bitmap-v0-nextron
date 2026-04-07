@@ -1,0 +1,20 @@
+{
+  "downloading": "데이터 다운로드 중",
+  "installing": "파일 설치 중",
+  "downloading-spped-current": "현재 속도",
+  "downloading-spped-average": "평균 속도",
+  "progress": "진행률",
+  "queue": "대기",
+  "queue-empty": "대기 중인 다운로드가 없습니다.",
+
+  "nothing-chosen": "사이드바에서 선택하여 자세한 내용을 확인하십시오.",
+  "games": "게임",
+  "play": "실행",
+  "add-to-favorites": "즐겨찾기에 추가",
+  "remove-from-favorites": "즐겨찾기에서 제거",
+  "manage": "관리",
+  "add-shortcut": "바탕화면 바로가기 추가",
+  "open-local": "로컬 파일 탐색",
+  "uninstall": "설치 제거",
+  "properties": "속성⋯"
+}
