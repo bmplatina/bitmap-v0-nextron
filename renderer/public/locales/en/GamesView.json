@@ -59,5 +59,6 @@
   "rate-delete-btn": "Delete",
   "rate-delete-cancel-btn": "Cancel",
   "rate-empty": "No reviews yet",
-  "rate-empty-desc": "No reviews have been submitted yet. Please write a review for this game in the \"Write a review\" tab."
+  "rate-empty-desc": "No reviews have been submitted yet. Please write a review for this game in the \"Write a review\" tab.",
+  "agerating": "Age Rating Image Source: PEGI (Pan European Game Information)"
 }

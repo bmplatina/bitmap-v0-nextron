@@ -59,5 +59,6 @@
   "rate-delete-btn": "삭제",
   "rate-delete-cancel-btn": "취소",
   "rate-empty": "등록된 평가 없음",
-  "rate-empty-desc": "아직 등록된 평가가 없습니다. \"평가 작성\" 탭에서 이 게임에 대한 평가를 작성해주십시오."
+  "rate-empty-desc": "아직 등록된 평가가 없습니다. \"평가 작성\" 탭에서 이 게임에 대한 평가를 작성해주십시오.",
+  "agerating": "연령 등급 이미지 출처: GRAC 게임물관리위원회"
 }

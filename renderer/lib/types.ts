@@ -58,6 +58,8 @@ interface Game {
   gameBinaryName: string;
   gameHeadline: stringLocalized;
   gameDescription: stringLocalized;
+  ageRating: number;
+  customEula: string;
 }
 
 interface GameWithSize extends Game {
@@ -278,6 +280,8 @@ class GameInstallManager {
     gameHeadline: { ko: "", en: "" },
     gameDescription: { ko: "", en: "" },
     size: [0, 0],
+    ageRating: 0,
+    customEula: "",
   };
 
   private gameId: number = 0;
@@ -305,6 +309,8 @@ class GameInstallManager {
   private gameHeadline: stringLocalized = { ko: "", en: "" };
   private gameDescription: stringLocalized = { ko: "", en: "" };
   private gameSize: number[] = [0, 0];
+  private ageRating: number = 0;
+  private customEula: string = "";
 
   set setShowInDownloadDrawer(bNewVisibility: boolean) {
     this.bShowInDownloadDrawer = bNewVisibility;
@@ -376,6 +382,8 @@ class GameInstallManager {
         gameHeadline: this.gameHeadline,
         gameDescription: this.gameDescription,
         size: this.gameSize,
+        ageRating: this.ageRating,
+        customEula: this.customEula,
       };
     }
 
@@ -466,6 +474,10 @@ class GameInstallManager {
 
   get getIsUpdatable(): boolean {
     return this.bIsUpdatable;
+  }
+
+  get getCustomEula(): string {
+    return this.customEula;
   }
 
   /**

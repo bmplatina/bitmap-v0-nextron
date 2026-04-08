@@ -22,6 +22,7 @@ import { Separator } from "../ui/separator";
 import GameRateSubmitter from "./game-rate-submitter";
 import GameRateViewer from "./game-rate-viewer";
 import GameInteractableButtons from "./bitmapapp_game-interactable-buttons";
+import AgeRatingImage from "./game-age-rating";
 
 type GameDetailProps = {
   game: GameWithSize;
@@ -99,6 +100,8 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
           </Suspense>
 
           <GameInteractableButtons game={game} />
+
+          <AgeRatingImage ageRating={game.ageRating}/>
         </div>
 
         {/* 오른쪽 컬럼 - 상세 정보 */}

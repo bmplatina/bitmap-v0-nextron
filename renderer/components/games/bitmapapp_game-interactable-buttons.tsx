@@ -4,46 +4,119 @@ import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import { Delete, Globe, Play } from "lucide-react";
 import { openExternal } from "@/lib/utils-client";
-import { EInstallState, GameWithSize, GameInstallManager } from "@/lib/types";
+import {
+  EInstallState,
+  GameWithSize,
+  GameInstallManager,
+  stringLocalized,
+} from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import AppleLogo from "@/public/images/platforms/platformMac.png";
 import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { Separator } from "../ui/separator";
+import { getEula } from "@/lib/general";
 import {
-  AspectRatio,
   Box,
   Button,
   Checkbox,
   Dialog,
   Flex,
+  ScrollArea,
   Text,
 } from "@radix-ui/themes";
+import ClientMarkdown from "../common/markdown/client-markdown";
 
-interface GameInteractableButtonsProps {
-  game: GameWithSize;
+interface GameEulaDislogContentProps {
+  eulaName: string;
+  openCallback: (bIsOpened: boolean) => void;
+  nextFunction: (bIsOpened: boolean) => void;
 }
 
-const GameInteractableButtons = observer(function ({
-  game,
-}: GameInteractableButtonsProps) {
-  const { store, bIsMac } = useGameInstallManager();
+function GameEulaDialogContent({
+  eulaName,
+  openCallback,
+  nextFunction,
+}: GameEulaDislogContentProps) {
   const {
     t,
     i18n: { language: locale },
   } = useTranslation("GamesView");
 
-  const [gameInstallManager, setGameInstallManager] =
-    useState<GameInstallManager>(() => new GameInstallManager(bIsMac));
-  const [bIsCompatible, setIsCompatible] = useState(false);
+  const [eula, setEula] = useState("");
+
+  useEffect(
+    function () {
+      async function getLicense() {
+        try {
+          const eula = await getEula(window.bitmapApi, eulaName);
+          setEula(locale === "en" ? eula.en : eula.ko);
+          console.log(`EULANAME: ${eulaName}, CONTENT: ${eula}`);
+        } catch (error: any) {
+          console.log(`EULANAME: ${eulaName}, ERROR: `, error);
+        }
+      }
+      getLicense();
+    },
+    [locale],
+  );
+
+  return (
+    <Flex direction="column" gap="5">
+      <Text
+        size="5"
+        weight="bold"
+        style={{ letterSpacing: "-0.02em" }}
+        as="div"
+      >
+        {t("installation")}
+      </Text>
+
+      <Separator />
+      <ScrollArea scrollbars="vertical" style={{ height: 240 }}>
+        <ClientMarkdown content={eula} />
+      </ScrollArea>
+
+      <Flex gap="3" justify="end" mt="2">
+        <Button
+          onClick={() => openCallback(false)}
+          variant="soft"
+          color="gray"
+          size="2"
+          style={{ cursor: "pointer" }}
+        >
+          {t("cancel")}
+        </Button>
+        <Button
+          onClick={() => nextFunction(true)}
+          size="2"
+          variant="solid"
+          color="blue"
+          style={{ cursor: "pointer" }}
+        >
+          {t("accept")}
+        </Button>
+      </Flex>
+    </Flex>
+  );
+}
+
+interface GameInstallDialogContentProps {
+  gameMgr: GameInstallManager;
+  openCallback: (bIsOpened: boolean) => void;
+}
+
+const GameInstallDialogContent = observer(function ({
+  gameMgr,
+  openCallback,
+}: GameInstallDialogContentProps) {
+  const { store, bIsMac } = useGameInstallManager();
+  const { t } = useTranslation("GamesView");
+
   const [bCreateShortcut, setCreateShortcut] = useState(true);
 
-  function openExternalLink(e: React.MouseEvent<HTMLAnchorElement>) {
-    openExternal(e, window.electronTools);
-  }
-
   function pushNewManager() {
-    store.add(gameInstallManager);
+    store.add(gameMgr);
   }
 
   /**
@@ -55,19 +128,183 @@ const GameInteractableButtons = observer(function ({
     event.preventDefault(); // 필요한 경우
 
     // 다운로드가 시작되면 무조건 BottomDrawer에 표시되도록 설정
-    gameInstallManager.setShowInDownloadDrawer = true;
+    gameMgr.setShowInDownloadDrawer = true;
 
     // 다운로드가 시작되기 전에 store에 등록하여 BottomDrawer에 즉시 표시되도록 함
     pushNewManager();
 
     try {
-      await gameInstallManager.downloadAndInstall(
-        window.bitmapApi,
-        bCreateShortcut,
-      );
+      await gameMgr.downloadAndInstall(window.bitmapApi, bCreateShortcut);
     } catch (error: any) {
       console.error("Download and Install Error:", error);
     }
+  }
+
+  /**
+   * Select the installation directory
+   */
+  async function selectDirectory() {
+    const options: Electron.OpenDialogOptions = {
+      title: "Select Installation Directory",
+      properties: ["openDirectory"], // 폴더 선택 가능
+    };
+
+    try {
+      const path = await window.electronTools.showDialog(options);
+      console.log("Path selected:", path);
+      if (path) {
+        gameMgr.setInstallationPath = path;
+        await window.bitmapApi.setDefaultGameInstallationPath(path); // Bitmap API를 통해 설치 경로 저장
+      }
+    } catch (error) {
+      console.error("파일 선택 중 오류 발생:", error);
+    }
+  }
+
+  return (
+    <Flex direction="column" gap="5">
+      <Box>
+        <Text
+          size="5"
+          weight="bold"
+          style={{ letterSpacing: "-0.02em" }}
+          as="div"
+        >
+          {t("installation")}
+        </Text>
+        <Text size="2" color="gray" mt="1" as="div">
+          {t("installing", {
+            gameName: gameMgr.getGameTitle,
+          })}
+        </Text>
+      </Box>
+
+      <Separator />
+      <Flex align="center" justify="between">
+        <Flex align="center">
+          <Image
+            src={gameMgr.getGameImageURL[1] || gameMgr.getGameImageURL[0]}
+            width="150"
+            height="85"
+            alt="Game Image"
+            className="object-cover object-top rounded-lg"
+          />
+          <Text size="3" weight="bold" ml="4" as="div">
+            {gameMgr.getGameTitle}
+          </Text>
+        </Flex>
+        <Text size="2" color="gray">
+          {gameMgr.getGameInfo.size[bIsMac ? 1 : 0]} GB
+        </Text>
+      </Flex>
+      <Separator />
+
+      <Text as="label" size="2">
+        <Flex as="span" gap="2">
+          <Checkbox
+            size="1"
+            checked={bCreateShortcut}
+            onCheckedChange={(checked) => setCreateShortcut(checked as boolean)}
+            disabled={
+              gameMgr.getInstallState === EInstallState.Downloading ||
+              gameMgr.getInstallState === EInstallState.Extracting
+            }
+          />{" "}
+          {t("add-shortcut")}
+        </Flex>
+      </Text>
+
+      <Box>
+        <Text as="div" size="2" weight="bold" color="gray" mb="2">
+          {t("installation-path")}
+        </Text>
+        <div
+          onClick={selectDirectory}
+          className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+        >
+          <Globe
+            size={16}
+            className="text-gray-500 dark:text-gray-400 shrink-0"
+          />
+          <Text size="2" className="truncate flex-grow">
+            {gameMgr.getInstallationPath || t("installation-path-hint")}
+          </Text>
+        </div>
+      </Box>
+
+      {gameMgr.getIsDownloadingOrInstallingState && (
+        <Box className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
+          <Flex justify="between" mb="2" align="end">
+            <Text size="2" weight="medium">
+              {gameMgr.getInstallState === EInstallState.Downloading
+                ? t("downloading", {
+                    progress: Math.round(gameMgr.getDownloadProgress),
+                  })
+                : gameMgr.getInstallState === EInstallState.Extracting
+                  ? t("writing-to-disk", {
+                      progress: gameMgr.getExtractProgress,
+                    })
+                  : ""}
+            </Text>
+          </Flex>
+          <Progress
+            value={
+              gameMgr.getInstallState === EInstallState.Downloading
+                ? Math.round(gameMgr.getDownloadProgress)
+                : gameMgr.getExtractProgress
+            }
+            className="h-2"
+          />
+        </Box>
+      )}
+
+      <Flex gap="3" justify="end" mt="2">
+        <Button
+          onClick={() => openCallback(false)}
+          variant="soft"
+          color="gray"
+          size="2"
+          style={{ cursor: "pointer" }}
+        >
+          {t("cancel")}
+        </Button>
+        <Button
+          onClick={handleDownloadAndInstall}
+          disabled={
+            gameMgr.getInstallState === EInstallState.Downloading ||
+            gameMgr.getInstallState === EInstallState.Extracting
+          }
+          size="2"
+          variant="solid"
+          color="blue"
+          style={{ cursor: "pointer" }}
+        >
+          {t("install")}
+        </Button>
+      </Flex>
+    </Flex>
+  );
+});
+
+interface GameInteractableButtonsProps {
+  game: GameWithSize;
+}
+
+const GameInteractableButtons = observer(function ({
+  game,
+}: GameInteractableButtonsProps) {
+  const { store, bIsMac } = useGameInstallManager();
+  const { t } = useTranslation("GamesView");
+
+  const [gameInstallManager, setGameInstallManager] =
+    useState<GameInstallManager>(() => new GameInstallManager(bIsMac));
+  const [bIsCompatible, setIsCompatible] = useState(false);
+
+  const [bIsInstallDialogOpened, setIsInstallDialogOpened] = useState(false);
+  const [bIsEulaAccepted, setIsEulaAccepted] = useState(false);
+
+  function openExternalLink(e: React.MouseEvent<HTMLAnchorElement>) {
+    openExternal(e, window.electronTools);
   }
 
   /**
@@ -95,30 +332,10 @@ const GameInteractableButtons = observer(function ({
     }
   }
 
-  /**
-   * Select the installation directory
-   */
-  async function selectDirectory() {
-    const options: Electron.OpenDialogOptions = {
-      title: "Select Installation Directory",
-      properties: ["openDirectory"], // 폴더 선택 가능
-    };
-
-    try {
-      const path = await window.electronTools.showDialog(options);
-      console.log("Path selected:", path);
-      if (path) {
-        gameInstallManager.setInstallationPath = path;
-        await window.bitmapApi.setDefaultGameInstallationPath(path); // Bitmap API를 통해 설치 경로 저장
-      }
-    } catch (error) {
-      console.error("파일 선택 중 오류 발생:", error);
-    }
-  }
-
   useEffect(
     function () {
       gameInstallManager.setGameInfo = game;
+      setIsEulaAccepted(game.customEula.length === 0);
     },
     [game, gameInstallManager],
   );
@@ -205,7 +422,10 @@ const GameInteractableButtons = observer(function ({
         {/* Install View */}
         {bIsCompatible &&
           gameInstallManager.getInstallState !== EInstallState.Installed && (
-            <Dialog.Root>
+            <Dialog.Root
+              open={bIsInstallDialogOpened}
+              onOpenChange={setIsInstallDialogOpened}
+            >
               <Dialog.Trigger>
                 <Button size="3" className="w-full" highContrast color="gray">
                   <Flex gap="2" align="center" justify="center" width="100%">
@@ -223,144 +443,18 @@ const GameInteractableButtons = observer(function ({
                 </Button>
               </Dialog.Trigger>
               <Dialog.Content className="apple-blur !bg-transparent border border-black/10 dark:border-white/10 shadow-2xl sm:max-w-[425px] !rounded-2xl !p-6">
-                <Flex direction="column" gap="5">
-                  <Box>
-                    <Text
-                      size="5"
-                      weight="bold"
-                      style={{ letterSpacing: "-0.02em" }}
-                      as="div"
-                    >
-                      {t("installation")}
-                    </Text>
-                    <Text size="2" color="gray" mt="1" as="div">
-                      {t("installing", {
-                        gameName: gameInstallManager.getGameTitle,
-                      })}
-                    </Text>
-                  </Box>
-
-                  <Separator />
-                  <Flex align="center" justify="between">
-                    <Flex align="center">
-                      <Image
-                        src={
-                          gameInstallManager.getGameImageURL[1] ||
-                          gameInstallManager.getGameImageURL[0]
-                        }
-                        width="150"
-                        height="85"
-                        alt="Game Image"
-                        className="object-cover object-top rounded-lg"
-                      />
-                      <Text size="3" weight="bold" ml="4" as="div">
-                        {gameInstallManager.getGameTitle}
-                      </Text>
-                    </Flex>
-                    <Text size="2" color="gray">
-                      {game.size[bIsMac ? 1 : 0]} GB
-                    </Text>
-                  </Flex>
-                  <Separator />
-
-                  <Text as="label" size="2">
-                    <Flex as="span" gap="2">
-                      <Checkbox
-                        size="1"
-                        checked={bCreateShortcut}
-                        onCheckedChange={(checked) =>
-                          setCreateShortcut(checked as boolean)
-                        }
-                        disabled={
-                          gameInstallManager.getInstallState ===
-                            EInstallState.Downloading ||
-                          gameInstallManager.getInstallState ===
-                            EInstallState.Extracting
-                        }
-                      />{" "}
-                      {t("add-shortcut")}
-                    </Flex>
-                  </Text>
-
-                  <Box>
-                    <Text as="div" size="2" weight="bold" color="gray" mb="2">
-                      {t("installation-path")}
-                    </Text>
-                    <div
-                      onClick={selectDirectory}
-                      className="flex items-center gap-3 p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
-                    >
-                      <Globe
-                        size={16}
-                        className="text-gray-500 dark:text-gray-400 shrink-0"
-                      />
-                      <Text size="2" className="truncate flex-grow">
-                        {gameInstallManager.getInstallationPath ||
-                          t("installation-path-hint")}
-                      </Text>
-                    </div>
-                  </Box>
-
-                  {gameInstallManager.getIsDownloadingOrInstallingState && (
-                    <Box className="bg-black/5 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
-                      <Flex justify="between" mb="2" align="end">
-                        <Text size="2" weight="medium">
-                          {gameInstallManager.getInstallState ===
-                          EInstallState.Downloading
-                            ? t("downloading", {
-                                progress: Math.round(
-                                  gameInstallManager.getDownloadProgress,
-                                ),
-                              })
-                            : gameInstallManager.getInstallState ===
-                                EInstallState.Extracting
-                              ? t("writing-to-disk", {
-                                  progress:
-                                    gameInstallManager.getExtractProgress,
-                                })
-                              : ""}
-                        </Text>
-                      </Flex>
-                      <Progress
-                        value={
-                          gameInstallManager.getInstallState ===
-                          EInstallState.Downloading
-                            ? Math.round(gameInstallManager.getDownloadProgress)
-                            : gameInstallManager.getExtractProgress
-                        }
-                        className="h-2"
-                      />
-                    </Box>
-                  )}
-
-                  <Flex gap="3" justify="end" mt="2">
-                    <Dialog.Close>
-                      <Button
-                        variant="soft"
-                        color="gray"
-                        size="2"
-                        style={{ cursor: "pointer" }}
-                      >
-                        {t("cancel")}
-                      </Button>
-                    </Dialog.Close>
-                    <Button
-                      onClick={handleDownloadAndInstall}
-                      disabled={
-                        gameInstallManager.getInstallState ===
-                          EInstallState.Downloading ||
-                        gameInstallManager.getInstallState ===
-                          EInstallState.Extracting
-                      }
-                      size="2"
-                      variant="solid"
-                      color="blue"
-                      style={{ cursor: "pointer" }}
-                    >
-                      {t("install")}
-                    </Button>
-                  </Flex>
-                </Flex>
+                {!bIsEulaAccepted ? (
+                  <GameEulaDialogContent
+                    eulaName={gameInstallManager.getGameInfo.customEula}
+                    openCallback={setIsInstallDialogOpened}
+                    nextFunction={setIsEulaAccepted}
+                  />
+                ) : (
+                  <GameInstallDialogContent
+                    gameMgr={gameInstallManager}
+                    openCallback={setIsInstallDialogOpened}
+                  />
+                )}
               </Dialog.Content>
             </Dialog.Root>
           )}

@@ -12,7 +12,12 @@ import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { GameInstallManager, GameWithSize, GameRating, EInstallState } from "@/lib/types";
+import {
+  GameInstallManager,
+  GameWithSize,
+  GameRating,
+  EInstallState,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 import GameDetail from "@/components/games/game-details";
 import { getGameRatesById } from "@/lib/games";
@@ -157,7 +162,10 @@ const LibraryPage = observer(function () {
           const state = mgr.getInstallState;
 
           // 조건: NotInstalled가 아니고 중복되지 않은 제목만 표시
-          if (state !== EInstallState.NotInstalled && !uniqueByTitle.has(title)) {
+          if (
+            state !== EInstallState.NotInstalled &&
+            !uniqueByTitle.has(title)
+          ) {
             uniqueByTitle.set(title, mgr);
           }
         });
@@ -195,6 +203,13 @@ const LibraryPage = observer(function () {
       }
     },
     [gameId],
+  );
+
+  React.useEffect(
+    function () {
+      if (gameManagers.length === 0) setIsSidebarOpen(false);
+    },
+    [gameManagers],
   );
 
   return (
