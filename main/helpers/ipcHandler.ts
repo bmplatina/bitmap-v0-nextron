@@ -410,6 +410,24 @@ class ipcHandle {
       },
     );
 
+    ipcMain.handle("remove-shortcut", async (_event, title: string) => {
+      try {
+        let shortcutPath: string = "";
+        if (this.platformName === "win32") {
+          // 1. 파일명으로 쓸 수 없는 특수문자 제거 (안정성 강화)
+          const safeTitle = title.replace(/[\\/:*?"<>|]/g, "");
+          shortcutPath = path.join(app.getPath("desktop"), `${safeTitle}.lnk`);
+        } else if (this.platformName === "darwin") {
+          shortcutPath = path.join(app.getPath("desktop"), `${title}`);
+        }
+        if (fs.existsSync(shortcutPath)) {
+          fs.unlinkSync(shortcutPath);
+        }
+      } catch (error) {
+        console.error("바로가기 제거 중 오류 발생:", error);
+      }
+    });
+
     // Open File
     ipcMain.handle("run-command", (_event, command) => {
       return new Promise<string>((resolve, reject) => {

@@ -702,6 +702,7 @@ class GameInstallManager {
         this.installState = EInstallState.NotInstalled;
         this.installationPath = this.defaultInstallationPath;
         context.deleteGameInstallInfo(this.gameId);
+        context.removeShortcut(this.gameTitle);
         await this.pushInstallState(context);
       }
     }

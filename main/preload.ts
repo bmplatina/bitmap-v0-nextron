@@ -141,6 +141,9 @@ const bitmapApi = {
   createShortcut: (installationPath: string, title: string) =>
     ipcRenderer.invoke("create-shortcut", installationPath, title),
 
+  removeShortcut: (title: string) =>
+    ipcRenderer.invoke("remove-shortcut", title),
+
   // Get extraction progress
   onExtractProgress: (callback: (progress: number) => void) =>
     ipcRenderer.on("extract-progress", (_, progress) => callback(progress)),
@@ -157,8 +160,7 @@ const bitmapApi = {
     ipcRenderer.invoke("game-install-info-insert", value),
 
   // electron-store:get
-  getGameInstallInfoAll: () =>
-    ipcRenderer.invoke("game-install-info-get-all"),
+  getGameInstallInfoAll: () => ipcRenderer.invoke("game-install-info-get-all"),
   getGameInstallInfoByIndex: (gameIdIndex: number) =>
     ipcRenderer.invoke("game-install-info-get-by-index", gameIdIndex),
 

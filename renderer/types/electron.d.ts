@@ -74,6 +74,8 @@ export interface bitmapApi {
     installationPath: string,
     title: string,
   ) => Promise<{ success: boolean; path: string }>;
+  removeShortcut: (title: string) => Promise<void>;
+
   onExtractProgress: (callback: (progress: number) => void) => number;
 
   runCommand: (command: string) => Promise<string>;
