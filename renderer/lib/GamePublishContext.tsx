@@ -17,7 +17,7 @@ interface GameFormContextType {
   updateLocalizedField: (
     field: "gameGenre" | "gameHeadline" | "gameDescription",
     lang: keyof stringLocalized,
-    value: string
+    value: string,
   ) => void;
   // 이미지 배열 업데이트
   updateImages: (urls: string[]) => void;
@@ -56,10 +56,12 @@ const initialGameData: Game = {
   gameBinaryName: "",
   gameHeadline: { ko: "", en: "" },
   gameDescription: { ko: "", en: "" },
+  ageRating: 0,
+  customEula: "",
 };
 
 const GameFormContext = createContext<GameFormContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function GamePublishProvider({ children }: { children: ReactNode }) {
@@ -72,7 +74,7 @@ export function GamePublishProvider({ children }: { children: ReactNode }) {
     <K extends keyof Game>(field: K, value: Game[K]) => {
       setGameData((prev) => ({ ...prev, [field]: value }));
     },
-    []
+    [],
   );
 
   // 2. 다국어(ko/en) 필드 전용 업데이트
@@ -80,7 +82,7 @@ export function GamePublishProvider({ children }: { children: ReactNode }) {
     (
       field: "gameGenre" | "gameHeadline" | "gameDescription",
       lang: keyof stringLocalized,
-      value: string
+      value: string,
     ) => {
       setGameData((prev) => ({
         ...prev,
@@ -90,7 +92,7 @@ export function GamePublishProvider({ children }: { children: ReactNode }) {
         },
       }));
     },
-    []
+    [],
   );
 
   // 3. 이미지 배열 전체 업데이트
