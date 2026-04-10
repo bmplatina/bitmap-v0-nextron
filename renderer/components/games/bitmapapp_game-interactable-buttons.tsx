@@ -4,15 +4,8 @@ import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import { Delete, Globe, Play } from "lucide-react";
 import { openExternal } from "@/lib/utils-client";
-import {
-  EInstallState,
-  GameWithSize,
-  GameInstallManager,
-  stringLocalized,
-} from "@/lib/types";
-import { Progress } from "@/components/ui/progress";
-import AppleLogo from "@/public/images/platforms/platformMac.png";
-import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
+import { EInstallState, GameWithSize, GameInstallManager } from "@/lib/types";
+import { useRouter } from "next/router";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { Separator } from "../ui/separator";
 import { getEula } from "@/lib/general";
@@ -22,10 +15,14 @@ import {
   Checkbox,
   Dialog,
   Flex,
+  Progress,
   ScrollArea,
   Text,
 } from "@radix-ui/themes";
 import ClientMarkdown from "../common/markdown/client-markdown";
+import AppleLogo from "@/public/images/platforms/platformMac.png";
+import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
+import { Card, CardContent } from "../ui/card";
 
 interface GameEulaDislogContentProps {
   eulaName: string;
@@ -56,9 +53,9 @@ function GameEulaDialogContent({
           console.log(`EULANAME: ${eulaName}, ERROR: `, error);
         }
       }
-      getLicense();
+      if (eulaName) getLicense();
     },
-    [locale],
+    [locale, eulaName],
   );
 
   return (
@@ -94,7 +91,7 @@ function GameEulaDialogContent({
           color="blue"
           style={{ cursor: "pointer" }}
         >
-          {t("accept")}
+          {t("confirm")}
         </Button>
       </Flex>
     </Flex>
@@ -266,7 +263,9 @@ const GameInstallDialogContent = observer(function ({
           size="2"
           style={{ cursor: "pointer" }}
         >
-          {t("cancel")}
+          {gameMgr.getInstallState === EInstallState.NotInstalled
+            ? t("cancel")
+            : t("confirm")}
         </Button>
         <Button
           onClick={handleDownloadAndInstall}
@@ -293,6 +292,7 @@ interface GameInteractableButtonsProps {
 const GameInteractableButtons = observer(function ({
   game,
 }: GameInteractableButtonsProps) {
+  const router = useRouter();
   const { store, bIsMac } = useGameInstallManager();
   const { t } = useTranslation("GamesView");
 
@@ -335,7 +335,9 @@ const GameInteractableButtons = observer(function ({
   useEffect(
     function () {
       gameInstallManager.setGameInfo = game;
-      setIsEulaAccepted(game.customEula.length === 0);
+      if (game.customEula) {
+        setIsEulaAccepted(game.customEula.length === 0);
+      } else setIsEulaAccepted(true);
     },
     [game, gameInstallManager],
   );
@@ -365,6 +367,12 @@ const GameInteractableButtons = observer(function ({
     },
     [store, game.gameId],
   );
+
+  useEffect(function () {
+    if (router.pathname.includes("library")) {
+      setIsEulaAccepted(true);
+    }
+  }, []);
 
   return (
     <div className="mt-6 space-y-4">
@@ -419,6 +427,7 @@ const GameInteractableButtons = observer(function ({
             </Button>
           </>
         )}
+
         {/* Install View */}
         {bIsCompatible &&
           gameInstallManager.getInstallState !== EInstallState.Installed && (
@@ -427,20 +436,63 @@ const GameInteractableButtons = observer(function ({
               onOpenChange={setIsInstallDialogOpened}
             >
               <Dialog.Trigger>
-                <Button size="3" className="w-full" highContrast color="gray">
-                  <Flex gap="2" align="center" justify="center" width="100%">
-                    <Image
-                      src={bIsMac ? AppleLogo : Windows10Logo}
-                      alt={t("download")}
-                      className="mr-1"
-                      width={18}
-                      height={18}
-                    />
-                    <Text size="2" weight="bold">
-                      {t("download")}
-                    </Text>
-                  </Flex>
-                </Button>
+                {gameInstallManager.getInstallState !==
+                EInstallState.NotInstalled ? (
+                  <Card>
+                    <CardContent className="mt-4">
+                      {gameInstallManager.getInstallState ===
+                      EInstallState.Downloading ? (
+                        <Flex direction="column" gap="2">
+                          <Text>
+                            {t("downloading", {
+                              progress: Math.round(
+                                gameInstallManager.getDownloadProgress,
+                              ),
+                            })}
+                          </Text>
+                          <Progress
+                            size="2"
+                            value={Math.round(
+                              gameInstallManager.getDownloadProgress,
+                            )}
+                          />
+                        </Flex>
+                      ) : gameInstallManager.getInstallState ===
+                        EInstallState.Extracting ? (
+                        <Flex direction="column" gap="2">
+                          <Text>
+                            {t("writing-to-disk", {
+                              progress: Math.round(
+                                gameInstallManager.getExtractProgress,
+                              ),
+                            })}
+                          </Text>
+                          <Progress
+                            size="2"
+                            value={Math.round(
+                              gameInstallManager.getExtractProgress,
+                            )}
+                          />
+                        </Flex>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Button size="3" className="w-full" highContrast color="gray">
+                    <Flex gap="2" align="center" justify="center" width="100%">
+                      <Image
+                        src={bIsMac ? AppleLogo : Windows10Logo}
+                        alt={t("download")}
+                        className="mr-1"
+                        width={18}
+                        height={18}
+                      />
+                      <Text size="2" weight="bold">
+                        {t("download")}
+                      </Text>
+                    </Flex>
+                  </Button>
+                )}
               </Dialog.Trigger>
               <Dialog.Content className="apple-blur !bg-transparent border border-black/10 dark:border-white/10 shadow-2xl sm:max-w-[425px] !rounded-2xl !p-6">
                 {!bIsEulaAccepted ? (
