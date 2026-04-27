@@ -36,8 +36,6 @@ autoUpdater.allowPrerelease = true; // 알파/베타 버전 업데이트 허용 
 
 if (bIsProd) {
   serve({ directory: "app" });
-} else {
-  app.setPath("userData", `${app.getPath("userData")} (development)`);
 }
 
 // 기본 프로토콜이 http와 유사하게 동작하도록 등록
@@ -65,7 +63,19 @@ const getMainWindowWhenReady = async () => {
   const shouldContinue = checkLauncherUrl(getMainWindowWhenReady);
   if (!shouldContinue) return;
 
+  if (!bIsProd) {
+    app.setPath("userData", `${app.getPath("userData")} (development)`);
+  }
+
   await app.whenReady();
+
+  // 윈도우에서 defaultGamePath가 비어있는 경우(초기 실행) 설정
+  if (platformName === "win32") {
+    const currentDefaultPath = helpers.userStore.get("defaultGamePath");
+    if (!currentDefaultPath) {
+      helpers.userStore.set("defaultGamePath", app.getPath("userData"));
+    }
+  }
 
   // 유튜브 152-4 오류 해결을 위해 User-Agent에서 Electron 문자열 제거
   const defaultUserAgent = session.defaultSession.getUserAgent();
