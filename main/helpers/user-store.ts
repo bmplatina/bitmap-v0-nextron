@@ -10,7 +10,7 @@ interface Settings {
 
 const defaultGamePath =
   process.platform === "win32"
-    ? app.getPath("userData")
+    ? ""
     : process.platform === "darwin"
       ? "/Users/Shared/Bitmap Production"
       : "";
