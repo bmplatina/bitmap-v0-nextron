@@ -373,10 +373,3 @@ autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
 
   // autoUpdater.quitAndInstall();
 });
-
-const ipcImplement: helpers.ipcHandle = new helpers.ipcHandle(
-  bIsProd,
-  platformName,
-);
-
-ipcImplement.initializeIpc();
