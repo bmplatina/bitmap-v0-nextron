@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import {
-  AspectRatio,
-  ContextMenu,
-  Container,
-  Flex,
-  ScrollArea,
-} from "@radix-ui/themes";
+import { ContextMenu, Container, Flex, ScrollArea } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
@@ -208,62 +202,87 @@ const LibraryPage = observer(function () {
   React.useEffect(
     function () {
       if (gameManagers.length === 0) setIsSidebarOpen(false);
+      // 설치된 게임이 있고 선택된 게임이 없으며 URL에 gameId가 없을 때 첫 번째 게임 자동 선택
+      if (gameManagers.length > 0 && !selectedGameId && !gameId) {
+        setGameDetail(gameManagers[0].getGameInfo.gameId);
+      }
     },
-    [gameManagers],
+    [gameManagers, selectedGameId, gameId],
   );
+
+  const showMainSidebar = router.query.sidebar === "main";
 
   return (
     <div className="flex h-[calc(100vh-4rem)] w-full relative overflow-hidden bg-background">
-      {/* Collapsible Sidebar (Overlay) */}
-      <div
-        className={cn(
-          "fixed top-[4rem] left-0 md:left-64 h-[calc(100vh-4rem)] apple-blur border-r flex-col flex transition-all duration-300 ease-in-out z-40 shadow-xl w-64",
-          isSidebarOpen
-            ? "translate-x-0 opacity-100"
-            : "-translate-x-full md:-translate-x-[200%] opacity-0 pointer-events-none",
-        )}
-      >
-        <ScrollArea
-          type="auto"
-          scrollbars="vertical"
-          className="flex-1 p-4 w-64"
-        >
-          {gameManagers.length > 0 && (
-            <>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
-                {t("games")}
-              </h3>
-              <div className="space-y-1">
-                {gameManagers.map((manager) => (
-                  <GameListButton
-                    key={manager.getGameInfo.gameId}
-                    gameMgr={manager}
-                    gameIdCallback={setGameDetail}
-                    bIsSelected={selectedGameId === manager.getGameInfo.gameId}
-                    removeCallback={fetchInstallInfos}
-                  />
-                ))}
+      {/* Collapsible Sidebar (Overlay for mobile, Static for desktop) */}
+      {!showMainSidebar && (
+        <>
+          <div
+            className={cn(
+              "fixed md:static top-[4rem] md:top-auto left-0 h-[calc(100vh-4rem)] md:h-full apple-blur md:bg-background border-r flex-col transition-all duration-300 ease-in-out z-40 shadow-xl md:shadow-none w-64 flex-shrink-0 flex md:translate-x-0 md:opacity-100 md:pointer-events-auto",
+              isSidebarOpen
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-full opacity-0 pointer-events-none",
+            )}
+          >
+            <ScrollArea
+              type="auto"
+              scrollbars="vertical"
+              className="flex-1 p-4 w-64"
+            >
+              <div className="mb-4">
+                <button
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                  onClick={() =>
+                    router.push({
+                      pathname: router.pathname,
+                      query: { ...router.query, sidebar: "main" },
+                    })
+                  }
+                >
+                  {t("toggle-sidebar")}
+                </button>
               </div>
-            </>
-          )}
-        </ScrollArea>
-      </div>
+              {gameManagers.length > 0 && (
+                <>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
+                    {t("games")}
+                  </h3>
+                  <div className="space-y-1">
+                    {gameManagers.map((manager) => (
+                      <GameListButton
+                        key={manager.getGameInfo.gameId}
+                        gameMgr={manager}
+                        gameIdCallback={setGameDetail}
+                        bIsSelected={
+                          selectedGameId === manager.getGameInfo.gameId
+                        }
+                        removeCallback={fetchInstallInfos}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </ScrollArea>
+          </div>
 
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className={cn(
-          "fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-6 h-12 apple-blur border border-border rounded-r-md shadow-md hover:bg-accent/50 transition-all duration-300 focus:outline-none",
-          isSidebarOpen ? "left-64 md:left-[32rem]" : "left-0 md:left-64",
-        )}
-        aria-label="Toggle Sidebar"
-      >
-        {isSidebarOpen ? (
-          <ChevronLeft size={16} className="text-muted-foreground" />
-        ) : (
-          <ChevronRight size={16} className="text-muted-foreground" />
-        )}
-      </button>
+          {/* Toggle Button (Mobile only) */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={cn(
+              "md:hidden fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-6 h-12 apple-blur border border-border rounded-r-md shadow-md hover:bg-accent/50 transition-all duration-300 focus:outline-none",
+              isSidebarOpen ? "left-64" : "left-0",
+            )}
+            aria-label="Toggle Sidebar"
+          >
+            {isSidebarOpen ? (
+              <ChevronLeft size={16} className="text-muted-foreground" />
+            ) : (
+              <ChevronRight size={16} className="text-muted-foreground" />
+            )}
+          </button>
+        </>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full h-full overflow-y-auto">
@@ -275,9 +294,11 @@ const LibraryPage = observer(function () {
                 gameRates={libraryViewedGameRating}
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                {t("nothing-chosen")}
-              </div>
+              gameManagers.length === 0 && (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t("nothing-chosen")}
+                </div>
+              )
             )}
           </Flex>
         </Container>
