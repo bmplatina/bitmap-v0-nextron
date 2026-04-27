@@ -6,10 +6,10 @@ import LocalizedLink from "@/components/common/localized-link";
 import { Flex, IconButton, Text } from "@radix-ui/themes";
 import { Edit } from "lucide-react";
 import { Badge } from "../ui/badge";
-import type { Game } from "@/lib/types";
+import type { Game, GameList } from "@/lib/types";
 
 interface GameProp {
-  game: Game;
+  game: GameList;
   bIsPublishingMode: boolean;
 }
 

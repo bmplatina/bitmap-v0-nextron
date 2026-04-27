@@ -58,6 +58,7 @@ const initialGameData: Game = {
   gameDescription: { ko: "", en: "" },
   ageRating: 0,
   customEula: "",
+  ratingContentDescriptors: [],
 };
 
 const GameFormContext = createContext<GameFormContextType | undefined>(

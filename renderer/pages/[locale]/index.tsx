@@ -1,8 +1,8 @@
-import { Box, Button, ScrollArea } from "@radix-ui/themes";
+import { ScrollArea } from "@radix-ui/themes";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { useState, useEffect } from "react";
 import { getGames } from "@/lib/games";
-import type { Game, Carousel } from "@/lib/types";
+import type { GameList } from "@/lib/types";
 import { useTranslation } from "next-i18next";
 import GameRedirectButton from "@/components/games/game-redirect-button";
 import AutoSliderCarousel from "@/components/common/main-page-carousel";
@@ -12,7 +12,7 @@ import LocalizedLink from "@/components/common/localized-link";
 
 export default function Home() {
   // 서버에서 직접 데이터 페칭
-  const [games, setGames] = useState<Game[]>([]);
+  const [games, setGames] = useState<GameList[]>([]);
   const { t } = useTranslation("MainPage");
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function Home() {
       <div className="flex flex-col items-center w-full p-6 pt-10 text-center space-y-12">
         {/* 유튜브 영상 가로 스크롤 섹션 */}
         <div className="w-full max-w-6xl">
-            <h2 className="text-2xl font-bold mb-4 text-left">{t("works")}</h2>
+          <h2 className="text-2xl font-bold mb-4 text-left">{t("works")}</h2>
           <YouTubeWorksList
             bFetchFromClient
             youTubeChannelId_Client="UCL137ZWChauNFsma6ifhNdA"
