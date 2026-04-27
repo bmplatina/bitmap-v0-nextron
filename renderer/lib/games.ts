@@ -1,4 +1,10 @@
-import { Game, GameRating, GameRatingRequest, GameWithSize } from "@/lib/types";
+import {
+  Game,
+  GameList,
+  GameRating,
+  GameRatingRequest,
+  GameWithSize,
+} from "@/lib/types";
 import { getApiLinkByPurpose } from "@/lib/utils";
 import { csrAxiosGet, csrAxiosPost } from "./utils-client";
 import { bitmapApi } from "@/types/electron";
@@ -7,22 +13,24 @@ import { bitmapApi } from "@/types/electron";
 async function getGames(
   context: bitmapApi,
   getPendingOnly: "released" | "pending" | "all",
-): Promise<Game[]> {
+  listPage?: number,
+): Promise<GameList[]> {
   try {
-    const data = await csrAxiosGet<Game[]>(context, "games/list");
+    const API_LINK =
+      typeof listPage === "number"
+        ? `games/list?page=${listPage}`
+        : "games/list";
+    const data = await csrAxiosGet<GameList[]>(context, API_LINK);
 
     if (getPendingOnly === "all") {
       return data;
     }
 
-    let games: Game[] = [];
-    for (const game of data) {
-      if (game.isApproved && !(getPendingOnly === "pending")) {
-        games.push(game);
-      }
-    }
-
-    return games;
+    return data.filter((game) => {
+      if (getPendingOnly === "released") return game.isApproved;
+      if (getPendingOnly === "pending") return !game.isApproved;
+      return true;
+    });
   } catch (error) {
     console.error("게임 데이터를 가져오는 중 오류 발생:", error);
 

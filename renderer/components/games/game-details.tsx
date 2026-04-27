@@ -101,7 +101,10 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
 
           <GameInteractableButtons game={game} />
 
-          <AgeRatingImage ageRating={game.ageRating}/>
+          <AgeRatingImage
+            ageRating={game.ageRating}
+            ratingContentDescriptors={game.ratingContentDescriptors}
+          />
         </div>
 
         {/* 오른쪽 컬럼 - 상세 정보 */}

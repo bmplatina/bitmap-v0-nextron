@@ -33,6 +33,15 @@ interface UserProfile extends Omit<
   "password" | "verification_code" | "code_expires_at"
 > {}
 
+type RatingDetails =
+  | "crime"
+  | "drugs"
+  | "gamble"
+  | "horror"
+  | "sex"
+  | "swear"
+  | "violence";
+
 interface Game {
   gameId: number;
   isApproved: boolean;
@@ -59,12 +68,26 @@ interface Game {
   gameHeadline: stringLocalized;
   gameDescription: stringLocalized;
   ageRating: number;
+  ratingContentDescriptors: RatingDetails[];
   customEula: string;
 }
 
 interface GameWithSize extends Game {
   size: number[];
 }
+
+interface GameList extends Pick<
+  Game,
+  | "gameId"
+  | "gameTitle"
+  | "gameImageURL"
+  | "gameDeveloper"
+  | "gamePublisher"
+  | "gameGenre"
+  | "gameReleasedDate"
+  | "isApproved"
+  | "isEarlyAccess"
+> {}
 
 interface GameInstallInfo extends GameWithSize {
   gameInstallationPath: string;
@@ -282,6 +305,7 @@ class GameInstallManager {
     size: [0, 0],
     ageRating: 0,
     customEula: "",
+    ratingContentDescriptors: [],
   };
 
   private gameId: number = 0;
@@ -311,6 +335,7 @@ class GameInstallManager {
   private gameSize: number[] = [0, 0];
   private ageRating: number = 0;
   private customEula: string = "";
+  private ratingContentDescriptors: RatingDetails[] = [];
 
   set setShowInDownloadDrawer(bNewVisibility: boolean) {
     this.bShowInDownloadDrawer = bNewVisibility;
@@ -350,6 +375,9 @@ class GameInstallManager {
     this.gameHeadline = newGame.gameHeadline;
     this.gameDescription = newGame.gameDescription;
     this.gameSize = newGame.size;
+    this.ageRating = newGame.ageRating;
+    this.customEula = newGame.customEula;
+    this.ratingContentDescriptors = newGame.ratingContentDescriptors;
 
     this.game = newGame;
   }
@@ -384,6 +412,7 @@ class GameInstallManager {
         size: this.gameSize,
         ageRating: this.ageRating,
         customEula: this.customEula,
+        ratingContentDescriptors: this.ratingContentDescriptors,
       };
     }
 
@@ -734,6 +763,7 @@ export { EInstallState, GameInstallManager };
 
 export type {
   Game,
+  GameList,
   GameWithSize,
   GameInstallInfo,
   Metadata,
@@ -758,6 +788,7 @@ export type {
   DocumentArchives,
   Portfolio,
   Project,
+  RatingDetails,
   UpdateProgress,
   UpdateStatusType,
   UpdateStatus,

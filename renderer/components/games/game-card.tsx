@@ -1,4 +1,4 @@
-import type { Game } from "@/lib/types";
+import type { GameList } from "@/lib/types";
 import { getLocalizedString, formatDate } from "@/lib/utils";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -9,7 +9,7 @@ import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 
 interface GameCardProps {
-  game: Game;
+  game: GameList;
 }
 
 export default function GameCard({ game }: GameCardProps) {
@@ -32,12 +32,12 @@ export default function GameCard({ game }: GameCardProps) {
             className="object-cover"
             priority
           />
-          {game.isApproved && game.isEarlyAccess && (
+          {!!game.isApproved && !!game.isEarlyAccess && (
             <Badge className="absolute top-2 right-2 bg-amber-500">
               {t("early-access")}
             </Badge>
           )}
-          {!game.isApproved && (
+          {!!!game.isApproved && (
             <Badge className="absolute top-2 right-2 bg-orange-500">
               {t("waiting-for-approval")}
             </Badge>
