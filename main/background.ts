@@ -234,6 +234,13 @@ const getMainWindowWhenReady = async () => {
   mainWindow.on("leave-full-screen", () => {
     mainWindow.webContents.send("fullscreen-change", false);
   });
+
+  const ipcImplement: helpers.ipcHandle = new helpers.ipcHandle(
+    bIsProd,
+    platformName,
+  );
+
+  ipcImplement.initializeIpc();
 })();
 
 app.on("window-all-closed", () => {
