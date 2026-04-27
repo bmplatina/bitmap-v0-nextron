@@ -2,7 +2,7 @@
   "private": false,
   "name": "bitmap",
   "description": "Bitmap App Powered by Platina",
-  "version": "0.3.0-beta",
+  "version": "0.3.0-beta-hotfix",
   "author": "Platina <platina@prodbybitmap.com>",
   "main": "app/background.js",
   "license": "MIT",
