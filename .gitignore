@@ -15,5 +15,10 @@ dist
 .idea
 .vscode
 .DS_Store
+
+# package manager
+.yarn*
+
+# local database
 gameInstallInfo.db
 settings.db
