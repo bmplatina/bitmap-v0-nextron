@@ -62,11 +62,13 @@ export interface bitmapApi {
   setScreenMode: (screenMode: "light" | "system" | "dark") => void;
   getScreenMode: () => "light" | "system" | "dark";
 
-  downloadFile: (url: string | null, savePath: string) => string;
+  downloadFile: (url: string | null, savePath: string) => Promise<string>;
   onDownloadProgress: (callback: (progress: number) => void) => number;
   onDownloadAvgSpeed: (callback: (progress: number) => void) => number;
   onDownloadRealtimeSpeed: (callback: (progress: number) => void) => number;
-  cancelDownload: () => void;
+  cancelDownload: (url: string) => void;
+  pauseDownload: (url: string) => void;
+  resumeDownload: (url: string) => void;
   // Extract *.zip file
   extractZip: (filePath: string) => string;
   // Create Shortcut

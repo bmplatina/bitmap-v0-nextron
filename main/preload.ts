@@ -132,7 +132,13 @@ const bitmapApi = {
     ),
 
   // Cancel Download
-  cancelDownload: () => ipcRenderer.invoke("download-cancel"),
+  cancelDownload: (url: string) => ipcRenderer.invoke("download-cancel", url),
+  
+  // Pause Download
+  pauseDownload: (url: string) => ipcRenderer.invoke("download-pause", url),
+  
+  // Resume Download
+  resumeDownload: (url: string) => ipcRenderer.invoke("download-resume", url),
 
   // Extract *.zip file
   extractZip: (filePath: string) => ipcRenderer.invoke("extract-zip", filePath),

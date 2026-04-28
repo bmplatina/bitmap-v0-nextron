@@ -109,6 +109,7 @@ interface Settings {
 enum EInstallState {
   NotInstalled,
   Downloading,
+  Paused,
   Extracting,
   Installed,
   InstallError,
@@ -509,6 +510,39 @@ class GameInstallManager {
     return this.customEula;
   }
 
+  pauseDownload(context: bitmapApi) {
+    if (this.installState === EInstallState.Downloading) {
+      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+      if (url) {
+        context.pauseDownload(url);
+        this.installState = EInstallState.Paused;
+      }
+    }
+  }
+
+  resumeDownload(context: bitmapApi) {
+    if (this.installState === EInstallState.Paused) {
+      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+      if (url) {
+        context.resumeDownload(url);
+        this.installState = EInstallState.Downloading;
+      }
+    }
+  }
+
+  cancelDownload(context: bitmapApi) {
+    if (this.installState === EInstallState.Downloading || this.installState === EInstallState.Paused) {
+      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+      if (url) {
+        context.cancelDownload(url);
+        this.installState = EInstallState.NotInstalled;
+        this.downloadProgress = 0;
+        this.downloadSpeedAvg = 0;
+        this.downloadSpeedRealtime = 0;
+      }
+    }
+  }
+
   /**
    * Download and Install Game. Do not call this function directly.
    * @param url gameDownloadPlatformUrl
@@ -551,6 +585,10 @@ class GameInstallManager {
         `다운로드 완료: ${archivePath}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
       );
     } catch (error) {
+      if (error === 'cancelled' || (error instanceof Error && error.message.includes('cancelled'))) {
+        console.log('다운로드 취소됨');
+        return 'cancelled';
+      }
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
       return error as string;

@@ -67,6 +67,20 @@ class ipcHandle {
 
   private readonly API_URI: string = "https://api.prodbybitmap.com/";
 
+  private activeDownloads = new Map<string, Electron.DownloadItem>();
+  private pendingDownloads = new Map<
+    string,
+    {
+      savePath: string;
+      sender: Electron.WebContents;
+      resolve: (value: string) => void;
+      reject: (reason?: any) => void;
+      startTime: number;
+      lastTime: number;
+      lastLoaded: number;
+    }
+  >();
+
   /**
    * API 링크 생성
    * @param substring 도메인 뒤 링크
@@ -77,6 +91,72 @@ class ipcHandle {
   }
 
   initializeIpc() {
+    session.defaultSession.on("will-download", (event, item, webContents) => {
+      const url = item.getURLChain()[0] || item.getURL();
+      const pending = this.pendingDownloads.get(url);
+
+      if (pending) {
+        item.setSavePath(pending.savePath);
+        this.activeDownloads.set(url, item);
+
+        item.on("updated", (event, state) => {
+          if (state === "interrupted") {
+            console.log("Download is interrupted but can be resumed");
+          } else if (state === "progressing") {
+            if (item.isPaused()) {
+              console.log("Download is paused");
+            } else {
+              const currentTime = Date.now();
+              const timeDiff = (currentTime - pending.lastTime) / 1000;
+
+              if (timeDiff >= 1.0) {
+                const loadedDiff = item.getReceivedBytes() - pending.lastLoaded;
+                const instantSpeedInMbps =
+                  (loadedDiff * 8) / (timeDiff * 1024 * 1024);
+                pending.sender.send(
+                  "download-speed-realtime",
+                  instantSpeedInMbps.toFixed(2),
+                );
+
+                pending.lastTime = currentTime;
+                pending.lastLoaded = item.getReceivedBytes();
+              }
+
+              const progress =
+                (item.getReceivedBytes() / (item.getTotalBytes() || 1)) * 100;
+              const totalDurationInSeconds =
+                (currentTime - pending.startTime) / 1000;
+
+              if (totalDurationInSeconds > 0) {
+                const avgSpeedInBytesPerSecond =
+                  item.getReceivedBytes() / totalDurationInSeconds;
+                const avgSpeedInMbps =
+                  (avgSpeedInBytesPerSecond * 8) / (1024 * 1024);
+
+                pending.sender.send("download-progress", progress);
+                pending.sender.send(
+                  "download-speed-avg",
+                  avgSpeedInMbps.toFixed(2),
+                );
+              }
+            }
+          }
+        });
+
+        item.once("done", (event, state) => {
+          if (state === "completed") {
+            pending.resolve(pending.savePath);
+          } else if (state === "cancelled") {
+            pending.reject("cancelled");
+          } else {
+            pending.reject(new Error(`Download failed: ${state}`));
+          }
+          this.activeDownloads.delete(url);
+          this.pendingDownloads.delete(url);
+        });
+      }
+    });
+
     // 신호등 버튼
     ipcMain.on("app-close", (event) => {
       const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -233,78 +313,51 @@ class ipcHandle {
 
     // download
     ipcMain.handle("download-file", async (event, { url, savePath }) => {
-      const startTime = Date.now();
-      let lastTime = startTime; // 실시간 계산용 이전 시간
-      let lastLoaded = 0; // 실시간 계산용 이전 데이터양
-
-      // 디렉터리 없을 시 생성
       const directory = dirname(savePath);
       if (!fs.existsSync(directory)) {
         fs.mkdirSync(directory, { recursive: true });
       }
 
-      const writer = fs.createWriteStream(savePath);
-
-      try {
-        const response = await axios.get(url, {
-          responseType: "stream",
-          cancelToken: source.token,
-          onDownloadProgress: (progressEvent) => {
-            const currentTime = Date.now();
-            const timeDiff = (currentTime - lastTime) / 1000; // 초 단위 구간 시간
-
-            // 1. 실시간 속도 계산 (1초 주기로 업데이트)
-            if (timeDiff >= 1.0) {
-              const loadedDiff = progressEvent.loaded - lastLoaded;
-              const instantSpeedInMbps =
-                (loadedDiff * 8) / (timeDiff * 1024 * 1024);
-
-              event.sender.send(
-                "download-speed-realtime",
-                instantSpeedInMbps.toFixed(2),
-              );
-
-              // 다음 계산을 위해 현재 상태 저장
-              lastTime = currentTime;
-              lastLoaded = progressEvent.loaded;
-            }
-
-            // 2. 진행률 및 평균 속도 계산
-            const progress =
-              (progressEvent.loaded / (progressEvent.total || 1)) * 100;
-            const totalDurationInSeconds = (currentTime - startTime) / 1000;
-
-            if (totalDurationInSeconds > 0) {
-              const avgSpeedInBytesPerSecond =
-                progressEvent.loaded / totalDurationInSeconds;
-              const avgSpeedInMbps =
-                (avgSpeedInBytesPerSecond * 8) / (1024 * 1024);
-
-              event.sender.send("download-progress", progress);
-              event.sender.send(
-                "download-speed-avg",
-                avgSpeedInMbps.toFixed(2),
-              );
-            }
-          },
+      return new Promise<string>((resolve, reject) => {
+        this.pendingDownloads.set(url, {
+          savePath,
+          sender: event.sender,
+          resolve,
+          reject,
+          startTime: Date.now(),
+          lastTime: Date.now(),
+          lastLoaded: 0,
         });
 
-        response.data.pipe(writer);
+        event.sender.downloadURL(url);
+      });
+    });
 
-        await new Promise((resolve: any, reject) => {
-          writer.on("finish", resolve);
-          writer.on("error", reject);
-        });
-
-        return savePath; // 다운로드한 파일 경로 반환
-      } catch (error) {
-        console.error("다운로드 실패:", error);
-        throw error;
+    ipcMain.handle("download-pause", async (event, url: string) => {
+      const item = this.activeDownloads.get(url);
+      if (item && !item.isPaused()) {
+        item.pause();
       }
     });
 
-    ipcMain.handle("download-cancel", async (event) => {
-      source.cancel();
+    ipcMain.handle("download-resume", async (event, url: string) => {
+      const item = this.activeDownloads.get(url);
+      if (item && item.canResume()) {
+        item.resume();
+      }
+    });
+
+    ipcMain.handle("download-cancel", async (event, url: string) => {
+      const item = this.activeDownloads.get(url);
+      if (item) {
+        item.cancel();
+      } else {
+        const pending = this.pendingDownloads.get(url);
+        if (pending) {
+          pending.reject("cancelled");
+          this.pendingDownloads.delete(url);
+        }
+      }
     });
 
     ipcMain.handle("extract-zip", async (event, zipPath) => {
