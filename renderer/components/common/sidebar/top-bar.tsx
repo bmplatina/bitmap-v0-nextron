@@ -1,11 +1,9 @@
-"use client";
-
 import type React from "react";
-import { startTransition, useEffect, useMemo, useState } from "react";
-import { Bell, ChevronLeft, Search as SearchIcon, Menu, X } from "lucide-react";
+import { startTransition, useEffect, useState } from "react";
+import { Bell, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
-import { imageUriRegExp } from "@/lib/utils";
+import { cn, imageUriRegExp } from "@/lib/utils";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import {
@@ -129,8 +127,10 @@ export default function TopBar() {
         <Search className="hidden md:block md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full electron-nodrag" />
 
         <div
-          className="ml-auto pl-2 flex items-center gap-2"
-          style={{ ...(!bIsMac && { transform: "translateX(-110px)" }) }}
+          className={cn(
+            "ml-auto pl-2 flex items-center gap-2",
+            !bIsMac && "mr-[128px]",
+          )}
         >
           <Flex gap="4" className="items-center">
             {isLoading ? (
