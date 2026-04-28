@@ -11,7 +11,7 @@ import Image from "next/image";
 import { EInstallState, GameInstallManager } from "@/lib/types";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
-import { X, Play, Trash2 } from "lucide-react";
+import { Download, X, Play, Trash2, Pause, Icon } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "../common/localized-link";
 
@@ -29,8 +29,16 @@ const GameInstallationCard = observer(function ({
     i18n: { language: locale },
   } = useTranslation("GamesView");
 
-  function dismiss() {
-    if (manager) manager.setShowInDownloadDrawer = false;
+  function cancelDownload() {
+    if (manager) manager.cancelDownload(window.bitmapApi);
+  }
+
+  function pauseDownload() {
+    if (manager) manager.pauseDownload(window.bitmapApi);
+  }
+
+  function resumeDownload() {
+    if (manager) manager.resumeDownload(window.bitmapApi);
   }
 
   function removeManager() {
@@ -129,15 +137,38 @@ const GameInstallationCard = observer(function ({
             </Box>
 
             {/* Dismiss Button (Top Right) */}
-            <IconButton
-              size="1"
-              variant="ghost"
-              color="gray"
-              onClick={dismiss}
-              style={{ margin: "-4px -4px 0 0" }}
+            <Flex
+              gap="2"
+              style={{ margin: "-4px -4px 0 0", alignSelf: "center" }}
             >
-              <X size={16} />
-            </IconButton>
+              {manager.getInstallState === EInstallState.Paused ? (
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="green"
+                  onClick={resumeDownload}
+                >
+                  <Play size={16} color="green" />
+                </IconButton>
+              ) : (
+                <IconButton
+                  size="1"
+                  variant="ghost"
+                  color="gray"
+                  onClick={pauseDownload}
+                >
+                  <Pause size={16} />
+                </IconButton>
+              )}
+              <IconButton
+                size="1"
+                variant="ghost"
+                color="red"
+                onClick={cancelDownload}
+              >
+                <Trash2 size={16} color="red" />
+              </IconButton>
+            </Flex>
           </Flex>
 
           <Box mt="2">
