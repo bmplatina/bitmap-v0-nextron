@@ -252,6 +252,8 @@ const getMainWindowWhenReady = async () => {
   );
 
   ipcImplement.initializeIpc();
+
+  console.log("Log file location:", log.transports.file.getFile().path);
 })();
 
 app.on("window-all-closed", () => {

@@ -33,7 +33,17 @@ export default function GamesPage() {
   // 서버 컴포넌트에서 직접 데이터 가져오기
   const [games, setGames] = useState<GameList[]>([]);
   const [nextGames, setNextGames] = useState<GameList[]>([]);
-  const { t } = useTranslation("GamesView");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("GamesView");
+
+  function getHref(href: string): string {
+    if (href === "/") return `/${locale}`;
+    else if (href.startsWith("http")) return href;
+    else if (href.startsWith("/ko") || href.startsWith("/en")) return href;
+    else return `/${locale}${href}`;
+  }
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -43,19 +53,23 @@ export default function GamesPage() {
       setNextGames(nextGamesData);
     };
     fetchGames();
-  }, []);
+  }, [state, page]);
 
   return (
     <Flex direction="column" gap="3" justify="center">
       <TabNav.Root className="sticky top-0 z-10 bg-background border-b-0">
-        <TabNav.Link href="/games?state=all" active={state === "all"}>
-          {t("all")}
+        <TabNav.Link asChild active={state === "all"}>
+          <LocalizedLink href="/games?state=all">{t("all")}</LocalizedLink>
         </TabNav.Link>
-        <TabNav.Link href="/games?state=released" active={state === "released"}>
-          {t("released")}
+        <TabNav.Link asChild active={state === "released"}>
+          <LocalizedLink href="/games?state=released">
+            {t("released")}
+          </LocalizedLink>
         </TabNav.Link>
-        <TabNav.Link href="/games?state=pending" active={state === "pending"}>
-          {t("pending")}
+        <TabNav.Link asChild active={state === "pending"}>
+          <LocalizedLink href="/games?state=pending">
+            {t("pending")}
+          </LocalizedLink>
         </TabNav.Link>
       </TabNav.Root>
       <Box pt="3">
