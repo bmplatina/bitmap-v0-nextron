@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import GameDetail from "@/components/games/game-details";
 import { getGameRatesById } from "@/lib/games";
 import { useRouter } from "next/router";
+import GameContextMenu from "@/components/games/game-context-menu";
 
 interface GameListButtonProps {
   gameMgr: GameInstallManager;
@@ -32,64 +33,32 @@ const GameListButton = observer(function ({
 }: GameListButtonProps) {
   const { t } = useTranslation("DownloadLibrary");
 
-  async function removeApp() {
-    await gameMgr.removeApp(window.bitmapApi);
-    removeCallback();
-  }
-
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger>
-        <button
-          className={cn(
-            "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none text-left",
-            bIsSelected
-              ? "bg-accent text-accent-foreground font-medium"
-              : "text-muted-foreground",
-          )}
-          onClick={() => gameIdCallback(gameMgr.getGameInfo.gameId)}
-        >
-          {/* 아이콘이 필요한 경우 여기에 추가할 수 있습니다 */}
-          <Image
-            src={
-              gameMgr.getGameImageURL[2] ||
-              gameMgr.getGameImageURL[0] ||
-              "/placeholder.svg?height=40&width=40"
-            }
-            alt={gameMgr.getGameTitle}
-            width={25}
-            height={25}
-            className="object-cover"
-          />
-          {gameMgr.getGameTitle || t("unknown_game")}
-        </button>
-      </ContextMenu.Trigger>
-      <ContextMenu.Content>
-        <ContextMenu.Item
-          color="green"
-          onClick={() => gameMgr.openApp(window.bitmapApi)}
-        >
-          {t("play")}
-        </ContextMenu.Item>
-        <ContextMenu.Item disabled>{t("add-to-favorites")}</ContextMenu.Item>
-        <ContextMenu.Separator />
-
-        <ContextMenu.Sub>
-          <ContextMenu.SubTrigger>{t("manage")}</ContextMenu.SubTrigger>
-          <ContextMenu.SubContent>
-            <ContextMenu.Item disabled>{t("add-shortcut")}</ContextMenu.Item>
-            <ContextMenu.Item disabled>{t("open-local")}</ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item shortcut="⌘ ⌫" color="red" onClick={removeApp}>
-              {t("uninstall")}
-            </ContextMenu.Item>
-          </ContextMenu.SubContent>
-        </ContextMenu.Sub>
-
-        <ContextMenu.Separator />
-        <ContextMenu.Item disabled>{t("properties")}</ContextMenu.Item>
-      </ContextMenu.Content>
-    </ContextMenu.Root>
+    <GameContextMenu gameMgr={gameMgr} removeCallback={removeCallback}>
+      <button
+        className={cn(
+          "flex w-full justify-start items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent hover:text-accent-foreground outline-none text-left",
+          bIsSelected
+            ? "bg-accent text-accent-foreground font-medium"
+            : "text-muted-foreground",
+        )}
+        onClick={() => gameIdCallback(gameMgr.getGameInfo.gameId)}
+      >
+        {/* 아이콘이 필요한 경우 여기에 추가할 수 있습니다 */}
+        <Image
+          src={
+            gameMgr.getGameImageURL[2] ||
+            gameMgr.getGameImageURL[0] ||
+            "/placeholder.svg?height=40&width=40"
+          }
+          alt={gameMgr.getGameTitle}
+          width={25}
+          height={25}
+          className="object-cover"
+        />
+        {gameMgr.getGameTitle || t("unknown_game")}
+      </button>
+    </GameContextMenu>
   );
 });
 

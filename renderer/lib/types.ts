@@ -269,6 +269,7 @@ class GameInstallManager {
   // Installation Infos
   private defaultInstallationPath: string | null = "";
   private installationPath: string | null = "";
+  private binaryAbsPath: string = "";
   private installState: EInstallState = EInstallState.NotInstalled;
   private downloadProgress: number = 0;
   private downloadSpeedAvg: number = 0;
@@ -464,6 +465,10 @@ class GameInstallManager {
     return this.installationPath;
   }
 
+  get getBinaryAbsoluatePath(): string {
+    return this.binaryAbsPath;
+  }
+
   set setInstallationPath(newInstallationPath: string | null) {
     this.installationPath = this.bIsMac
       ? `${newInstallationPath}/${this.gameBinaryName}/`
@@ -512,7 +517,9 @@ class GameInstallManager {
 
   pauseDownload(context: bitmapApi) {
     if (this.installState === EInstallState.Downloading) {
-      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+      const url = this.bIsMac
+        ? this.gameDownloadMacURL
+        : this.gameDownloadWinURL;
       if (url) {
         context.pauseDownload(url);
         this.installState = EInstallState.Paused;
@@ -522,7 +529,9 @@ class GameInstallManager {
 
   resumeDownload(context: bitmapApi) {
     if (this.installState === EInstallState.Paused) {
-      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+      const url = this.bIsMac
+        ? this.gameDownloadMacURL
+        : this.gameDownloadWinURL;
       if (url) {
         context.resumeDownload(url);
         this.installState = EInstallState.Downloading;
@@ -531,16 +540,29 @@ class GameInstallManager {
   }
 
   cancelDownload(context: bitmapApi) {
-    if (this.installState === EInstallState.Downloading || this.installState === EInstallState.Paused) {
-      const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+    if (
+      this.installState === EInstallState.Downloading ||
+      this.installState === EInstallState.Paused
+    ) {
+      const url = this.bIsMac
+        ? this.gameDownloadMacURL
+        : this.gameDownloadWinURL;
       if (url) {
         context.cancelDownload(url);
+        const savePathLocal: string | null = this.bIsMac
+          ? `${this.installationPath}/${url?.split("/")[url?.split("/").length - 1]}`
+          : `${this.installationPath}\\${url?.split("/")[url?.split("/").length - 1]}`;
+        context.removeFile(savePathLocal);
         this.installState = EInstallState.NotInstalled;
         this.downloadProgress = 0;
         this.downloadSpeedAvg = 0;
         this.downloadSpeedRealtime = 0;
       }
     }
+  }
+
+  async createShortcut(context: bitmapApi) {
+    await context.createShortcut(this.binaryAbsPath, this.gameTitle);
   }
 
   /**
@@ -585,9 +607,12 @@ class GameInstallManager {
         `다운로드 완료: ${archivePath}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
       );
     } catch (error) {
-      if (error === 'cancelled' || (error instanceof Error && error.message.includes('cancelled'))) {
-        console.log('다운로드 취소됨');
-        return 'cancelled';
+      if (
+        error === "cancelled" ||
+        (error instanceof Error && error.message.includes("cancelled"))
+      ) {
+        console.log("다운로드 취소됨");
+        return "cancelled";
       }
       this.installState = EInstallState.InstallError;
       console.error("오류 발생:", error);
@@ -618,11 +643,11 @@ class GameInstallManager {
       console.log(
         `설치 완료: EInstallState.Installed: ${this.installState === EInstallState.Installed}`,
       );
+      this.binaryAbsPath = this.bIsMac
+        ? `${extractedPath}/${this.gameBinaryName}.app`
+        : `${extractedPath}\\${this.gameBinaryName}.exe`;
       if (bCreateShortcut) {
-        await context.createShortcut(
-          `${extractedPath}/${this.gameBinaryName}.${this.bIsMac ? "app" : "exe"}`,
-          this.gameTitle,
-        );
+        this.createShortcut(context);
       }
     } catch (error: any) {
       this.installState = EInstallState.InstallError;
