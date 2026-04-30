@@ -16,6 +16,17 @@ import i18next from "../next-i18next.config";
 import { autoUpdater, UpdateInfo, ProgressInfo } from "electron-updater";
 import log from "electron-log";
 
+// 1. 초기 설정 (앱 실행 시 한 번만 설정)
+log.errorHandler.startCatching();
+
+// 로그 포맷 설정
+log.transports.console.format =
+  "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
+log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
+
+// 파일 저장 임계값 설정: 'info'로 설정하면 info, warn, error가 모두 파일에 기록됩니다.
+log.transports.file.level = "info";
+
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
 const platformName = process.platform;
@@ -128,7 +139,7 @@ const getMainWindowWhenReady = async () => {
   });
 
   const locale = helpers.userStore.get("locale", i18next.i18n.defaultLocale);
-  console.log("Using locale:", locale);
+  log.info("Using locale:", locale);
 
   // iframe 내부에서 열리는 외부 링크 (유튜브 제목 등)를 기본 브라우저로 리디렉션
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

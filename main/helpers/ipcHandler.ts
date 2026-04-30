@@ -13,6 +13,7 @@ import * as types from "./types";
 import path, { dirname, join } from "path";
 import fs from "fs";
 import { exec } from "child_process";
+import log from "electron-log";
 
 // Game Downloader
 import axios from "axios";
@@ -101,10 +102,10 @@ class ipcHandle {
 
         item.on("updated", (event, state) => {
           if (state === "interrupted") {
-            console.log("Download is interrupted but can be resumed");
+            log.info("Download is interrupted but can be resumed");
           } else if (state === "progressing") {
             if (item.isPaused()) {
-              console.log("Download is paused");
+              log.info("Download is paused");
             } else {
               const currentTime = Date.now();
               const timeDiff = (currentTime - pending.lastTime) / 1000;
@@ -221,12 +222,12 @@ class ipcHandle {
       const mainWindow = BrowserWindow.fromWebContents(event.sender);
 
       if (!mainWindow) {
-        console.error("set-screen-mode: mainWindow is null");
+        log.error("set-screen-mode: mainWindow is null");
         return;
       }
 
       if (this.platformName !== "win32") {
-        console.warn(
+        log.warn(
           "set-screen-mode: setTitleBarOverlay method is not supported on",
           this.platformName,
         );
@@ -411,7 +412,7 @@ class ipcHandle {
 
         return extractPath;
       } catch (error) {
-        console.error("압축 해제 실패:", error);
+        log.error("압축 해제 실패:", error);
         throw error;
       }
     });
@@ -453,11 +454,11 @@ class ipcHandle {
             }
             // 심볼릭 링크 생성 (원본 경로, 생성될 경로)
             fs.symlinkSync(installationPath, shortcutPath);
-            console.log("맥 가상본(심볼릭 링크) 생성 완료");
+            log.info("맥 가상본(심볼릭 링크) 생성 완료");
             return { success: true, path: shortcutPath };
           }
         } catch (error) {
-          console.error("바로가기 생성 중 오류 발생:", error);
+          log.error("바로가기 생성 중 오류 발생:", error);
           return { success: false, error: error.message };
         }
       },
@@ -477,7 +478,7 @@ class ipcHandle {
           fs.unlinkSync(shortcutPath);
         }
       } catch (error) {
-        console.error("바로가기 제거 중 오류 발생:", error);
+        log.error("바로가기 제거 중 오류 발생:", error);
       }
     });
 
@@ -486,10 +487,10 @@ class ipcHandle {
       return new Promise<string>((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
           if (error) {
-            console.log("'run-command' error", stderr, error);
+            log.info("'run-command' error", stderr, error);
             reject(stderr || error.message);
           } else {
-            console.log("'run-command' completed", stdout);
+            log.info("'run-command' completed", stdout);
             resolve(stdout);
           }
         });
@@ -504,10 +505,10 @@ class ipcHandle {
           const extensionName =
             this.platformName === "darwin" ? ".app/" : ".exe";
           const targetPath = dirPath + extensionName;
-          console.log(`dirPath: ${dirPath}, targetPath: ${targetPath}`);
+          log.info(`dirPath: ${dirPath}, targetPath: ${targetPath}`);
           return fs.existsSync(targetPath);
         } catch (error) {
-          console.error(error);
+          log.error(error);
           return false;
         }
       },
@@ -556,10 +557,10 @@ class ipcHandle {
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.find({}, (err, docs: GameInstallInfo[]) => {
             if (err) {
-              console.error(err);
+              log.error(err);
               reject(err);
             } else {
-              console.log("GetByIndex Succeed: ", typeof docs, docs);
+              log.info("GetByIndex Succeed: ", typeof docs, docs);
               resolve(docs);
             }
           });
@@ -576,10 +577,10 @@ class ipcHandle {
             { gameId: gameIdIndex },
             (err, docs: GameInstallInfo) => {
               if (err) {
-                console.error(err);
+                log.error(err);
                 reject(err);
               } else {
-                console.log("GetByIndex Succeed: ", typeof docs, docs);
+                log.info("GetByIndex Succeed: ", typeof docs, docs);
                 resolve(docs);
               }
             },
@@ -654,10 +655,10 @@ class ipcHandle {
       return new Promise((resolve, reject) => {
         this.settingsDb.findOne({ id: 0 }, (err, docs: GameInstallInfo) => {
           if (err) {
-            console.error(err);
+            log.error(err);
             reject(err);
           } else {
-            console.log("GetByIndex Succeed: ", typeof docs, docs);
+            log.info("GetByIndex Succeed: ", typeof docs, docs);
             resolve(docs);
           }
         });
