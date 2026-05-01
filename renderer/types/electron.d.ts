@@ -32,6 +32,7 @@ export interface tools {
   openExternal: (url: string) => void;
 
   getPlatform: () => Promise<string>;
+  getAppVersion: () => Promise<string>;
 
   getLocale: () => "ko" | "en";
 

@@ -3,6 +3,7 @@ import type {
   stringLocalized,
   DocumentArchives,
   Portfolio,
+  GitHubRelease,
 } from "@/lib/types";
 import { csrAxiosGet, csrAxiosPost } from "./utils-client";
 import { bitmapApi } from "@/types/electron";
@@ -113,10 +114,24 @@ async function getPortfolio(
   };
 }
 
+async function getBitmapAppFromGitHub(context: bitmapApi) {
+  try {
+    const response = await csrAxiosGet<GitHubRelease[]>(
+      context,
+      "https://api.github.com/repos/bmplatina/bitmap-v0-nextron/releases",
+    );
+
+    if (response) return response;
+  } catch (error) {
+    console.error("Bitmap App 가져오는 중 오류 발생:", error);
+  }
+}
+
 export {
   getAllArchiveDocs,
   getArchiveDocument,
   getMembers,
   getEula,
   getPortfolio,
+  getBitmapAppFromGitHub,
 };

@@ -3,16 +3,18 @@ import { startTransition, useEffect, useState } from "react";
 import { Bell, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
-import { cn, imageUriRegExp } from "@/lib/utils";
+import { cn, imageUriRegExp, pretendard } from "@/lib/utils";
 import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import {
   Avatar,
   Button,
+  Dialog,
   Flex,
   IconButton,
   Popover,
   Spinner,
+  Text,
 } from "@radix-ui/themes";
 import { ProfilePopover } from "@/components/accounts/profile";
 import { useAuth } from "@/lib/AuthContext";
@@ -20,6 +22,11 @@ import NotificationCenter from "./notification-center";
 import UpdateOverlay from "@/components/common/sidebar/update-overlay";
 import Search from "@/components/common/search/search";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import semver from "semver";
+import { openExternal } from "@/lib/utils-client";
+import { getBitmapAppFromGitHub } from "@/lib/general";
+import { GitHubRelease } from "@/lib/types";
+import ClientMarkdown from "../markdown/client-markdown";
 import BitmapLogoBMP from "@/public/images/bitmap_bmp.png";
 
 export default function TopBar() {
@@ -133,6 +140,7 @@ export default function TopBar() {
           )}
         >
           <Flex gap="4" className="items-center">
+            <UpdateButton />
             {isLoading ? (
               <Spinner />
             ) : (
@@ -189,5 +197,113 @@ export default function TopBar() {
         </div>
       </div>
     </>
+  );
+}
+
+function UpdateButton() {
+  const { t } = useTranslation("BitmapApp");
+  const { bIsMac } = useGameInstallManager();
+  const [gitHubReleases, setGitHubReleases] = useState<GitHubRelease[]>([]);
+  const [latestReleaseDownloadURI, setLatestReleaseDownloadURI] = useState("");
+  const [latestReleaseVersion, setLatestReleaseVersion] = useState("");
+  const [latestTag, setLatestTag] = useState("");
+  const [currentAppVersion, setCurrentAppVersion] = useState("");
+  const [bIsUpdatable, setIsUpdatable] = useState(false);
+
+  function openExternalLink(
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  ) {
+    openExternal(event, window.electronTools);
+  }
+
+  useEffect(() => {
+    async function checkUpdate() {
+      try {
+        // 1. 최신 릴리즈 정보 가져오기
+        const releases = await getBitmapAppFromGitHub(window.bitmapApi);
+        if (!releases || releases.length === 0) return;
+
+        // UI 표시를 위한 상태 업데이트
+        setGitHubReleases(releases);
+
+        const latestRelease = releases[0];
+        const latestTagName = latestRelease.tag_name;
+
+        // 다운로드 자산 찾기
+        const downloadAsset = latestRelease.assets.find((asset) =>
+          asset.browser_download_url.includes(bIsMac ? ".dmg" : ".exe"),
+        );
+
+        // 상태 업데이트
+        setLatestTag(latestTagName);
+        setLatestReleaseVersion(latestTagName);
+        if (downloadAsset) {
+          setLatestReleaseDownloadURI(downloadAsset.browser_download_url);
+        }
+
+        // 2. 버전 비교 (로컬 변수 사용)
+        const currentVersion = await window.electronTools.getAppVersion();
+        setCurrentAppVersion(currentVersion);
+
+        // semver 유효성 검사 및 비교
+        if (semver.valid(latestTagName) && semver.valid(currentVersion)) {
+          setIsUpdatable(semver.gt(latestTagName, currentVersion));
+        } else setIsUpdatable(false);
+      } catch (error) {
+        console.error("버전 체크 중 오류 발생:", error);
+      }
+    }
+
+    checkUpdate();
+  }, [bIsMac]);
+
+  if (!bIsUpdatable) return null;
+
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <Button
+          radius="full"
+          className={cn("electron-nodrag", pretendard.className)}
+        >
+          업데이트
+        </Button>
+      </Dialog.Trigger>
+      <Dialog.Content
+        maxWidth="450px"
+        className={cn(pretendard.className, "md:!max-w-[800px]")}
+      >
+        <Dialog.Title>
+          <Text className={pretendard.className}>
+            Bitmap App {latestReleaseVersion}
+          </Text>
+        </Dialog.Title>
+        <Dialog.Description size="2" mb="4">
+          {t("latest-release-note-desc")}
+        </Dialog.Description>
+
+        <Flex direction="column" gap="3">
+          {gitHubReleases[0]?.body && (
+            <ClientMarkdown content={gitHubReleases[0].body} />
+          )}
+        </Flex>
+
+        <Flex gap="3" mt="4" justify="end">
+          <Button color="green" asChild>
+            <LocalizedLink
+              href={latestReleaseDownloadURI}
+              onClick={openExternalLink}
+            >
+              {t("download", "다운로드")}
+            </LocalizedLink>
+          </Button>
+          <Dialog.Close>
+            <Button>
+              <Text className={pretendard.className}>{t("dismiss")}</Text>
+            </Button>
+          </Dialog.Close>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

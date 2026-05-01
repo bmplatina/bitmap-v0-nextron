@@ -84,9 +84,12 @@ class ipcHandle {
 
   /**
    * API 링크 생성
-   * @param substring 도메인 뒤 링크
+   * @param substring 도메인 뒤 링크 또는 전체 URL
    */
   getApiLinkByPurpose(substring: string): string {
+    if (substring.startsWith("http://") || substring.startsWith("https://")) {
+      return substring;
+    }
     const API_DOMAIN: string = "https://api.prodbybitmap.com/";
     return `${API_DOMAIN}${substring}`;
   }
@@ -194,6 +197,10 @@ class ipcHandle {
     // 플랫폼 가져오기
     ipcMain.handle("get-platform", (_event): string => {
       return this.platformName;
+    });
+
+    ipcMain.handle("get-version", (_event): string => {
+      return app.getVersion();
     });
 
     ipcMain.handle("get-locale", (_event): string => {

@@ -53,6 +53,8 @@ const electronTools = {
   // Get current OS
   getPlatform: () => ipcRenderer.invoke("get-platform"),
 
+  getAppVersion: () => ipcRenderer.invoke("get-version"),
+
   // Get OS default language
   getLocale: () => ipcRenderer.invoke("get-locale"),
 
@@ -133,10 +135,10 @@ const bitmapApi = {
 
   // Cancel Download
   cancelDownload: (url: string) => ipcRenderer.invoke("download-cancel", url),
-  
+
   // Pause Download
   pauseDownload: (url: string) => ipcRenderer.invoke("download-pause", url),
-  
+
   // Resume Download
   resumeDownload: (url: string) => ipcRenderer.invoke("download-resume", url),
 

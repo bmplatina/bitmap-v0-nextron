@@ -822,6 +822,46 @@ interface UpdateStatus {
   status: UpdateStatusType;
 }
 
+interface GitHubRelease {
+  id: number;
+  url: string;
+  html_url: string;
+  tag_name: string;
+  target_commitish: string;
+  name: string;
+  body: string; // 마크다운 형식의 릴리스 노트
+  draft: boolean;
+  prerelease: boolean;
+  created_at: string; // ISO 8601 날짜
+  published_at: string;
+  author: GitHubUser;
+  assets: GitHubAsset[];
+  tarball_url: string;
+  zipball_url: string;
+}
+
+interface GitHubAsset {
+  id: number;
+  name: string; // 파일명 (예: Bitmap.Setup.0.1.1-a.exe)
+  label: string | null;
+  uploader: GitHubUser;
+  content_type: string;
+  state: "uploaded" | string;
+  size: number; // 바이트 단위
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+  browser_download_url: string; // 실제 다운로드 링크
+}
+
+interface GitHubUser {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+  type: string;
+}
+
 export { EInstallState, GameInstallManager };
 
 export type {
@@ -855,4 +895,5 @@ export type {
   UpdateProgress,
   UpdateStatusType,
   UpdateStatus,
+  GitHubRelease,
 };

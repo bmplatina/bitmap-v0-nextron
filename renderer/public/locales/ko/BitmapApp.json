@@ -1,14 +1,21 @@
 {
   "about": "Bitmap App은 예술과 기술을 넘나드는 창작자들과 정보를 공유하고,\\n제작된 게임을 플레이하며 소통하는 최적의 공간입니다.",
-  "download-alert": "안전한 설치를 위해 GitHub 릴리즈 페이지로 이동합니다.",
+  "download-alert": "안전한 설치를 위해 GitHub 릴리스에서 다운로드합니다.",
   "intro-title": "게임 그 이상의 가치, Bitmap",
   "feature-1-title": "간편한 설치 및 업데이트",
   "feature-1-desc": "원클릭으로 최신 버전의 게임을 설치하고 자동으로 업데이트를 관리하세요.",
   "feature-2-title": "창작자 커뮤니티",
   "feature-2-desc": "개발자와 직접 소통하고 피드백을 주고받으며 함께 게임을 완성해나갑니다.",
   "feature-3-title": "다양한 플랫폼 지원",
-  "feature-3-desc": "Windows, macOS, Linux 등 다양한 환경에서 비트맵의 게임들을 즐길 수 있습니다.",
+  "feature-3-desc": "Windows, macOS 등 다양한 환경에서 비트맵의 게임들을 즐길 수 있습니다.",
+  "unsupported": "{osName}은(는) 지원되지 않는 플랫폼입니다. Bitmap App은 Windows와 macOS를 지원합니다.",
   "system-req": "시스템 요구 사양",
   "os": "운영체제",
-  "os-desc": "Windows 10 이상, macOS 11 이상, Linux (glibc 2.27+)"
+  "os-desc": "Windows 10 이상, macOS 15 이상",
+  "all-releases": "모든 릴리스",
+  "all-releases-view": "모든 릴리스 보기",
+  "all-releases-desc": "Bitmap 앱의 모든 릴리스를 아래에서 확인하고 다운로드할 수 있습니다.",
+  "latest-release-note-desc": "Bitmap 앱 최신 릴리스의 변경 내역을 확인하십시오.",
+  "download": "다운로드",
+  "dismiss": "승인"
 }
