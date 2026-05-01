@@ -43,8 +43,21 @@ export default function TopBar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   // 스크롤 상태 관리
   const [isScrolled, setIsScrolled] = useState(false);
-  // 히스토리 개수
-  const [historyLength, setHistoryLength] = useState(window.history.length);
+  // 뒤로가기 가능 여부 관리
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  useEffect(() => {
+    const updateBackStatus = () => {
+      // Next.js의 history state.idx를 활용하여 첫 페이지인지 확인
+      setCanGoBack((window.history.state?.idx ?? 0) > 0);
+    };
+
+    updateBackStatus();
+    router.events.on("routeChangeComplete", updateBackStatus);
+    return () => {
+      router.events.off("routeChangeComplete", updateBackStatus);
+    };
+  }, [router.events]);
 
   function handleFullscreenChange(newFullscreenState: boolean) {
     if (!bIsMac) return;
@@ -55,8 +68,7 @@ export default function TopBar() {
   }
 
   function handleBackPage() {
-    window.history.back();
-    setHistoryLength(window.history.length);
+    router.back();
   }
 
   // 스크롤 감지
@@ -125,7 +137,7 @@ export default function TopBar() {
             radius="full"
             className="electron-nodrag"
             onClick={handleBackPage}
-            disabled={historyLength <= 1}
+            disabled={!canGoBack}
           >
             <ChevronLeft className="h-5 w-5" />
           </IconButton>
