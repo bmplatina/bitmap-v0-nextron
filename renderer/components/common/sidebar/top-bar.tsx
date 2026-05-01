@@ -1,5 +1,6 @@
 import type React from "react";
 import { startTransition, useEffect, useState } from "react";
+import { UpdateProgress, UpdateStatus, UpdateStatusType } from "@/lib/types";
 import { Bell, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
@@ -13,13 +14,13 @@ import {
   Flex,
   IconButton,
   Popover,
+  Progress,
   Spinner,
   Text,
 } from "@radix-ui/themes";
 import { ProfilePopover } from "@/components/accounts/profile";
 import { useAuth } from "@/lib/AuthContext";
 import NotificationCenter from "./notification-center";
-import UpdateOverlay from "@/components/common/sidebar/update-overlay";
 import Search from "@/components/common/search/search";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import semver from "semver";
@@ -193,14 +194,13 @@ export default function TopBar() {
               </>
             )}
           </Flex>
-          <UpdateOverlay /> {/* 전역 알림 컴포넌트 */}
         </div>
       </div>
     </>
   );
 }
 
-function UpdateButton() {
+const UpdateButton: React.FC = function () {
   const { t } = useTranslation("BitmapApp");
   const { bIsMac } = useGameInstallManager();
   const [gitHubReleases, setGitHubReleases] = useState<GitHubRelease[]>([]);
@@ -209,6 +209,11 @@ function UpdateButton() {
   const [latestTag, setLatestTag] = useState("");
   const [currentAppVersion, setCurrentAppVersion] = useState("");
   const [bIsUpdatable, setIsUpdatable] = useState(false);
+
+  // States for Auto Update
+  const [status, setStatus] = useState<UpdateStatusType>("idle");
+  const [message, setMessage] = useState("");
+  const [progress, setProgress] = useState<UpdateProgress | null>(null);
 
   function openExternalLink(
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
@@ -257,6 +262,20 @@ function UpdateButton() {
     checkUpdate();
   }, [bIsMac]);
 
+  useEffect(() => {
+    // 메인 프로세스로부터 상태 수신
+    window.electronTools.onUpdateStatus((data: UpdateStatus) => {
+      setStatus(data.status);
+      setMessage(data.message);
+    });
+
+    // 다운로드 진행률 수신
+    window.electronTools.onDownloadProgress((data: UpdateProgress) => {
+      setStatus("downloading");
+      setProgress(data);
+    });
+  }, []);
+
   if (!bIsUpdatable) return null;
 
   return (
@@ -266,7 +285,7 @@ function UpdateButton() {
           radius="full"
           className={cn("electron-nodrag", pretendard.className)}
         >
-          업데이트
+          {t("update")}
         </Button>
       </Dialog.Trigger>
       <Dialog.Content
@@ -289,14 +308,32 @@ function UpdateButton() {
         </Flex>
 
         <Flex gap="3" mt="4" justify="end">
-          <Button color="green" asChild>
-            <LocalizedLink
-              href={latestReleaseDownloadURI}
-              onClick={openExternalLink}
+          {status === "downloading" && progress ? (
+            <>
+              <Progress value={progress.percent} />
+              <Text>
+                {Math.round(progress.percent)}%,{" "}
+                {(progress.bytesPerSecond / 1024 / 1024).toFixed(1)} MB/s
+              </Text>
+            </>
+          ) : status === "downloaded" ? (
+            <Button
+              color="green"
+              onClick={() => window.electronTools.quitAndInstall()}
             >
-              {t("download", "다운로드")}
-            </LocalizedLink>
-          </Button>
+              {t("bitmap-app-update-now")}
+            </Button>
+          ) : (
+            <Button color="green" asChild>
+              <LocalizedLink
+                href={latestReleaseDownloadURI}
+                onClick={openExternalLink}
+              >
+                {t("download")}
+              </LocalizedLink>
+            </Button>
+          )}
+
           <Dialog.Close>
             <Button>
               <Text className={pretendard.className}>{t("dismiss")}</Text>
@@ -306,4 +343,4 @@ function UpdateButton() {
       </Dialog.Content>
     </Dialog.Root>
   );
-}
+};

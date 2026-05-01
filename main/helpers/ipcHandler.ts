@@ -66,6 +66,8 @@ class ipcHandle {
   private readonly settingsDbPath: string;
   private readonly settingsDb: Datastore<any>;
 
+  private readonly SAFARI_USERAGENT: string =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15";
   private readonly API_URI: string = "https://api.prodbybitmap.com/";
 
   private activeDownloads = new Map<string, Electron.DownloadItem>();
@@ -90,8 +92,7 @@ class ipcHandle {
     if (substring.startsWith("http://") || substring.startsWith("https://")) {
       return substring;
     }
-    const API_DOMAIN: string = "https://api.prodbybitmap.com/";
-    return `${API_DOMAIN}${substring}`;
+    return `${this.API_URI}${substring}`;
   }
 
   initializeIpc() {
@@ -271,6 +272,7 @@ class ipcHandle {
             timeout: 30000,
             headers: {
               "Content-Type": "application/json",
+              "User-Agent": this.SAFARI_USERAGENT,
               ...(token && { Authorization: `Bearer ${token}` }),
             },
             onDownloadProgress: (progressEvent) => {
@@ -303,6 +305,7 @@ class ipcHandle {
             timeout: 30000,
             headers: {
               "Content-Type": contentType || "application/json",
+              "User-Agent": this.SAFARI_USERAGENT,
               ...(token && { Authorization: `Bearer ${token}` }),
             },
             onUploadProgress: (progressEvent) => {

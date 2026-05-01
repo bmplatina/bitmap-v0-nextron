@@ -9,7 +9,5 @@
   "screen-mode-light-desc": "밝은 테마를 사용합니다.",
   "screen-mode-system-default": "자동",
   "screen-mode-system-default-desc": "시스템의 테마 설정을 따릅니다.",
-  "bitmap-app-update": "Bitmap 앱 업데이트 중⋯",
-  "bitmap-app-update-now": "지금 재시작 및 설치",
   "dismiss": "닫기"
 }

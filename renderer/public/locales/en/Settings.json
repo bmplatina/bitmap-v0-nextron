@@ -9,7 +9,5 @@
   "screen-mode-light-desc": "Use light mode",
   "screen-mode-system-default": "Auto",
   "screen-mode-system-default-desc": "Follow the system theme settings",
-  "bitmap-app-update": "Updating Bitmap App…",
-  "bitmap-app-update-now": "Restart and Install Now",
   "dismiss": "Dismiss"
 }
