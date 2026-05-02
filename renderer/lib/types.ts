@@ -595,13 +595,13 @@ class GameInstallManager {
     return new Promise<string>((resolve, reject) => {
       this.installState = EInstallState.Downloading;
       
-      const unsubscribeProgress = context.onGameInstallProgress((progress) => {
+      const unsubscribeProgress = context.onGameInstallProgress(this.gameId, (progress) => {
         this.downloadProgress = progress.percent;
         this.downloadSpeedRealtime = parseFloat(progress.speed.replace(/[^0-9.]/g, ''));
         console.log(`다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`);
       });
 
-      const unsubscribeComplete = context.onGameInstallComplete(async (success) => {
+      const unsubscribeComplete = context.onGameInstallComplete(this.gameId, async (success) => {
         unsubscribeProgress();
         unsubscribeComplete();
 
@@ -627,7 +627,7 @@ class GameInstallManager {
         }
       });
 
-      context.pullGame(indexUrl, destPath, storeUrl, cachePath).catch((err) => {
+      context.pullGame(this.gameId, indexUrl, destPath, storeUrl, cachePath).catch((err) => {
         unsubscribeProgress();
         unsubscribeComplete();
         this.installState = EInstallState.InstallError;

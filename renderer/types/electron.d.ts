@@ -65,9 +65,9 @@ export interface bitmapApi {
 
   downloadFile: (url: string | null, savePath: string) => Promise<string>;
   
-  pullGame: (indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => Promise<void>;
-  onGameInstallProgress: (callback: (progress: { percent: number; current: number; total: number; speed: string; remaining: string }) => void) => () => void;
-  onGameInstallComplete: (callback: (success: boolean) => void) => () => void;
+  pullGame: (gameId: number, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => Promise<void>;
+  onGameInstallProgress: (gameId: number, callback: (progress: { percent: number; current: number; total: number; speed: string; remaining: string }) => void) => () => void;
+  onGameInstallComplete: (gameId: number, callback: (success: boolean) => void) => () => void;
 
   onDownloadProgress: (callback: (progress: number) => void) => number;
   onDownloadAvgSpeed: (callback: (progress: number) => void) => number;

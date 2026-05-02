@@ -380,7 +380,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "pull-game",
-      async (event, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => {
+      async (event, gameId: number, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => {
         const desyncArgs = ["extract", "-s", storeUrl];
         if (cachePath) {
           desyncArgs.push("-c", cachePath);
@@ -420,13 +420,13 @@ class ipcHandle {
                 speed: match[4] + match[5],
                 remaining: match[6],
               };
-              event.sender.send("game-install-progress", progress);
+              event.sender.send(`game-install-progress-${gameId}`, progress);
             }
           }
         });
 
         child.on("close", (code) => {
-          event.sender.send("game-install-complete", code === 0);
+          event.sender.send(`game-install-complete-${gameId}`, code === 0);
         });
       },
     );
