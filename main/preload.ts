@@ -119,6 +119,28 @@ const bitmapApi = {
   downloadFile: (url: string, savePath: string) =>
     ipcRenderer.invoke("download-file", { url, savePath }),
 
+  // Pull Game via desync
+  pullGame: (indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) =>
+    ipcRenderer.invoke("pull-game", indexUrl, destPath, storeUrl, cachePath),
+
+  onGameInstallProgress: (callback: (progress: { percent: number; current: number; total: number; speed: string; remaining: string }) => void) => {
+    const subscription = (_event: IpcRendererEvent, progress: { percent: number; current: number; total: number; speed: string; remaining: string }) =>
+      callback(progress);
+    ipcRenderer.on("game-install-progress", subscription);
+    return () => {
+      ipcRenderer.removeListener("game-install-progress", subscription);
+    };
+  },
+
+  onGameInstallComplete: (callback: (success: boolean) => void) => {
+    const subscription = (_event: IpcRendererEvent, success: boolean) =>
+      callback(success);
+    ipcRenderer.on("game-install-complete", subscription);
+    return () => {
+      ipcRenderer.removeListener("game-install-complete", subscription);
+    };
+  },
+
   // Get download progress
   onDownloadProgress: (callback: (progress: number) => void) =>
     ipcRenderer.on("download-progress", (_, progress) => callback(progress)),

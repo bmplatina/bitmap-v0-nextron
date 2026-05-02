@@ -14,6 +14,7 @@ import path, { dirname, join } from "path";
 import fs from "fs";
 import { exec } from "child_process";
 import log from "electron-log";
+import { spawn } from "child_process";
 
 // Game Downloader
 import axios from "axios";
@@ -53,11 +54,17 @@ class ipcHandle {
       filename: this.settingsDbPath,
       autoload: true,
     });
+    const desyncBinaryName =
+      processPlatform === "win32" ? "desync.exe" : "desync";
+    this.desyncPath = !app.isPackaged
+      ? path.join(process.cwd(), "resources", processPlatform, desyncBinaryName)
+      : path.join(process.resourcesPath, "bin", desyncBinaryName);
   }
 
   // Electron
   private readonly bIsProd: boolean;
   private readonly platformName: string;
+  private readonly desyncPath: string;
 
   // neDB state store
   private readonly gameInstallInfoDbPath: string;
@@ -370,6 +377,59 @@ class ipcHandle {
         }
       }
     });
+
+    ipcMain.handle(
+      "pull-game",
+      async (event, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => {
+        const desyncArgs = ["extract", "-s", storeUrl];
+        if (cachePath) {
+          desyncArgs.push("-c", cachePath);
+        }
+        desyncArgs.push(indexUrl, destPath);
+
+        const child = spawn(
+          this.desyncPath,
+          desyncArgs,
+          {
+            env: {
+              ...process.env,
+              DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
+            },
+          },
+        );
+
+        let stderrBuffer = "";
+
+        child.stderr.on("data", (data) => {
+          stderrBuffer += data.toString();
+          
+          let newlineIndex;
+          while ((newlineIndex = stderrBuffer.indexOf("\n")) !== -1) {
+            const line = stderrBuffer.slice(0, newlineIndex).trim();
+            stderrBuffer = stderrBuffer.slice(newlineIndex + 1);
+
+            // Parsing e.g.: Assembling 12% (1500000/12345678) 12.5 MiB/s 00:45
+            const progressRegex = /(\d+)%\s+\((\d+)\/(\d+)\)\s+([\d.]+)\s*([a-zA-Z]+\/s)\s+([\d:]+)/i;
+            const match = line.match(progressRegex);
+
+            if (match) {
+              const progress = {
+                percent: parseInt(match[1]),
+                current: parseInt(match[2]),
+                total: parseInt(match[3]),
+                speed: match[4] + match[5],
+                remaining: match[6],
+              };
+              event.sender.send("game-install-progress", progress);
+            }
+          }
+        });
+
+        child.on("close", (code) => {
+          event.sender.send("game-install-complete", code === 0);
+        });
+      },
+    );
 
     ipcMain.handle("extract-zip", async (event, zipPath) => {
       const extractPath = dirname(zipPath);

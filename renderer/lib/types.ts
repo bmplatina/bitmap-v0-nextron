@@ -567,95 +567,74 @@ class GameInstallManager {
 
   /**
    * Download and Install Game. Do not call this function directly.
-   * @param url gameDownloadPlatformUrl
-   * @param savePath InstallationPath
+   * @param bCreateShortcut boolean to create a shortcut upon install
    */
   async downloadAndInstall(
     context: bitmapApi,
     bCreateShortcut: boolean,
   ): Promise<string> {
-    const url = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+    const indexUrl = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
 
-    const savePathLocal: string | null = this.bIsMac
-      ? `${this.installationPath}/${url?.split("/")[url?.split("/").length - 1]}`
-      : `${this.installationPath}\\${url?.split("/")[url?.split("/").length - 1]}`;
-    console.log(`URL: ${url}, SavePath: ${savePathLocal}`);
+    if (!indexUrl) {
+      return "No valid download URL provided.";
+    }
 
-    let archivePath: string = "";
+    // Determine the base store URL. E.g. if index is https://api.../games/1/index.caibx, store is https://api.../games/1/
+    const storeUrl = indexUrl.substring(0, indexUrl.lastIndexOf("/") + 1);
+    
+    // Default installation path is derived dynamically.
+    const destPath = this.bIsMac
+      ? `${this.installationPath}/${this.gameBinaryName}`
+      : `${this.installationPath}\\${this.gameBinaryName}`;
+    
+    // We could optionally define a cache path locally
+    const cachePath = undefined; // For now we keep it simple, but we could add a cache path here if needed.
 
-    try {
+    console.log(`URL: ${indexUrl}, StoreURL: ${storeUrl}, DestPath: ${destPath}`);
+
+    return new Promise<string>((resolve, reject) => {
       this.installState = EInstallState.Downloading;
-      // 다운로드 진행률 수신
-      context.onDownloadProgress((progress) => {
-        this.downloadProgress = progress;
-        console.log(
-          `다운로드 중: ${this.downloadProgress}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
-        );
+      
+      const unsubscribeProgress = context.onGameInstallProgress((progress) => {
+        this.downloadProgress = progress.percent;
+        this.downloadSpeedRealtime = parseFloat(progress.speed.replace(/[^0-9.]/g, ''));
+        console.log(`다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`);
       });
 
-      context.onDownloadAvgSpeed((progress) => {
-        this.downloadSpeedAvg = progress;
+      const unsubscribeComplete = context.onGameInstallComplete(async (success) => {
+        unsubscribeProgress();
+        unsubscribeComplete();
+
+        if (success) {
+          this.installState = EInstallState.Installed; // 작업 완료
+          this.currentVersion = this.getGameInfo.gameLatestRevision;
+          this.bIsUpdatable = false;
+          await this.pushInstallState(context);
+          console.log(`설치 완료!`);
+          
+          this.binaryAbsPath = this.bIsMac
+            ? `${destPath}.app` // Adjust this if the extracted file is the actual app
+            : `${destPath}.exe`; // Adjust this if the extracted file is the actual exe
+            
+          if (bCreateShortcut) {
+            this.createShortcut(context);
+          }
+          resolve("success");
+        } else {
+          this.installState = EInstallState.InstallError;
+          console.error("오류 발생: 다운로드 실패");
+          resolve("failed");
+        }
       });
 
-      context.onDownloadRealtimeSpeed((progress) => {
-        this.downloadSpeedRealtime = progress;
+      context.pullGame(indexUrl, destPath, storeUrl, cachePath).catch((err) => {
+        unsubscribeProgress();
+        unsubscribeComplete();
+        this.installState = EInstallState.InstallError;
+        console.error("오류 발생:", err);
+        resolve(err as string);
       });
-      // 다운로드 요청
-      archivePath = await context.downloadFile(url, savePathLocal);
-
-      console.log(
-        `다운로드 완료: ${archivePath}, EInstallState.Downloading: ${this.installState === EInstallState.Downloading}`,
-      );
-    } catch (error) {
-      if (
-        error === "cancelled" ||
-        (error instanceof Error && error.message.includes("cancelled"))
-      ) {
-        console.log("다운로드 취소됨");
-        return "cancelled";
-      }
-      this.installState = EInstallState.InstallError;
-      console.error("오류 발생:", error);
-      return error as string;
-    }
-
-    try {
-      this.installState = EInstallState.Extracting;
-
-      // 압축 해제 진행률 수신
-      context.onExtractProgress((progress) => {
-        this.extractProgress = progress;
-        console.log(
-          `압축 해제 중: ${this.extractProgress}, EInstallState.Extracting: ${this.installState === EInstallState.Extracting}`,
-        );
-      });
-
-      // 압축 해제 요청
-      const extractedPath = await context.extractZip(archivePath);
-      console.log(
-        `압축 해제 완료: ${extractedPath}, EInstallState: ${this.installState}`,
-      );
-
-      this.installState = EInstallState.Installed; // 작업 완료
-      this.currentVersion = this.getGameInfo.gameLatestRevision;
-      this.bIsUpdatable = false;
-      await this.pushInstallState(context);
-      console.log(
-        `설치 완료: EInstallState.Installed: ${this.installState === EInstallState.Installed}`,
-      );
-      this.binaryAbsPath = this.bIsMac
-        ? `${extractedPath}/${this.gameBinaryName}.app`
-        : `${extractedPath}\\${this.gameBinaryName}.exe`;
-      if (bCreateShortcut) {
-        this.createShortcut(context);
-      }
-    } catch (error: any) {
-      this.installState = EInstallState.InstallError;
-      console.error("오류 발생:", error);
-      return error as string;
-    }
-
-    return "success";
+    });
   }
 
   /**

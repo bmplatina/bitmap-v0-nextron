@@ -24,6 +24,11 @@ win:
   target:
     - target: nsis
       arch: x64
+  extraResources:
+    - from: resources/win32
+      to: bin
+      filter:
+        - "**/*"
 
 mac:
   category: public.app-category.utilities
@@ -33,6 +38,11 @@ mac:
     - target: zip
       arch: [universal]
   icon: resources/Bitmap_IconComposer.icon
+  extraResources:
+    - from: resources/darwin
+      to: bin
+      filter:
+        - "**/*"
 
 linux:
   icon: resources/Bitmap_IconComposer.icon/Assets/BitmapWhite.png
