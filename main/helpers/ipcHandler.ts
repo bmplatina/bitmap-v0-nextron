@@ -76,6 +76,7 @@ class ipcHandle {
   private readonly SAFARI_USERAGENT: string =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.4 Safari/605.1.15";
   private readonly API_URI: string = "https://api.prodbybitmap.com/";
+  private readonly DEPOT_URI: string = "https://depot.prodbybitmap.com/";
 
   private activeDownloads = new Map<string, Electron.DownloadItem>();
   private pendingDownloads = new Map<
@@ -380,53 +381,110 @@ class ipcHandle {
 
     ipcMain.handle(
       "pull-game",
-      async (event, gameId: number, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => {
-        const desyncArgs = ["extract", "-s", storeUrl];
-        if (cachePath) {
-          desyncArgs.push("-c", cachePath);
-        }
-        desyncArgs.push(indexUrl, destPath);
-
-        const child = spawn(
-          this.desyncPath,
-          desyncArgs,
-          {
-            env: {
-              ...process.env,
-              DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
-            },
-          },
+      async (event, gameId: number, caidxUrl: string, destPath: string) => {
+        // caidx를 저장할 임시 경로. <temp>/caidx/games/${gameId}/<file>.caidx
+        const caidxDirPath = path.join(
+          app.getPath("temp"),
+          "caidx",
+          "games",
+          gameId.toString(),
         );
+        const caidxFileName =
+          path.basename(caidxUrl.split("?")[0].split("#")[0]) || "index.caidx";
+        const caidxSavePath = path.join(caidxDirPath, caidxFileName);
+        const authToken = userStore.get("token");
+        if (!fs.existsSync(caidxDirPath)) {
+          fs.mkdirSync(caidxDirPath, { recursive: true });
+        }
 
+        await new Promise<string>((resolve, reject) => {
+          this.pendingDownloads.set(caidxUrl, {
+            savePath: caidxSavePath,
+            sender: event.sender,
+            resolve,
+            reject,
+            startTime: Date.now(),
+            lastTime: Date.now(),
+            lastLoaded: 0,
+          });
+
+          event.sender.downloadURL(caidxUrl, {
+            headers: authToken
+              ? {
+                  Authorization: `Bearer ${authToken}`,
+                }
+              : {},
+          });
+        });
+
+        // desync untar -i -s DEPOT_URI <path/to/caidx.caidx> destPath
+        const desyncArgs = [
+          "untar",
+          "-i",
+          "-s",
+          this.DEPOT_URI,
+          caidxSavePath,
+          destPath,
+        ];
+
+        const child = spawn(this.desyncPath, desyncArgs, {
+          env: {
+            ...process.env,
+            DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
+          },
+        });
+
+        let isCompleted = false;
         let stderrBuffer = "";
 
+        const cleanupCaidxAndNotify = (success: boolean) => {
+          if (isCompleted) {
+            return;
+          }
+          isCompleted = true;
+
+          if (fs.existsSync(caidxSavePath)) {
+            fs.unlink(caidxSavePath, (unlinkError) => {
+              if (unlinkError) {
+                log.error("pull-game: failed to delete caidx", unlinkError);
+              }
+              event.sender.send(`game-install-complete-${gameId}`, success);
+            });
+            return;
+          }
+
+          event.sender.send(`game-install-complete-${gameId}`, success);
+        };
+
         child.stderr.on("data", (data) => {
-          stderrBuffer += data.toString();
-          
+          stderrBuffer += data.toString().replace(/\r/g, "\n");
+
           let newlineIndex;
           while ((newlineIndex = stderrBuffer.indexOf("\n")) !== -1) {
             const line = stderrBuffer.slice(0, newlineIndex).trim();
             stderrBuffer = stderrBuffer.slice(newlineIndex + 1);
 
-            // Parsing e.g.: Assembling 12% (1500000/12345678) 12.5 MiB/s 00:45
-            const progressRegex = /(\d+)%\s+\((\d+)\/(\d+)\)\s+([\d.]+)\s*([a-zA-Z]+\/s)\s+([\d:]+)/i;
+            // Parsing e.g.: Unpacking 79170 / 79481 99.61% 00m01s
+            const progressRegex = /(\d+(?:\.\d+)?)%\s+((?:\d+h)?\d+m\d+s)/i;
             const match = line.match(progressRegex);
 
             if (match) {
               const progress = {
-                percent: parseInt(match[1]),
-                current: parseInt(match[2]),
-                total: parseInt(match[3]),
-                speed: match[4] + match[5],
-                remaining: match[6],
+                percent: parseFloat(match[1]),
+                eta: match[2],
               };
               event.sender.send(`game-install-progress-${gameId}`, progress);
             }
           }
         });
 
+        child.on("error", (error) => {
+          log.error("pull-game: failed to start desync", error);
+          cleanupCaidxAndNotify(false);
+        });
+
         child.on("close", (code) => {
-          event.sender.send(`game-install-complete-${gameId}`, code === 0);
+          cleanupCaidxAndNotify(code === 0);
         });
       },
     );

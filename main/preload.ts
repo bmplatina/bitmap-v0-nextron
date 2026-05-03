@@ -120,20 +120,31 @@ const bitmapApi = {
     ipcRenderer.invoke("download-file", { url, savePath }),
 
   // Pull Game via desync
-  pullGame: (gameId: number, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) =>
-    ipcRenderer.invoke("pull-game", gameId, indexUrl, destPath, storeUrl, cachePath),
+  pullGame: (gameId: number, caidxUrl: string, destPath: string) =>
+    ipcRenderer.invoke("pull-game", gameId, caidxUrl, destPath),
 
-  onGameInstallProgress: (gameId: number, callback: (progress: { percent: number; current: number; total: number; speed: string; remaining: string }) => void) => {
+  onGameInstallProgress: (
+    gameId: number,
+    callback: (progress: { percent: number; eta: string }) => void,
+  ) => {
     const channel = `game-install-progress-${gameId}`;
-    const subscription = (_event: IpcRendererEvent, progress: { percent: number; current: number; total: number; speed: string; remaining: string }) =>
-      callback(progress);
+    const subscription = (
+      _event: IpcRendererEvent,
+      progress: {
+        percent: number;
+        eta: string;
+      },
+    ) => callback(progress);
     ipcRenderer.on(channel, subscription);
     return () => {
       ipcRenderer.removeListener(channel, subscription);
     };
   },
 
-  onGameInstallComplete: (gameId: number, callback: (success: boolean) => void) => {
+  onGameInstallComplete: (
+    gameId: number,
+    callback: (success: boolean) => void,
+  ) => {
     const channel = `game-install-complete-${gameId}`;
     const subscription = (_event: IpcRendererEvent, success: boolean) =>
       callback(success);

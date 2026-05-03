@@ -64,10 +64,20 @@ export interface bitmapApi {
   getScreenMode: () => "light" | "system" | "dark";
 
   downloadFile: (url: string | null, savePath: string) => Promise<string>;
-  
-  pullGame: (gameId: number, indexUrl: string, destPath: string, storeUrl: string, cachePath?: string) => Promise<void>;
-  onGameInstallProgress: (gameId: number, callback: (progress: { percent: number; current: number; total: number; speed: string; remaining: string }) => void) => () => void;
-  onGameInstallComplete: (gameId: number, callback: (success: boolean) => void) => () => void;
+
+  pullGame: (
+    gameId: number,
+    caidxUrl: string,
+    destPath: string,
+  ) => Promise<void>;
+  onGameInstallProgress: (
+    gameId: number,
+    callback: (progress: { percent: number; eta: string }) => void,
+  ) => () => void;
+  onGameInstallComplete: (
+    gameId: number,
+    callback: (success: boolean) => void,
+  ) => () => void;
 
   onDownloadProgress: (callback: (progress: number) => void) => number;
   onDownloadAvgSpeed: (callback: (progress: number) => void) => number;
