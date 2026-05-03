@@ -392,9 +392,13 @@ class ipcHandle {
         const caidxFileName =
           path.basename(caidxUrl.split("?")[0].split("#")[0]) || "index.caidx";
         const caidxSavePath = path.join(caidxDirPath, caidxFileName);
+        const desyncCachePath = path.join(caidxDirPath, "cache");
         const authToken = userStore.get("token");
         if (!fs.existsSync(caidxDirPath)) {
           fs.mkdirSync(caidxDirPath, { recursive: true });
+        }
+        if (!fs.existsSync(desyncCachePath)) {
+          fs.mkdirSync(desyncCachePath, { recursive: true });
         }
 
         await new Promise<string>((resolve, reject) => {
@@ -423,6 +427,8 @@ class ipcHandle {
           "-i",
           "-s",
           this.DEPOT_URI,
+          "-c",
+          desyncCachePath,
           caidxSavePath,
           destPath,
         ];
