@@ -436,6 +436,8 @@ class ipcHandle {
 
         let isCompleted = false;
         let stderrBuffer = "";
+        let lastCompletedChunks: number | null = null;
+        let lastProgressTimestamp: number | null = null;
 
         const cleanupCaidxAndNotify = (success: boolean) => {
           if (isCompleted) {
@@ -465,13 +467,33 @@ class ipcHandle {
             stderrBuffer = stderrBuffer.slice(newlineIndex + 1);
 
             // Parsing e.g.: Unpacking 79170 / 79481 99.61% 00m01s
-            const progressRegex = /(\d+(?:\.\d+)?)%\s+((?:\d+h)?\d+m\d+s)/i;
+            const progressRegex =
+              /(\d+)\s*\/\s*(\d+)\s+(\d+(?:\.\d+)?)%\s+((?:\d+h)?\d+m\d+s)/i;
             const match = line.match(progressRegex);
 
             if (match) {
+              const completedChunks = parseInt(match[1], 10);
+              const currentTimestamp = Date.now();
+              let speed = 0;
+
+              if (
+                lastCompletedChunks !== null &&
+                lastProgressTimestamp !== null &&
+                currentTimestamp > lastProgressTimestamp
+              ) {
+                const elapsedSeconds =
+                  (currentTimestamp - lastProgressTimestamp) / 1000;
+                const deltaChunks = completedChunks - lastCompletedChunks;
+                speed = Math.max(0, deltaChunks / elapsedSeconds);
+              }
+
+              lastCompletedChunks = completedChunks;
+              lastProgressTimestamp = currentTimestamp;
+
               const progress = {
-                percent: parseFloat(match[1]),
-                eta: match[2],
+                percent: parseFloat(match[3]),
+                eta: match[4],
+                speed: parseFloat(speed.toFixed(2)),
               };
               event.sender.send(`game-install-progress-${gameId}`, progress);
             }

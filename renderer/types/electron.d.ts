@@ -72,7 +72,7 @@ export interface bitmapApi {
   ) => Promise<void>;
   onGameInstallProgress: (
     gameId: number,
-    callback: (progress: { percent: number; eta: string }) => void,
+    callback: (progress: { percent: number; eta: string; speed: number }) => void,
   ) => () => void;
   onGameInstallComplete: (
     gameId: number,

@@ -133,6 +133,7 @@ const bitmapApi = {
       progress: {
         percent: number;
         eta: string;
+        speed: number;
       },
     ) => callback(progress);
     ipcRenderer.on(channel, subscription);

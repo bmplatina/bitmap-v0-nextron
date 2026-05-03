@@ -572,32 +572,19 @@ class GameInstallManager {
   async downloadAndInstall(
     context: bitmapApi,
     bCreateShortcut: boolean,
-  ): Promise<string> {
+  ): Promise<string> {    
     const indexUrl = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
-
-    if (!indexUrl) {
-      return "No valid download URL provided.";
-    }
-
-    // Determine the base store URL. E.g. if index is https://api.../games/1/index.caibx, store is https://api.../games/1/
-    const storeUrl = indexUrl.substring(0, indexUrl.lastIndexOf("/") + 1);
-    
     // Default installation path is derived dynamically.
     const destPath = this.bIsMac
       ? `${this.installationPath}/${this.gameBinaryName}`
       : `${this.installationPath}\\${this.gameBinaryName}`;
-    
-    // We could optionally define a cache path locally
-    const cachePath = undefined; // For now we keep it simple, but we could add a cache path here if needed.
-
-    console.log(`URL: ${indexUrl}, StoreURL: ${storeUrl}, DestPath: ${destPath}`);
 
     return new Promise<string>((resolve, reject) => {
       this.installState = EInstallState.Downloading;
       
       const unsubscribeProgress = context.onGameInstallProgress(this.gameId, (progress) => {
         this.downloadProgress = progress.percent;
-        this.downloadSpeedRealtime = parseFloat(progress.speed.replace(/[^0-9.]/g, ''));
+        this.downloadSpeedRealtime = progress.speed;
         console.log(`다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`);
       });
 
@@ -627,7 +614,7 @@ class GameInstallManager {
         }
       });
 
-      context.pullGame(this.gameId, indexUrl, destPath, storeUrl, cachePath).catch((err) => {
+      context.pullGame(this.gameId,indexUrl ?? "", destPath).catch((err) => {
         unsubscribeProgress();
         unsubscribeComplete();
         this.installState = EInstallState.InstallError;
