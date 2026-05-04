@@ -272,7 +272,6 @@ class GameInstallManager {
   private binaryAbsPath: string = "";
   private installState: EInstallState = EInstallState.NotInstalled;
   private downloadProgress: number = 0;
-  private downloadSpeedAvg: number = 0;
   private downloadSpeedRealtime: number = 0;
   private extractProgress: number = 0;
   private currentVersion: number = 0;
@@ -487,10 +486,6 @@ class GameInstallManager {
     return this.downloadProgress;
   }
 
-  get getDownloadSpeedAvg(): number {
-    return this.downloadSpeedAvg;
-  }
-
   get getDownloadSpeedRealtime(): number {
     return this.downloadSpeedRealtime;
   }
@@ -555,7 +550,6 @@ class GameInstallManager {
         context.removeFile(savePathLocal);
         this.installState = EInstallState.NotInstalled;
         this.downloadProgress = 0;
-        this.downloadSpeedAvg = 0;
         this.downloadSpeedRealtime = 0;
       }
     }

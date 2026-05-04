@@ -95,14 +95,6 @@ const DownloadManagerPage = observer(function () {
                     {activeMgr.getDownloadSpeedRealtime} Mbps
                   </Text>
                 </Flex>
-                <Flex direction="column">
-                  <Text size="1" color="gray">
-                    {t("downloading-spped-average")}
-                  </Text>
-                  <Text size="2" color="gray">
-                    {activeMgr.getDownloadSpeedAvg} Mbps
-                  </Text>
-                </Flex>
                 <Flex direction="column" gap="1" mt="1">
                   <Flex justify="between">
                     <Text size="1" color="gray">
