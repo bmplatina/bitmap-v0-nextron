@@ -573,10 +573,11 @@ class GameInstallManager {
     context: bitmapApi,
     bCreateShortcut: boolean,
   ): Promise<string> {
-    // Default installation path is derived dynamically.
+    // macOS: <installRoot>/<gameName>.app, Windows: <installRoot> (files are extracted directly here)
+    const installRootPath = (this.installationPath ?? "").replace(/[\\/]+$/, "");
     const destPath = this.bIsMac
-      ? `${this.installationPath}/${this.gameBinaryName}`
-      : `${this.installationPath}\\${this.gameBinaryName}`;
+      ? `${installRootPath}/${this.gameBinaryName}.app`
+      : installRootPath;
 
     return new Promise<string>((resolve, reject) => {
       this.installState = EInstallState.Downloading;
@@ -606,8 +607,8 @@ class GameInstallManager {
             console.log(`설치 완료!`);
 
             this.binaryAbsPath = this.bIsMac
-              ? `${destPath}.app` // Adjust this if the extracted file is the actual app
-              : `${destPath}.exe`; // Adjust this if the extracted file is the actual exe
+              ? destPath
+              : `${destPath}\\${this.gameBinaryName}.exe`;
 
             if (bCreateShortcut) {
               this.createShortcut(context);
