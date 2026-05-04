@@ -15,6 +15,7 @@ import fs from "fs";
 import { exec } from "child_process";
 import log from "electron-log";
 import { spawn } from "child_process";
+import { pipeline } from "stream/promises";
 
 // Game Downloader
 import axios from "axios";
@@ -381,7 +382,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "pull-game",
-      async (event, gameId: number, caidxUrl: string, destPath: string) => {
+      async (event, gameId: number, destPath: string) => {
         // caidx를 저장할 임시 경로. <temp>/caidx/games/${gameId}/<file>.caidx
         const caidxDirPath = path.join(
           app.getPath("temp"),
@@ -389,9 +390,11 @@ class ipcHandle {
           "games",
           gameId.toString(),
         );
-        const caidxFileName =
-          path.basename(caidxUrl.split("?")[0].split("#")[0]) || "index.caidx";
-        const caidxSavePath = path.join(caidxDirPath, caidxFileName);
+        const platform = this.platformName === "win32" ? "Windows" : "macOS";
+        const caidxSavePath = path.join(
+          caidxDirPath,
+          `${gameId}_${platform}_latest.caidx`,
+        );
         const desyncCachePath = path.join(caidxDirPath, "cache");
         const authToken = userStore.get("token");
         if (!fs.existsSync(caidxDirPath)) {
@@ -400,26 +403,28 @@ class ipcHandle {
         if (!fs.existsSync(desyncCachePath)) {
           fs.mkdirSync(desyncCachePath, { recursive: true });
         }
+        const installParentPath = path.dirname(destPath);
+        if (!fs.existsSync(installParentPath)) {
+          fs.mkdirSync(installParentPath, { recursive: true });
+        }
 
-        await new Promise<string>((resolve, reject) => {
-          this.pendingDownloads.set(caidxUrl, {
-            savePath: caidxSavePath,
-            sender: event.sender,
-            resolve,
-            reject,
-            startTime: Date.now(),
-            lastTime: Date.now(),
-            lastLoaded: 0,
-          });
+        const writer = fs.createWriteStream(caidxSavePath);
 
-          event.sender.downloadURL(caidxUrl, {
-            headers: authToken
-              ? {
-                  Authorization: `Bearer ${authToken}`,
-                }
-              : {},
-          });
-        });
+        const response = await axios.get(
+          this.getApiLinkByPurpose(
+            `games/caidx/${gameId}?platform=${platform}&version=latest`,
+          ),
+          {
+            responseType: "stream",
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": this.SAFARI_USERAGENT,
+              ...(authToken && { Authorization: `Bearer ${authToken}` }),
+            },
+          },
+        );
+
+        await pipeline(response.data, writer);
 
         // desync untar -i -s DEPOT_URI <path/to/caidx.caidx> destPath
         const desyncArgs = [
@@ -471,6 +476,7 @@ class ipcHandle {
           while ((newlineIndex = stderrBuffer.indexOf("\n")) !== -1) {
             const line = stderrBuffer.slice(0, newlineIndex).trim();
             stderrBuffer = stderrBuffer.slice(newlineIndex + 1);
+            console.log(line);
 
             // Parsing e.g.: Unpacking 79170 / 79481 99.61% 00m01s
             const progressRegex =
@@ -481,6 +487,7 @@ class ipcHandle {
               const completedChunks = parseInt(match[1], 10);
               const currentTimestamp = Date.now();
               let speed = 0;
+              const chunkSizeBytes = 4 * 1024;
 
               if (
                 lastCompletedChunks !== null &&
@@ -490,7 +497,9 @@ class ipcHandle {
                 const elapsedSeconds =
                   (currentTimestamp - lastProgressTimestamp) / 1000;
                 const deltaChunks = completedChunks - lastCompletedChunks;
-                speed = Math.max(0, deltaChunks / elapsedSeconds);
+                const bytesPerSecond =
+                  (deltaChunks * chunkSizeBytes) / elapsedSeconds;
+                speed = Math.max(0, bytesPerSecond / (1024 * 1024));
               }
 
               lastCompletedChunks = completedChunks;

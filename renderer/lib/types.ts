@@ -572,8 +572,7 @@ class GameInstallManager {
   async downloadAndInstall(
     context: bitmapApi,
     bCreateShortcut: boolean,
-  ): Promise<string> {    
-    const indexUrl = this.bIsMac ? this.gameDownloadMacURL : this.gameDownloadWinURL;
+  ): Promise<string> {
     // Default installation path is derived dynamically.
     const destPath = this.bIsMac
       ? `${this.installationPath}/${this.gameBinaryName}`
@@ -581,40 +580,48 @@ class GameInstallManager {
 
     return new Promise<string>((resolve, reject) => {
       this.installState = EInstallState.Downloading;
-      
-      const unsubscribeProgress = context.onGameInstallProgress(this.gameId, (progress) => {
-        this.downloadProgress = progress.percent;
-        this.downloadSpeedRealtime = progress.speed;
-        console.log(`다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`);
-      });
 
-      const unsubscribeComplete = context.onGameInstallComplete(this.gameId, async (success) => {
-        unsubscribeProgress();
-        unsubscribeComplete();
+      const unsubscribeProgress = context.onGameInstallProgress(
+        this.gameId,
+        (progress) => {
+          this.downloadProgress = progress.percent;
+          this.downloadSpeedRealtime = progress.speed;
+          console.log(
+            `다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`,
+          );
+        },
+      );
 
-        if (success) {
-          this.installState = EInstallState.Installed; // 작업 완료
-          this.currentVersion = this.getGameInfo.gameLatestRevision;
-          this.bIsUpdatable = false;
-          await this.pushInstallState(context);
-          console.log(`설치 완료!`);
-          
-          this.binaryAbsPath = this.bIsMac
-            ? `${destPath}.app` // Adjust this if the extracted file is the actual app
-            : `${destPath}.exe`; // Adjust this if the extracted file is the actual exe
-            
-          if (bCreateShortcut) {
-            this.createShortcut(context);
+      const unsubscribeComplete = context.onGameInstallComplete(
+        this.gameId,
+        async (success) => {
+          unsubscribeProgress();
+          unsubscribeComplete();
+
+          if (success) {
+            this.installState = EInstallState.Installed; // 작업 완료
+            this.currentVersion = this.getGameInfo.gameLatestRevision;
+            this.bIsUpdatable = false;
+            await this.pushInstallState(context);
+            console.log(`설치 완료!`);
+
+            this.binaryAbsPath = this.bIsMac
+              ? `${destPath}.app` // Adjust this if the extracted file is the actual app
+              : `${destPath}.exe`; // Adjust this if the extracted file is the actual exe
+
+            if (bCreateShortcut) {
+              this.createShortcut(context);
+            }
+            resolve("success");
+          } else {
+            this.installState = EInstallState.InstallError;
+            console.error("오류 발생: 다운로드 실패");
+            resolve("failed");
           }
-          resolve("success");
-        } else {
-          this.installState = EInstallState.InstallError;
-          console.error("오류 발생: 다운로드 실패");
-          resolve("failed");
-        }
-      });
+        },
+      );
 
-      context.pullGame(this.gameId,indexUrl ?? "", destPath).catch((err) => {
+      context.pullGame(this.gameId, destPath).catch((err) => {
         unsubscribeProgress();
         unsubscribeComplete();
         this.installState = EInstallState.InstallError;

@@ -65,14 +65,14 @@ export interface bitmapApi {
 
   downloadFile: (url: string | null, savePath: string) => Promise<string>;
 
-  pullGame: (
-    gameId: number,
-    caidxUrl: string,
-    destPath: string,
-  ) => Promise<void>;
+  pullGame: (gameId: number, destPath: string) => Promise<void>;
   onGameInstallProgress: (
     gameId: number,
-    callback: (progress: { percent: number; eta: string; speed: number }) => void,
+    callback: (progress: {
+      percent: number;
+      eta: string;
+      speed: number;
+    }) => void,
   ) => () => void;
   onGameInstallComplete: (
     gameId: number,
