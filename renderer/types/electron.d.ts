@@ -92,7 +92,7 @@ export interface bitmapApi {
     installationPath: string,
     title: string,
   ) => Promise<{ success: boolean; path: string }>;
-  removeShortcut: (title: string) => Promise<void>;
+  removeShortcut: (title: string) => Promise<boolean>;
 
   onExtractProgress: (callback: (progress: number) => void) => number;
 

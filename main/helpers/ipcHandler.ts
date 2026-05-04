@@ -104,6 +104,23 @@ class ipcHandle {
     return `${this.API_URI}${substring}`;
   }
 
+  private removePathIfExists(targetPath: string): boolean {
+    try {
+      const stat = fs.lstatSync(targetPath);
+      if (stat.isDirectory() && !stat.isSymbolicLink()) {
+        fs.rmSync(targetPath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(targetPath);
+      }
+      return true;
+    } catch (error: any) {
+      if (error?.code === "ENOENT") {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   initializeIpc() {
     session.defaultSession.on("will-download", (event, item, webContents) => {
       const url = item.getURLChain()[0] || item.getURL();
@@ -614,9 +631,7 @@ class ipcHandle {
             return { success, path: shortcutPath };
           } else if (this.platformName === "darwin") {
             const shortcutPath = path.join(app.getPath("desktop"), `${title}`); // 기존에 링크가 있다면 삭제 (오류 방지)
-            if (fs.existsSync(shortcutPath)) {
-              fs.unlinkSync(shortcutPath);
-            }
+            this.removePathIfExists(shortcutPath);
             // 심볼릭 링크 생성 (원본 경로, 생성될 경로)
             fs.symlinkSync(installationPath, shortcutPath);
             log.info("맥 가상본(심볼릭 링크) 생성 완료");
@@ -631,19 +646,26 @@ class ipcHandle {
 
     ipcMain.handle("remove-shortcut", async (_event, title: string) => {
       try {
-        let shortcutPath: string = "";
+        const shortcutPaths: string[] = [];
         if (this.platformName === "win32") {
-          // 1. 파일명으로 쓸 수 없는 특수문자 제거 (안정성 강화)
           const safeTitle = title.replace(/[\\/:*?"<>|]/g, "");
-          shortcutPath = path.join(app.getPath("desktop"), `${safeTitle}.lnk`);
+          shortcutPaths.push(path.join(app.getPath("desktop"), `${safeTitle}.lnk`));
         } else if (this.platformName === "darwin") {
-          shortcutPath = path.join(app.getPath("desktop"), `${title}`);
+          shortcutPaths.push(path.join(app.getPath("desktop"), `${title}`));
+          shortcutPaths.push(path.join(app.getPath("desktop"), `${title}.app`));
         }
-        if (fs.existsSync(shortcutPath)) {
-          fs.unlinkSync(shortcutPath);
+
+        let removed = false;
+        for (const shortcutPath of shortcutPaths) {
+          if (this.removePathIfExists(shortcutPath)) {
+            removed = true;
+          }
         }
+
+        return removed;
       } catch (error) {
         log.error("바로가기 제거 중 오류 발생:", error);
+        return false;
       }
     });
 

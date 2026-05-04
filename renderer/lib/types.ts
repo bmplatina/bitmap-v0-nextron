@@ -758,11 +758,11 @@ class GameInstallManager {
   async removeApp(context: bitmapApi) {
     if (this.installationPath) {
       console.log(this.installationPath);
+      await context.removeShortcut(this.gameTitle);
       if (await context.removeFile(this.installationPath)) {
         this.installState = EInstallState.NotInstalled;
         this.installationPath = this.defaultInstallationPath;
-        context.deleteGameInstallInfo(this.gameId);
-        context.removeShortcut(this.gameTitle);
+        await context.deleteGameInstallInfo(this.gameId);
         await this.pushInstallState(context);
       }
     }
