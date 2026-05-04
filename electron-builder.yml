@@ -34,9 +34,9 @@ mac:
   category: public.app-category.utilities
   target:
     - target: dmg
-      arch: [universal]
+      arch: [arm64]
     - target: zip
-      arch: [universal]
+      arch: [arm64]
   icon: resources/Bitmap_IconComposer.icon
   extraResources:
     - from: resources/darwin
