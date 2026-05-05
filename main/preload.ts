@@ -195,6 +195,9 @@ const bitmapApi = {
   // Open file
   runCommand: (command: string) => ipcRenderer.invoke("run-command", command),
 
+  // Delete desync caches
+  removeDesyncCache: () => ipcRenderer.invoke("remove-desync-cache"),
+
   // Remove file
   removeFile: (targetPath: string) =>
     ipcRenderer.invoke("remove-file", targetPath),

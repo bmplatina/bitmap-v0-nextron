@@ -11,7 +11,7 @@ import { autoUpdater } from "electron-updater";
 import { userStore } from "./user-store";
 import * as types from "./types";
 import path, { dirname, join } from "path";
-import fs from "fs";
+import fs, { promises } from "fs";
 import { exec } from "child_process";
 import log from "electron-log";
 import { spawn } from "child_process";
@@ -20,9 +20,6 @@ import { pipeline } from "stream/promises";
 // Game Downloader
 import axios from "axios";
 import unzipper from "unzipper";
-
-const axiosGetCancelToken = axios.CancelToken;
-const source = axiosGetCancelToken.source();
 
 // Parameter store
 import Datastore from "@seald-io/nedb";
@@ -122,6 +119,80 @@ class ipcHandle {
   }
 
   initializeIpc() {
+    this.electronTools();
+    this.bitmapAPI();
+    this.deprecatedHandlers();
+  }
+
+  private electronTools() {
+    // 신호등 버튼
+    ipcMain.on("app-close", (event) => {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      mainWindow.close();
+    });
+
+    ipcMain.on("app-minimize", (event) => {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      mainWindow.minimize();
+    });
+
+    ipcMain.on("app-maximize", (event) => {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+
+      if (mainWindow.isMaximized()) {
+        mainWindow.restore();
+      } else {
+        mainWindow.maximize();
+      }
+    });
+
+    ipcMain.handle("is-maximized", (event) => {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      return mainWindow.isMaximized();
+    });
+
+    // 파일 경로 지정
+    ipcMain.handle("show-dialog", async (event, options) => {
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      const result = await dialog.showOpenDialog(mainWindow, options);
+      return result.filePaths[0]; // 사용자가 선택한 파일 경로
+    });
+
+    // 플랫폼 가져오기
+    ipcMain.handle("get-platform", (_event): string => {
+      return this.platformName;
+    });
+
+    ipcMain.handle("get-version", (_event): string => {
+      return app.getVersion();
+    });
+
+    ipcMain.handle("get-locale", (_event): string => {
+      return userStore.get("locale");
+    });
+
+    ipcMain.handle("set-locale", (_event, locale: "ko" | "en") => {
+      userStore.set("locale", locale);
+    });
+
+    ipcMain.handle("open-external", async (_event, url: string) => {
+      return shell.openExternal(url);
+    });
+
+    ipcMain.handle(
+      "get-electron-appdata-path",
+      async (_event): Promise<string> => {
+        return app.getPath("userData");
+      },
+    );
+
+    // 렌더러로부터 설치 명령 수신
+    ipcMain.on("quit-and-install", () => {
+      autoUpdater.quitAndInstall();
+    });
+  }
+
+  private bitmapAPI() {
     session.defaultSession.on("will-download", (event, item, webContents) => {
       const url = item.getURLChain()[0] || item.getURL();
       const pending = this.pendingDownloads.get(url);
@@ -188,107 +259,6 @@ class ipcHandle {
       }
     });
 
-    // 신호등 버튼
-    ipcMain.on("app-close", (event) => {
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-      mainWindow.close();
-    });
-
-    ipcMain.on("app-minimize", (event) => {
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-      mainWindow.minimize();
-    });
-
-    ipcMain.on("app-maximize", (event) => {
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-
-      if (mainWindow.isMaximized()) {
-        mainWindow.restore();
-      } else {
-        mainWindow.maximize();
-      }
-    });
-
-    ipcMain.handle("is-maximized", (event) => {
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-      return mainWindow.isMaximized();
-    });
-
-    // 파일 경로 지정
-    ipcMain.handle("show-dialog", async (event, options) => {
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-      const result = await dialog.showOpenDialog(mainWindow, options);
-      return result.filePaths[0]; // 사용자가 선택한 파일 경로
-    });
-
-    // 플랫폼 가져오기
-    ipcMain.handle("get-platform", (_event): string => {
-      return this.platformName;
-    });
-
-    ipcMain.handle("get-version", (_event): string => {
-      return app.getVersion();
-    });
-
-    ipcMain.handle("get-locale", (_event): string => {
-      return userStore.get("locale");
-    });
-
-    ipcMain.handle("set-locale", (_event, locale: "ko" | "en") => {
-      userStore.set("locale", locale);
-    });
-
-    ipcMain.handle("get-token", (_event): string => {
-      return userStore.get("token");
-    });
-
-    ipcMain.handle("set-token", (_event, token: string) => {
-      userStore.set("token", token);
-    });
-
-    ipcMain.handle("get-screen-mode", (_event): string => {
-      return userStore.get("screenMode");
-    });
-
-    ipcMain.handle("set-screen-mode", (event, screenMode: types.screenMode) => {
-      userStore.set("screenMode", screenMode);
-      nativeTheme.themeSource = screenMode;
-      const mainWindow = BrowserWindow.fromWebContents(event.sender);
-
-      if (!mainWindow) {
-        log.error("set-screen-mode: mainWindow is null");
-        return;
-      }
-
-      if (this.platformName !== "win32") {
-        log.warn(
-          "set-screen-mode: setTitleBarOverlay method is not supported on",
-          this.platformName,
-        );
-        return;
-      }
-
-      const isDarkMode =
-        screenMode === "dark" ||
-        (screenMode === "system" && nativeTheme.shouldUseDarkColors);
-
-      if (isDarkMode) {
-        mainWindow.setTitleBarOverlay({
-          color: "#00000000", // 배경색 (투명 - 다크)
-          symbolColor: "#FFFFFFFF", // 아이콘색 (흰색)
-        });
-      } else {
-        mainWindow.setTitleBarOverlay({
-          color: "#FFFFFF00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
-          symbolColor: "#000000FF", // 아이콘색 (검정색)
-        });
-      }
-    });
-
-    ipcMain.handle("open-external", async (_event, url: string) => {
-      return shell.openExternal(url);
-    });
-
     ipcMain.handle(
       "axios-get",
       async (event, uriSubstring: string, token?: string) => {
@@ -347,6 +317,53 @@ class ipcHandle {
         return response.data;
       },
     );
+
+    ipcMain.handle("get-token", (_event): string => {
+      return userStore.get("token");
+    });
+
+    ipcMain.handle("set-token", (_event, token: string) => {
+      userStore.set("token", token);
+    });
+
+    ipcMain.handle("get-screen-mode", (_event): string => {
+      return userStore.get("screenMode");
+    });
+
+    ipcMain.handle("set-screen-mode", (event, screenMode: types.screenMode) => {
+      userStore.set("screenMode", screenMode);
+      nativeTheme.themeSource = screenMode;
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+
+      if (!mainWindow) {
+        log.error("set-screen-mode: mainWindow is null");
+        return;
+      }
+
+      if (this.platformName !== "win32") {
+        log.warn(
+          "set-screen-mode: setTitleBarOverlay method is not supported on",
+          this.platformName,
+        );
+        return;
+      }
+
+      const isDarkMode =
+        screenMode === "dark" ||
+        (screenMode === "system" && nativeTheme.shouldUseDarkColors);
+
+      if (isDarkMode) {
+        mainWindow.setTitleBarOverlay({
+          color: "#00000000", // 배경색 (투명 - 다크)
+          symbolColor: "#FFFFFFFF", // 아이콘색 (흰색)
+        });
+      } else {
+        mainWindow.setTitleBarOverlay({
+          color: "#FFFFFF00", // 배경색 (투명 - 라이트, Electron 리페인팅 트리거용)
+          symbolColor: "#000000FF", // 아이콘색 (검정색)
+        });
+      }
+    });
 
     // download
     ipcMain.handle("download-file", async (event, { url, savePath }) => {
@@ -459,6 +476,7 @@ class ipcHandle {
           env: {
             ...process.env,
             DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
+            ...(authToken && { BITMAP_AUTH_TOKEN: authToken }),
           },
         });
 
@@ -543,62 +561,6 @@ class ipcHandle {
       },
     );
 
-    ipcMain.handle("extract-zip", async (event, zipPath) => {
-      const extractPath = dirname(zipPath);
-
-      try {
-        const zip = fs.createReadStream(zipPath);
-        const directory = await unzipper.Open.file(zipPath);
-        const totalFiles = directory.files.length;
-        let extractedFiles = 0;
-
-        // 파일을 하나씩 해제하며 진행률 계산
-        await new Promise<void>((resolve, reject) => {
-          zip
-            .pipe(unzipper.Parse())
-            .on("entry", (entry) => {
-              const fileName = entry.path;
-              const type = entry.type; // 'Directory' or 'File'
-              const fullPath = join(extractPath, fileName);
-
-              if (type === "Directory") {
-                fs.mkdirSync(fullPath, { recursive: true });
-                entry.autodrain();
-              } else {
-                fs.mkdirSync(dirname(fullPath), { recursive: true });
-                entry.pipe(fs.createWriteStream(fullPath)).on("finish", () => {
-                  extractedFiles++;
-                  const progress = Math.round(
-                    (extractedFiles / totalFiles) * 100,
-                  );
-                  event.sender.send("extract-progress", progress); // 진행률 전송
-                });
-              }
-            })
-            .on("close", resolve) // 압축 해제 완료
-            .on("error", reject); // 에러 발생
-        });
-
-        fs.rmSync(zipPath, { recursive: true });
-
-        if (this.platformName === "darwin") {
-          new Promise<string>((resolve, reject) => {
-            exec(`chmod -R 755 "${extractPath}"`, (error, stdout, stderr) => {
-              if (error) {
-                reject(stderr || error.message);
-              }
-              resolve(stdout);
-            });
-          });
-        }
-
-        return extractPath;
-      } catch (error) {
-        log.error("압축 해제 실패:", error);
-        throw error;
-      }
-    });
-
     ipcMain.handle(
       "create-shortcut",
       async (_event, installationPath: string, title: string) => {
@@ -649,7 +611,9 @@ class ipcHandle {
         const shortcutPaths: string[] = [];
         if (this.platformName === "win32") {
           const safeTitle = title.replace(/[\\/:*?"<>|]/g, "");
-          shortcutPaths.push(path.join(app.getPath("desktop"), `${safeTitle}.lnk`));
+          shortcutPaths.push(
+            path.join(app.getPath("desktop"), `${safeTitle}.lnk`),
+          );
         } else if (this.platformName === "darwin") {
           shortcutPaths.push(path.join(app.getPath("desktop"), `${title}`));
           shortcutPaths.push(path.join(app.getPath("desktop"), `${title}.app`));
@@ -667,6 +631,15 @@ class ipcHandle {
         log.error("바로가기 제거 중 오류 발생:", error);
         return false;
       }
+    });
+
+    ipcMain.handle("remove-desync-cache", async (_event) => {
+      const desyncCachePath = path.join(app.getPath("temp"), "caidx");
+      if (fs.existsSync(desyncCachePath)) {
+        fs.rmSync(desyncCachePath, { recursive: true, force: true });
+        return true;
+      }
+      return false;
     });
 
     // Open File
@@ -872,10 +845,63 @@ class ipcHandle {
         userStore.set("defaultGamePath", newPath);
       },
     );
+  }
 
-    // 렌더러로부터 설치 명령 수신
-    ipcMain.on("quit-and-install", () => {
-      autoUpdater.quitAndInstall();
+  private deprecatedHandlers() {
+    ipcMain.handle("extract-zip", async (event, zipPath) => {
+      const extractPath = dirname(zipPath);
+
+      try {
+        const zip = fs.createReadStream(zipPath);
+        const directory = await unzipper.Open.file(zipPath);
+        const totalFiles = directory.files.length;
+        let extractedFiles = 0;
+
+        // 파일을 하나씩 해제하며 진행률 계산
+        await new Promise<void>((resolve, reject) => {
+          zip
+            .pipe(unzipper.Parse())
+            .on("entry", (entry) => {
+              const fileName = entry.path;
+              const type = entry.type; // 'Directory' or 'File'
+              const fullPath = join(extractPath, fileName);
+
+              if (type === "Directory") {
+                fs.mkdirSync(fullPath, { recursive: true });
+                entry.autodrain();
+              } else {
+                fs.mkdirSync(dirname(fullPath), { recursive: true });
+                entry.pipe(fs.createWriteStream(fullPath)).on("finish", () => {
+                  extractedFiles++;
+                  const progress = Math.round(
+                    (extractedFiles / totalFiles) * 100,
+                  );
+                  event.sender.send("extract-progress", progress); // 진행률 전송
+                });
+              }
+            })
+            .on("close", resolve) // 압축 해제 완료
+            .on("error", reject); // 에러 발생
+        });
+
+        fs.rmSync(zipPath, { recursive: true });
+
+        if (this.platformName === "darwin") {
+          new Promise<string>((resolve, reject) => {
+            exec(`chmod -R 755 "${extractPath}"`, (error, stdout, stderr) => {
+              if (error) {
+                reject(stderr || error.message);
+              }
+              resolve(stdout);
+            });
+          });
+        }
+
+        return extractPath;
+      } catch (error) {
+        log.error("압축 해제 실패:", error);
+        throw error;
+      }
     });
   }
 }

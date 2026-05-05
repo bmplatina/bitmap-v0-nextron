@@ -78,6 +78,7 @@ export interface bitmapApi {
     gameId: number,
     callback: (success: boolean) => void,
   ) => () => void;
+  removeDesyncCache: () => Promise<boolean>;
 
   onDownloadProgress: (callback: (progress: number) => void) => number;
   onDownloadAvgSpeed: (callback: (progress: number) => void) => number;
