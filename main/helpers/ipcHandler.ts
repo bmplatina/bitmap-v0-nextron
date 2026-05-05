@@ -643,7 +643,7 @@ class ipcHandle {
     });
 
     // Open File
-    ipcMain.handle("run-command", (_event, command) => {
+    ipcMain.handle("run-command", async (_event, command) => {
       return new Promise<string>((resolve, reject) => {
         exec(command, (error, stdout, stderr) => {
           if (error) {
@@ -657,10 +657,47 @@ class ipcHandle {
       });
     });
 
+    ipcMain.handle("run-game", async (_event, gamePath: string) => {
+      try {
+        let executablePath = gamePath;
+
+        if (this.platformName === "darwin" && gamePath.endsWith(".app")) {
+          const macOSPath = path.join(gamePath, "Contents", "MacOS");
+          if (fs.existsSync(macOSPath)) {
+            const files = await promises.readdir(macOSPath);
+            // .dylib 파일과 숨김 파일(.)을 제외한 첫 번째 파일 선택
+            const binary = files.find(
+              (f) => !f.endsWith(".dylib") && !f.startsWith("."),
+            );
+            if (binary) {
+              executablePath = path.join(macOSPath, binary);
+            }
+          }
+        }
+
+        if (!fs.existsSync(executablePath)) {
+          throw new Error(`Executable not found at ${executablePath}`);
+        }
+
+        log.info(`Running game: ${executablePath}`);
+        const child = spawn(executablePath, [], {
+          detached: true,
+          stdio: "ignore",
+          cwd: path.dirname(executablePath),
+        });
+
+        child.unref();
+        return { success: true };
+      } catch (error: any) {
+        log.error("run-game error:", error);
+        return { success: false, error: error.message };
+      }
+    });
+
     // Check Is Installed
     ipcMain.handle(
       "check-executable-or-app",
-      (_event, dirPath: string): boolean => {
+      async (_event, dirPath: string): Promise<boolean> => {
         try {
           const extensionName =
             this.platformName === "darwin" ? ".app/" : ".exe";
@@ -824,13 +861,6 @@ class ipcHandle {
         });
       });
     });
-
-    ipcMain.handle(
-      "get-electron-appdata-path",
-      async (_event): Promise<string> => {
-        return app.getPath("userData");
-      },
-    );
 
     ipcMain.handle(
       "get-default-game-installation-path",
