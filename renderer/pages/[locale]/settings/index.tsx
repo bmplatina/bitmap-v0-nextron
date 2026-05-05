@@ -1,23 +1,61 @@
-"use client";
-
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useTranslation } from "next-i18next";
-import { Flex, RadioCards, Text } from "@radix-ui/themes";
+import { TFunction, useTranslation } from "next-i18next";
+import { Flex, RadioCards, Text, Tabs, Box, Button } from "@radix-ui/themes";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
+
+interface i18nProp {
+  t: TFunction;
+}
 
 export default function SettingsPage() {
   const { t } = useTranslation("Settings");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트 사이드에서만 테마 관련 UI를 렌더링
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <Tabs.Root defaultValue="general">
+      <Tabs.List>
+        <Tabs.Trigger value="general">General</Tabs.Trigger>
+        <Tabs.Trigger value="display">Display</Tabs.Trigger>
+        <Tabs.Trigger value="downloads">Downloads</Tabs.Trigger>
+      </Tabs.List>
+
+      <Box pt="3" className="px-4">
+        <Tabs.Content value="general">
+          <Text size="2">Make changes to your account.</Text>
+        </Tabs.Content>
+
+        <Tabs.Content value="display">
+          <DiaplaySettings t={t} />
+        </Tabs.Content>
+
+        <Tabs.Content value="downloads">
+          <DownloadsSettings t={t} />
+        </Tabs.Content>
+      </Box>
+    </Tabs.Root>
+  );
+}
+
+function DiaplaySettings({ t }: i18nProp) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -60,70 +98,60 @@ export default function SettingsPage() {
     );
   };
 
-  if (!mounted) {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">{t("settings-general")}</h1>
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("theme")}</CardTitle>
-              {/* <CardDescription>
-                애플리케이션의 외관을 설정합니다.
-              </CardDescription> */}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="theme-select">테마 선택</Label>
-                <div className="h-10 bg-muted rounded-md animate-pulse" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">{t("settings-general")}</h1>
-
-      <div className="space-y-6">
-        {/* 테마 설정 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("theme")}</CardTitle>
-            {/* <CardDescription>애플리케이션의 외관을 설정합니다.</CardDescription> */}
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="theme-select">테마 선택</Label>
-                <RadioCards.Root
-                  value={theme}
-                  onValueChange={setScreenMode}
-                  columns={{ initial: "1", sm: "3" }}
-                >
-                  {themeOptions.map((option) => (
-                    <RadioCards.Item key={option.value} value={option.value}>
-                      <div className="flex items-center gap-2">
-                        {option.icon}
-                      </div>
-                      <Flex direction="column" width="100%">
-                        <Text weight="bold">{t(option.label)}</Text>
-                        <Text>{t(option.description)}</Text>
-                      </Flex>
-                    </RadioCards.Item>
-                  ))}
-                </RadioCards.Root>
-              </div>
+    <>
+      {/* 테마 설정 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("theme")}</CardTitle>
+          {/* <CardDescription>애플리케이션의 외관을 설정합니다.</CardDescription> */}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="theme-select">테마 선택</Label>
+              <RadioCards.Root
+                value={theme}
+                onValueChange={setScreenMode}
+                columns={{ initial: "1", sm: "3" }}
+              >
+                {themeOptions.map((option) => (
+                  <RadioCards.Item key={option.value} value={option.value}>
+                    <div className="flex items-center gap-2">{option.icon}</div>
+                    <Flex direction="column" width="100%">
+                      <Text weight="bold">{t(option.label)}</Text>
+                      <Text>{t(option.description)}</Text>
+                    </Flex>
+                  </RadioCards.Item>
+                ))}
+              </RadioCards.Root>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Separator />
-      </div>
-    </div>
+      <Separator />
+    </>
+  );
+}
+
+function DownloadsSettings({ t }: i18nProp) {
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>다운로드 캐시</CardTitle>
+        </CardHeader>
+        <CardContent>다운로드 캐시 용량: {5} GB</CardContent>
+        <CardFooter>
+          <Button onClick={window.bitmapApi.removeDesyncCache}>
+            캐시 제거
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Separator />
+    </>
   );
 }
 

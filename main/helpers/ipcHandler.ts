@@ -90,6 +90,8 @@ class ipcHandle {
     }
   >();
 
+  private runningGames = new Set<number>();
+
   /**
    * API 링크 생성
    * @param substring 도메인 뒤 링크 또는 전체 URL
@@ -657,42 +659,51 @@ class ipcHandle {
       });
     });
 
-    ipcMain.handle("run-game", async (_event, gamePath: string) => {
-      try {
-        let executablePath = gamePath;
+    ipcMain.handle(
+      "run-game",
+      async (event, gameId: number, gamePath: string) => {
+        try {
+          let executablePath = gamePath;
+          const startTime = Date.now();
 
-        if (this.platformName === "darwin" && gamePath.endsWith(".app")) {
-          const macOSPath = path.join(gamePath, "Contents", "MacOS");
-          if (fs.existsSync(macOSPath)) {
-            const files = await promises.readdir(macOSPath);
-            // .dylib 파일과 숨김 파일(.)을 제외한 첫 번째 파일 선택
-            const binary = files.find(
-              (f) => !f.endsWith(".dylib") && !f.startsWith("."),
-            );
-            if (binary) {
-              executablePath = path.join(macOSPath, binary);
+          if (this.platformName === "darwin" && gamePath.endsWith(".app")) {
+            const macOSPath = path.join(gamePath, "Contents", "MacOS");
+            if (fs.existsSync(macOSPath)) {
+              const files = await promises.readdir(macOSPath);
+              // .dylib 파일과 숨김 파일(.)을 제외한 첫 번째 파일 선택
+              const binary = files.find(
+                (f) => !f.endsWith(".dylib") && !f.startsWith("."),
+              );
+              if (binary) {
+                executablePath = path.join(macOSPath, binary);
+              }
             }
           }
+
+          if (!fs.existsSync(executablePath)) {
+            throw new Error(`Executable not found at ${executablePath}`);
+          }
+
+          log.info(`Running game: ${executablePath}`);
+          const child = spawn(executablePath, [], {
+            detached: true,
+            stdio: "ignore",
+            cwd: path.dirname(executablePath),
+          });
+
+          // child.unref();
+          child.on("close", (code) => {
+            const endTime = Date.now();
+            const durationInMinutes = (endTime - startTime) / 60000;
+            event.sender.send(`game-closed-${gameId}`, durationInMinutes);
+          });
+          return { success: true };
+        } catch (error: any) {
+          log.error("run-game error:", error);
+          return { success: false, error: error.message };
         }
-
-        if (!fs.existsSync(executablePath)) {
-          throw new Error(`Executable not found at ${executablePath}`);
-        }
-
-        log.info(`Running game: ${executablePath}`);
-        const child = spawn(executablePath, [], {
-          detached: true,
-          stdio: "ignore",
-          cwd: path.dirname(executablePath),
-        });
-
-        child.unref();
-        return { success: true };
-      } catch (error: any) {
-        log.error("run-game error:", error);
-        return { success: false, error: error.message };
-      }
-    });
+      },
+    );
 
     // Check Is Installed
     ipcMain.handle(

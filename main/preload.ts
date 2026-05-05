@@ -195,6 +195,23 @@ const bitmapApi = {
   // Open file
   runCommand: (command: string) => ipcRenderer.invoke("run-command", command),
 
+  // Run Game
+  runGame: (gameId: number, gamePath: string) =>
+    ipcRenderer.invoke("run-game", gameId, gamePath),
+
+  onGameTerminated: (
+    gameId: number,
+    callback: (durationInMinutes: number) => void,
+  ) => {
+    const channel = `game-closed-${gameId}`;
+    const subscription = (_event: IpcRendererEvent, duration: number) =>
+      callback(duration);
+    ipcRenderer.on(channel, subscription);
+    return () => {
+      ipcRenderer.removeListener(channel, subscription);
+    };
+  },
+
   // Delete desync caches
   removeDesyncCache: () => ipcRenderer.invoke("remove-desync-cache"),
 

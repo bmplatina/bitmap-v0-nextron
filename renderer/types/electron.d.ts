@@ -99,6 +99,15 @@ export interface bitmapApi {
 
   runCommand: (command: string) => Promise<string>;
 
+  runGame: (
+    gameId: number,
+    gamePath: string,
+  ) => Promise<{ success: boolean; error?: any }>;
+  onGameTerminated: (
+    gameId: number,
+    callback: (durationInMinutes: number) => void,
+  ) => () => void;
+
   removeFile: (targetPath: string) => Promise<boolean>;
 
   setGameInstallInfo: (value: GameInstallInfo) => Promise<any>;
