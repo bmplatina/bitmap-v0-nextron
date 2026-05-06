@@ -524,7 +524,7 @@ class ipcHandle {
               const completedChunks = parseInt(match[1], 10);
               const currentTimestamp = Date.now();
               let speed = 0;
-              const chunkSizeBytes = 4 * 1024;
+              const chunkSizeBytes = 50 * 1024;
 
               if (
                 lastCompletedChunks !== null &&
@@ -663,6 +663,11 @@ class ipcHandle {
       "run-game",
       async (event, gameId: number, gamePath: string) => {
         try {
+          if (this.runningGames.has(gameId)) {
+            log.warn(`Game ${gameId} is already running.`);
+            return { success: false, error: "Game is already running." };
+          }
+
           let executablePath = gamePath;
           const startTime = Date.now();
 
@@ -684,22 +689,34 @@ class ipcHandle {
             throw new Error(`Executable not found at ${executablePath}`);
           }
 
-          log.info(`Running game: ${executablePath}`);
+          log.info(`Starting game: ${executablePath}`);
+          
+          this.runningGames.add(gameId);
+
           const child = spawn(executablePath, [], {
             detached: true,
             stdio: "ignore",
             cwd: path.dirname(executablePath),
           });
 
-          // child.unref();
+          child.unref();
+
           child.on("close", (code) => {
+            this.runningGames.delete(gameId);
             const endTime = Date.now();
-            const durationInMinutes = (endTime - startTime) / 60000;
-            event.sender.send(`game-closed-${gameId}`, durationInMinutes);
+            const durationInMinutes = Math.floor((endTime - startTime) / 60000);
+            
+            log.info(`Game closed: ${executablePath}. Playtime: ${durationInMinutes}m, ExitCode: ${code}`);
+
+            if (!event.sender.isDestroyed()) {
+              event.sender.send(`game-closed-${gameId}`, durationInMinutes);
+            }
           });
+          
           return { success: true };
         } catch (error: any) {
           log.error("run-game error:", error);
+          this.runningGames.delete(gameId);
           return { success: false, error: error.message };
         }
       },
