@@ -7,6 +7,7 @@ import { openExternal } from "@/lib/utils-client";
 import { EInstallState, GameWithSize, GameInstallManager } from "@/lib/types";
 import { useRouter } from "next/router";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import { useAuth } from "@/lib/AuthContext";
 import { Separator } from "../ui/separator";
 import { getEula } from "@/lib/general";
 import {
@@ -293,6 +294,7 @@ const GameInteractableButtons = observer(function ({
   game,
 }: GameInteractableButtonsProps) {
   const router = useRouter();
+  const { bIsLoggedIn, isLoading } = useAuth();
   const { store, bIsMac } = useGameInstallManager();
   const { t } = useTranslation("GamesView");
 
@@ -478,7 +480,13 @@ const GameInteractableButtons = observer(function ({
                     </CardContent>
                   </Card>
                 ) : (
-                  <Button size="3" className="w-full" highContrast color="gray">
+                  <Button
+                    size="3"
+                    className="w-full"
+                    highContrast
+                    color="gray"
+                    disabled={!isLoading && !bIsLoggedIn}
+                  >
                     <Flex gap="2" align="center" justify="center" width="100%">
                       <Image
                         src={bIsMac ? AppleLogo : Windows10Logo}
