@@ -34,7 +34,8 @@ export default function TopBar() {
   const router = useRouter();
   const { t } = useTranslation("common");
   const { bIsMac } = useGameInstallManager();
-  const { bIsLoggedIn, username, isLoading, avatarUri } = useAuth();
+  const { bIsLoggedIn, username, isLoading, avatarUri, bIsEmailVerified } =
+    useAuth();
   // Electron 및 MacOS 환경 감지 변수 (실제 감지 코드는 구현하지 않음)
   const [titleTransform, setTitleTransform] =
     useState<string>("translateX(80px)");
@@ -115,11 +116,12 @@ export default function TopBar() {
         <div
           className="flex items-center electron-nodrag"
           style={{
-            ...(bIsMac && {
-              transform: titleTransform,
-              willChange: "transform",
-              transition: "transform 0.5s ease 0.05s",
-            }),
+            ...(bIsMac &&
+              bIsEmailVerified && {
+                transform: titleTransform,
+                willChange: "transform",
+                transition: "transform 0.5s ease 0.05s",
+              }),
           }}
         >
           <LocalizedLink href="/" className="flex items-center">

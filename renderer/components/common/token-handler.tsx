@@ -1,17 +1,18 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { Button, Flex, Text } from "@radix-ui/themes";
 import { useTranslation } from "next-i18next";
+import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
+import { cn } from "@/lib/utils";
 import EmailVerificationDialog from "@/components/accounts/email-verification";
 
 export default function TokenHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login, logout, bIsEmailVerified, bIsLoggedIn, username } = useAuth();
+  const { bIsMac } = useGameInstallManager();
   const { t } = useTranslation("Authentication");
   const [bIsVerificationClicked, setIsVerificationClicked] =
     useState<boolean>(false);
@@ -28,7 +29,9 @@ export default function TokenHandler() {
   if (!bIsEmailVerified && bIsLoggedIn) {
     return (
       <div className="h-12 bg-background border-b flex items-center px-4 w-full relative z-50 apple-blur">
-        <div className="mr-auto text-sm md:text-base">
+        <div
+          className={cn("mr-auto text-sm md:text-base", bIsMac && "ml-[80px]")}
+        >
           <Text weight="bold">{username}</Text>
           <Text wrap="pretty">{t("email-verification-incomplete-top")}</Text>
         </div>
