@@ -57,6 +57,7 @@
     "embla-carousel-react": "8.5.1",
     "es-hangul": "^2.3.8",
     "framer-motion": "^12.34.3",
+    "get-folder-size": "^5.0.0",
     "input-otp": "1.4.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.454.0",
@@ -74,6 +75,7 @@
   "devDependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/get-folder-size": "^3.0.4",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.52",
     "@types/semver": "^7.7.1",

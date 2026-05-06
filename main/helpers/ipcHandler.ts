@@ -16,6 +16,7 @@ import { exec } from "child_process";
 import log from "electron-log";
 import { spawn } from "child_process";
 import { pipeline } from "stream/promises";
+import getFildersize from "get-folder-size";
 
 // Game Downloader
 import axios from "axios";
@@ -90,7 +91,7 @@ class ipcHandle {
     }
   >();
 
-  private runningGames = new Set<number>();
+  private runningGames = new Map<number, import("child_process").ChildProcess>();
 
   /**
    * API 링크 생성
@@ -524,7 +525,8 @@ class ipcHandle {
               const completedChunks = parseInt(match[1], 10);
               const currentTimestamp = Date.now();
               let speed = 0;
-              const chunkSizeBytes = 50 * 1024;
+              // 사용자의 실제 다운로드 속도 체감을 맞추기 위한 보정값 (약 34.7KB)
+              const chunkSizeBytes = 34.7 * 1024;
 
               if (
                 lastCompletedChunks !== null &&
@@ -536,7 +538,7 @@ class ipcHandle {
                 const deltaChunks = completedChunks - lastCompletedChunks;
                 const bytesPerSecond =
                   (deltaChunks * chunkSizeBytes) / elapsedSeconds;
-                speed = Math.max(0, bytesPerSecond / (1024 * 1024));
+                speed = Math.max(0, (bytesPerSecond * 8) / (1024 * 1024));
               }
 
               lastCompletedChunks = completedChunks;
@@ -690,8 +692,6 @@ class ipcHandle {
           }
 
           log.info(`Starting game: ${executablePath}`);
-          
-          this.runningGames.add(gameId);
 
           const child = spawn(executablePath, [], {
             detached: true,
@@ -699,20 +699,24 @@ class ipcHandle {
             cwd: path.dirname(executablePath),
           });
 
+          this.runningGames.set(gameId, child);
+
           child.unref();
 
           child.on("close", (code) => {
             this.runningGames.delete(gameId);
             const endTime = Date.now();
             const durationInMinutes = Math.floor((endTime - startTime) / 60000);
-            
-            log.info(`Game closed: ${executablePath}. Playtime: ${durationInMinutes}m, ExitCode: ${code}`);
+
+            log.info(
+              `Game closed: ${executablePath}. Playtime: ${durationInMinutes}m, ExitCode: ${code}`,
+            );
 
             if (!event.sender.isDestroyed()) {
               event.sender.send(`game-closed-${gameId}`, durationInMinutes);
             }
           });
-          
+
           return { success: true };
         } catch (error: any) {
           log.error("run-game error:", error);
@@ -721,6 +725,38 @@ class ipcHandle {
         }
       },
     );
+
+    ipcMain.handle("stop-game", async (event, gameId: number) => {
+      try {
+        const child = this.runningGames.get(gameId);
+        if (!child) {
+          return { success: false, error: "Game is not running." };
+        }
+
+        log.info(`Requesting graceful shutdown for game ${gameId}...`);
+        
+        // 1. 안전한 종료(SIGTERM) 요청
+        child.kill('SIGTERM');
+
+        // 2. 5초 뒤에도 프로세스가 살아있다면 강제 종료(SIGKILL)
+        const forceKillTimeout = setTimeout(() => {
+          if (this.runningGames.has(gameId)) {
+            log.warn(`Game ${gameId} did not gracefully shutdown. Force killing...`);
+            child.kill('SIGKILL');
+          }
+        }, 5000); // 5초 대기
+
+        // 프로세스가 무사히 종료되면 타이머 취소
+        child.once("close", () => {
+          clearTimeout(forceKillTimeout);
+        });
+
+        return { success: true };
+      } catch (error: any) {
+        log.error("stop-game error:", error);
+        return { success: false, error: error.message };
+      }
+    });
 
     // Check Is Installed
     ipcMain.handle(

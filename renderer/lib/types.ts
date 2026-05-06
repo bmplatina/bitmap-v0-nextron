@@ -568,7 +568,10 @@ class GameInstallManager {
     bCreateShortcut: boolean,
   ): Promise<string> {
     // macOS: <installRoot>/<gameName>.app, Windows: <installRoot> (files are extracted directly here)
-    const installRootPath = (this.installationPath ?? "").replace(/[\\/]+$/, "");
+    const installRootPath = (this.installationPath ?? "").replace(
+      /[\\/]+$/,
+      "",
+    );
     const destPath = this.bIsMac
       ? `${installRootPath}/${this.gameBinaryName}.app`
       : installRootPath;
@@ -733,25 +736,31 @@ class GameInstallManager {
   }
 
   async openApp(context: bitmapApi) {
-    let openCommand: string = "";
+    // let openCommand: string = "";
 
-    if (this.bIsMac) {
-      openCommand = `open "${this.installationPath}/${this.game.gameBinaryName}.app"`;
-    } else {
-      if (this.installationPath) {
-        if (this.installationPath.charAt(0) === "C") {
-          openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
-        } else {
-          openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
-        }
-      }
-    }
+    // if (this.installationPath) {
+    //   if (this.bIsMac) {
+    //     openCommand = `open "${this.installationPath}/${this.game.gameBinaryName}.app"`;
+    //   } else {
+    //     if (this.installationPath.charAt(0) === "C") {
+    //       openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+    //     } else {
+    //       openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
+    //     }
+    //   }
+    // }
 
     try {
-      const result: string = await context.runCommand(openCommand);
-      console.log("명령 실행 성공:", result);
-    } catch (error) {
-      console.error("명령 실행 중 오류:", error as string);
+      // const result: string = await context.runCommand(openCommand);
+      if (!this.binaryAbsPath) {
+        this.binaryAbsPath = this.bIsMac
+          ? `${this.installationPath}/${this.game.gameBinaryName}.app`
+          : `${this.installationPath}\\${this.game.gameBinaryName}.exe`;
+      }
+      const result = await context.runGame(this.gameId, this.binaryAbsPath);
+      console.log("명령 실행 성공:", result.success);
+    } catch (error: any) {
+      console.error("명령 실행 중 오류:", error?.error);
     }
   }
 

@@ -199,6 +199,8 @@ const bitmapApi = {
   runGame: (gameId: number, gamePath: string) =>
     ipcRenderer.invoke("run-game", gameId, gamePath),
 
+  stopGame: (gameId: number) => ipcRenderer.invoke("stop-game", gameId),
+
   onGameTerminated: (
     gameId: number,
     callback: (durationInMinutes: number) => void,
