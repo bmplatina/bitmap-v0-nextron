@@ -29,6 +29,10 @@ win:
       to: bin
       filter:
         - "**/*"
+  publish:
+    # an object provider for github with additional options
+    - provider: github
+      protocol: https
 
 mac:
   category: public.app-category.utilities
@@ -38,6 +42,10 @@ mac:
     - target: zip
       arch: [arm64]
   icon: resources/Bitmap_IconComposer.icon
+  publish:
+    # an object provider for github with additional options
+    - provider: github
+      protocol: https
   extraResources:
     - from: resources/darwin
       to: bin

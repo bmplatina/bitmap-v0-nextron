@@ -5,7 +5,12 @@
   "version": "0.4.0-beta",
   "author": "Platina <platina@prodbybitmap.com>",
   "main": "app/main.js",
+  "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmplatina/bitmap-v0-nextron.git"
+  },
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",

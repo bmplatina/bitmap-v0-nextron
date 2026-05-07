@@ -1,11 +1,14 @@
+@import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@config "../tailwind.config.js";
+@config "../tailwind.config.ts";
 
 body {
-  font-family: "Pretendard", var(--font-pretendard), Arial, Helvetica, sans-serif;
+  font-family:
+    "Pretendard", var(--font-pretendard), Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
@@ -106,14 +109,16 @@ body {
   body {
     @apply bg-background text-foreground;
     /* Radix UI 폰트 강제 재정의 */
-    --default-font-family: "Pretendard", var(--font-pretendard), sans-serif !important;
+    --default-font-family:
+      "Pretendard", var(--font-pretendard), sans-serif !important;
   }
 }
 
 @layer components {
   .font-pretendard {
     /* Radix가 내부적으로 사용하는 모든 폰트 변수를 덮어버림 */
-    --default-font-family: "Pretendard", var(--font-pretendard), sans-serif !important;
+    --default-font-family:
+      "Pretendard", var(--font-pretendard), sans-serif !important;
     --font-family: "Pretendard", var(--font-pretendard), sans-serif !important;
   }
 }

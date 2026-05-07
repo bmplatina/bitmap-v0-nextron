@@ -13,8 +13,24 @@ import {
 import serve from "electron-serve";
 import * as helpers from "./helpers";
 import i18next from "../next-i18next.config";
-import { autoUpdater, UpdateInfo, ProgressInfo } from "electron-updater";
+import * as electronUpdaterModule from "electron-updater";
+import type { UpdateInfo, ProgressInfo } from "electron-updater";
 import log from "electron-log";
+
+type ElectronUpdaterModule = {
+  autoUpdater?: (typeof import("electron-updater"))["autoUpdater"];
+  default?: {
+    autoUpdater?: (typeof import("electron-updater"))["autoUpdater"];
+  };
+};
+
+const autoUpdater =
+  (electronUpdaterModule as ElectronUpdaterModule).autoUpdater ??
+  (electronUpdaterModule as ElectronUpdaterModule).default?.autoUpdater;
+
+if (!autoUpdater) {
+  throw new Error("Failed to resolve electron-updater autoUpdater export.");
+}
 
 // 1. 초기 설정 (앱 실행 시 한 번만 설정)
 log.errorHandler.startCatching();
@@ -173,18 +189,15 @@ const getMainWindowWhenReady = async () => {
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
+      const isBitmapApi = host === "api.prodbybitmap.com";
 
       if (isYouTube) {
         details.requestHeaders["Referer"] = "https://www.youtube-nocookie.com/";
         details.requestHeaders["Origin"] = "https://www.youtube-nocookie.com";
-      } else {
-        if (!details.requestHeaders["Origin"]) {
-          details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
-        }
+      } else if (isBitmapApi && !details.requestHeaders["Origin"]) {
+        details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
       }
-    } catch (e) {
-      details.requestHeaders["Origin"] = "https://api.prodbybitmap.com";
-    }
+    } catch (e) {}
     callback({ cancel: false, requestHeaders: details.requestHeaders });
   });
 
@@ -199,12 +212,13 @@ const getMainWindowWhenReady = async () => {
         host.includes("googleapis.com") ||
         host.includes("googlevideo.com") ||
         host.includes("ytimg.com");
+      const isBitmapApi = host === "api.prodbybitmap.com";
 
       if (isYouTube) {
         delete responseHeaders["x-frame-options"];
         delete responseHeaders["X-Frame-Options"];
         delete responseHeaders["content-security-policy"];
-      } else {
+      } else if (isBitmapApi) {
         responseHeaders = {
           ...responseHeaders,
           "Access-Control-Allow-Origin": ["*"],

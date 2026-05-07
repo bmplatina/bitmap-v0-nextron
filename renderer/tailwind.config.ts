@@ -1,15 +1,20 @@
-const colors = require("tailwindcss/colors");
+import type { Config } from "tailwindcss";
+import defaultTheme from "tailwindcss/defaultTheme"; // 이걸 꼭 import 해야 합니다.
 
-module.exports = {
-  darkMode: ["class"],
+const config: Config = {
+  darkMode: "class",
   content: [
-    "./renderer/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./renderer/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./renderer/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./renderer/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // 기본 sans 폰트를 Pretendard로 교체하고, 나머지는 Tailwind 기본값을 유지
+        sans: ["var(--font-pretendard)", ...defaultTheme.fontFamily.sans],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -45,11 +50,11 @@ module.exports = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         chart: {
-          1: "hsl(var(--chart-1))",
-          2: "hsl(var(--chart-2))",
-          3: "hsl(var(--chart-3))",
-          4: "hsl(var(--chart-4))",
-          5: "hsl(var(--chart-5))",
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -89,10 +94,9 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
-      fontFamily: {
-        sans: ["var(--font-pretendard)", "Pretendard", "sans-serif"],
-      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
+
+export default config;
