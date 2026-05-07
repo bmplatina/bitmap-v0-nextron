@@ -1,7 +1,7 @@
-const path = require("path");
+import path from "path";
+import { UserConfig } from "next-i18next";
 
-/** @type {import('next-i18next').UserConfig} */
-const config = {
+const config: UserConfig = {
   i18n: {
     defaultLocale: "en",
     locales: ["ko", "en"],
@@ -17,4 +17,4 @@ const config = {
   // },
 };
 
-module.exports = config;
+export default config;
