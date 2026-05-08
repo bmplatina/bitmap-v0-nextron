@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
 import type { AppProps } from "next/app";
-import { useRouter } from "next/router";
 import { ScrollArea, Theme } from "@radix-ui/themes";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import Sidebar from "@/components/common/sidebar/sidebar";
@@ -15,20 +14,29 @@ import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../../next-i18next.config";
 import { pretendard } from "@/lib/utils";
-import { useTranslation } from "next-i18next";
+import {
+  getDownloadCacheSize,
+  removeDownloadCache,
+  formatBytesToGB,
+} from "@/lib/utils-client";
 import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
 import DeeplinkHandler from "@/lib/DeeplinkHandler";
 
 function RootLayout({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-  const {
-    i18n: { language: locale },
-  } = useTranslation();
-
+  const [cacheSize, setCacheSize] = useState<number>(0);
   const [bIsMounted, setIsMounted] = useState(false);
+
+  async function autoPurgeDesyncCache() {
+    const size = await getDownloadCacheSize(window.bitmapApi);
+    setCacheSize(size);
+    if (formatBytesToGB(cacheSize) > 7.5) {
+      await removeDownloadCache(window.bitmapApi, setCacheSize);
+    }
+  }
 
   useEffect(() => {
     setIsMounted(true);
+    autoPurgeDesyncCache();
   }, []);
 
   if (!bIsMounted) {

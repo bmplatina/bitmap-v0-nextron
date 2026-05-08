@@ -1,6 +1,11 @@
 {
-  "settings-general": "General Settings",
+  "general": "General Settings",
+  "display": "Display",
+  "download": "Download",
+  "language": "Language",
+  "language-desc": "Set the application language",
   "theme": "Theme",
+  "theme-desc": "Set the application theme",
   "current-theme": "Current Theme",
   "screen-mode": "Screen Mode",
   "screen-mode-dark": "Dark Mode",
@@ -9,5 +14,7 @@
   "screen-mode-light-desc": "Use light mode",
   "screen-mode-system-default": "Auto",
   "screen-mode-system-default-desc": "Follow the system theme settings",
+  "download-cache": "Download Cache",
+  "download-cache-desc": "Temporary files used for game downloads. If game updates fail, deleting this cache may resolve the issue. The cache is automatically cleared if it exceeds 7.5GB.",
   "dismiss": "Dismiss"
 }

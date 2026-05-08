@@ -8,19 +8,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { useRouter } from "next/router";
 import { Separator } from "@/components/ui/separator";
 import { Monitor, Moon, Sun } from "lucide-react";
-import { TFunction, useTranslation } from "next-i18next";
-import { Flex, RadioCards, Text, Tabs, Box, Button } from "@radix-ui/themes";
+import { type TFunction, useTranslation } from "next-i18next";
+import type { i18n } from "i18next";
+import {
+  Box,
+  Button,
+  Flex,
+  Progress,
+  RadioCards,
+  Select,
+  Text,
+  Tabs,
+} from "@radix-ui/themes";
+import { getDownloadCacheSize, removeDownloadCache } from "@/lib/utils-client";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 
 interface i18nProp {
   t: TFunction;
+  i18n?: i18n;
 }
 
 export default function SettingsPage() {
-  const { t } = useTranslation("Settings");
+  const { t, i18n } = useTranslation("Settings");
   const [mounted, setMounted] = useState(false);
 
   // 클라이언트 사이드에서만 테마 관련 UI를 렌더링
@@ -33,29 +45,103 @@ export default function SettingsPage() {
   return (
     <Tabs.Root defaultValue="general">
       <Tabs.List>
-        <Tabs.Trigger value="general">General</Tabs.Trigger>
-        <Tabs.Trigger value="display">Display</Tabs.Trigger>
-        <Tabs.Trigger value="downloads">Downloads</Tabs.Trigger>
+        <Tabs.Trigger value="general">{t("general")}</Tabs.Trigger>
+        <Tabs.Trigger value="display">{t("display")}</Tabs.Trigger>
+        <Tabs.Trigger value="download">{t("download")}</Tabs.Trigger>
       </Tabs.List>
 
       <Box pt="3" className="px-4">
         <Tabs.Content value="general">
-          <Text size="2">Make changes to your account.</Text>
+          <GeneralSettings t={t} />
         </Tabs.Content>
 
         <Tabs.Content value="display">
-          <DiaplaySettings t={t} />
+          <DisplaySettings t={t} />
         </Tabs.Content>
 
-        <Tabs.Content value="downloads">
-          <DownloadsSettings t={t} />
+        <Tabs.Content value="download">
+          <DownloadSettings t={t} />
         </Tabs.Content>
       </Box>
     </Tabs.Root>
   );
 }
 
-function DiaplaySettings({ t }: i18nProp) {
+function GeneralSettings({ t }: i18nProp) {
+  const router = useRouter();
+  const { i18n } = useTranslation();
+
+  async function handleLocaleChange(nextLocale: string) {
+    // i18next 인스턴스에 언어 변경을 직접 지시하여 즉각적인 DOM 리렌더링 유도
+    await i18n.changeLanguage(nextLocale);
+
+    // Next.js 라우터 경로도 업데이트 (향후 새로고침이나 Link 이동을 위해)
+    const newAsPath = router.asPath.replace(
+      `/${i18n.language}`,
+      `/${nextLocale}`,
+    );
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, locale: nextLocale },
+      },
+      newAsPath,
+      { shallow: false },
+    );
+  }
+
+  useEffect(
+    function () {
+      const newLocale: "ko" | "en" = i18n.language === "ko" ? "ko" : "en";
+      window.electronTools.setLocale(newLocale);
+    },
+    [i18n.language],
+  );
+
+  useEffect(() => {
+    void (async () => {
+      const initialLocale = await window.electronTools.getLocale();
+      await handleLocaleChange(initialLocale);
+    })();
+  }, []);
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("language")}</CardTitle>
+          <CardDescription>{t("language-desc")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select.Root
+            defaultValue={i18n.language || "en"}
+            onValueChange={handleLocaleChange}
+          >
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Group>
+                <Select.Label>Global</Select.Label>
+                <Select.Item value="en">English (English)</Select.Item>
+              </Select.Group>
+              <Select.Separator />
+              <Select.Group>
+                <Select.Label>Asia</Select.Label>
+                <Select.Item value="ko">Korean (한국어)</Select.Item>
+                <Select.Item value="ja" disabled>
+                  Japanese (日本語)
+                </Select.Item>
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+        </CardContent>
+      </Card>
+
+      <Separator />
+    </>
+  );
+}
+
+function DisplaySettings({ t }: i18nProp) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -104,12 +190,11 @@ function DiaplaySettings({ t }: i18nProp) {
       <Card>
         <CardHeader>
           <CardTitle>{t("theme")}</CardTitle>
-          {/* <CardDescription>애플리케이션의 외관을 설정합니다.</CardDescription> */}
+          <CardDescription>{t("theme-desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="theme-select">테마 선택</Label>
               <RadioCards.Root
                 value={theme}
                 onValueChange={setScreenMode}
@@ -120,7 +205,6 @@ function DiaplaySettings({ t }: i18nProp) {
                     <div className="flex items-center gap-2">{option.icon}</div>
                     <Flex direction="column" width="100%">
                       <Text weight="bold">{t(option.label)}</Text>
-                      <Text>{t(option.description)}</Text>
                     </Flex>
                   </RadioCards.Item>
                 ))}
@@ -135,18 +219,41 @@ function DiaplaySettings({ t }: i18nProp) {
   );
 }
 
-function DownloadsSettings({ t }: i18nProp) {
+function DownloadSettings({ t }: i18nProp) {
+  const [cacheSize, setCacheSize] = useState<number>(0);
+
+  function formatBytesToGB(bytes: number) {
+    return Number((bytes / 1024 ** 3).toFixed(2));
+  }
+
+  async function purgeCache() {
+    await removeDownloadCache(window.bitmapApi, setCacheSize);
+  }
+
+  useEffect(() => {
+    async function fetchCacheSize() {
+      const size = await getDownloadCacheSize(window.bitmapApi);
+      setCacheSize(size);
+    }
+
+    fetchCacheSize();
+  }, []);
+
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>다운로드 캐시</CardTitle>
+          <CardTitle>{t("download-cache")}</CardTitle>
+          <CardDescription>{t("download-cache-desc")}</CardDescription>
         </CardHeader>
-        <CardContent>다운로드 캐시 용량: {5} GB</CardContent>
+        <CardContent>
+          <Flex gap="2" direction="column">
+            <Text>{formatBytesToGB(cacheSize)}GiB / 7.5GiB</Text>
+            <Progress value={formatBytesToGB(cacheSize) / 7.5} />
+          </Flex>
+        </CardContent>
         <CardFooter>
-          <Button onClick={window.bitmapApi.removeDesyncCache}>
-            캐시 제거
-          </Button>
+          <Button onClick={purgeCache}>캐시 제거</Button>
         </CardFooter>
       </Card>
 

@@ -34,9 +34,9 @@ export interface tools {
   getPlatform: () => Promise<string>;
   getAppVersion: () => Promise<string>;
 
-  getLocale: () => "ko" | "en";
+  getLocale: () => Promise<"ko" | "en">;
 
-  setLocale: (locale: "ko" | "en") => void;
+  setLocale: (locale: "ko" | "en") => Promise<void>;
 
   getElectronStoredPath: () => Promise<string>;
 
@@ -78,6 +78,7 @@ export interface bitmapApi {
     gameId: number,
     callback: (success: boolean) => void,
   ) => () => void;
+  getDesyncCacheSize: () => Promise<number>;
   removeDesyncCache: () => Promise<boolean>;
 
   onDownloadProgress: (callback: (progress: number) => void) => number;
@@ -103,9 +104,7 @@ export interface bitmapApi {
     gameId: number,
     gamePath: string,
   ) => Promise<{ success: boolean; error?: any }>;
-  stopGame: (
-    gameId: number,
-  ) => Promise<{ success: boolean; error?: any }>;
+  stopGame: (gameId: number) => Promise<{ success: boolean; error?: any }>;
   onGameTerminated: (
     gameId: number,
     callback: (durationInMinutes: number) => void,

@@ -214,6 +214,9 @@ const bitmapApi = {
     };
   },
 
+  // Get desync cache size
+  getDesyncCacheSize: () => ipcRenderer.invoke("get-desync-cache-size"),
+
   // Delete desync caches
   removeDesyncCache: () => ipcRenderer.invoke("remove-desync-cache"),
 

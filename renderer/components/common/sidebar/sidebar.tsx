@@ -21,8 +21,8 @@ export default function Sidebar() {
       ? "/"
       : router.pathname.replace("/[locale]", "") || "/";
 
-  const isLibraryPage = router.pathname.includes('/library');
-  const showMainSidebar = router.query.sidebar === 'main';
+  const isLibraryPage = router.pathname.includes("/library");
+  const showMainSidebar = router.query.sidebar === "main";
 
   function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(event, window.electronTools);
@@ -111,9 +111,7 @@ export default function Sidebar() {
           );
         })}
       </div>
-      <div className="p-4 border-t">
-        <LanguageSwitcher />
-      </div>
+      <div className="p-4 border-t">{/* <LanguageSwitcher /> */}</div>
     </div>
   );
 }

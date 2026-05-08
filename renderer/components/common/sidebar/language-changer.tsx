@@ -39,9 +39,11 @@ export default function LanguageSwitch() {
     [locale],
   );
 
-  useEffect(function () {
-    const initialLocale = window.electronTools.getLocale();
-    handleLocaleChange(initialLocale === "en");
+  useEffect(() => {
+    void (async () => {
+      const initialLocale = await window.electronTools.getLocale();
+      await handleLocaleChange(initialLocale === "en");
+    })();
   }, []);
 
   return (

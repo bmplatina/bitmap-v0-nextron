@@ -68,6 +68,43 @@ async function getPlatform(context: ElectronTools) {
   return platform;
 }
 
+async function getDownloadCacheSize(context: BitmapAPI) {
+  const result = (await context.getDesyncCacheSize()) as unknown;
+
+  if (typeof result === "number") {
+    return result;
+  }
+
+  if (
+    result &&
+    typeof result === "object" &&
+    "size" in result &&
+    typeof result.size === "number"
+  ) {
+    return result.size;
+  }
+
+  return 0;
+}
+
+async function removeDownloadCache(
+  context: BitmapAPI,
+  setCacheSize: (size: number) => void,
+) {
+  const success = await context.removeDesyncCache();
+  if (success) {
+    alert("캐시가 성공적으로 제거되었습니다.");
+    const size = await getDownloadCacheSize(context);
+    setCacheSize(size);
+  } else {
+    alert("캐시 제거에 실패했습니다.");
+  }
+}
+
+function formatBytesToGB(bytes: number) {
+  return Number((bytes / 1024 ** 3).toFixed(2));
+}
+
 export {
   BitmapInternalLink,
   csrAxiosGet,
@@ -75,4 +112,7 @@ export {
   openExternal,
   openExternalByUri,
   getPlatform,
+  getDownloadCacheSize,
+  removeDownloadCache,
+  formatBytesToGB,
 };

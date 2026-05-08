@@ -77,6 +77,11 @@ class ipcHandle {
   private readonly API_URI: string = "https://api.prodbybitmap.com/";
   private readonly DEPOT_URI: string = "https://depot.prodbybitmap.com/";
 
+  private readonly DESYNC_TEMP_PATH: string = path.join(
+    app.getPath("temp"),
+    "caidx",
+  );
+
   private activeDownloads = new Map<string, Electron.DownloadItem>();
   private pendingDownloads = new Map<
     string,
@@ -425,8 +430,7 @@ class ipcHandle {
       async (event, gameId: number, destPath: string) => {
         // caidx를 저장할 임시 경로. <temp>/caidx/games/${gameId}/<file>.caidx
         const caidxDirPath = path.join(
-          app.getPath("temp"),
-          "caidx",
+          this.DESYNC_TEMP_PATH,
           "games",
           gameId.toString(),
         );
@@ -640,10 +644,37 @@ class ipcHandle {
       }
     });
 
+    ipcMain.handle("get-desync-cache-size", async (_event) => {
+      if (fs.existsSync(this.DESYNC_TEMP_PATH)) {
+        const result = await getFoldersize(this.DESYNC_TEMP_PATH);
+        if (typeof result === "number") {
+          return result;
+        }
+
+        if (
+          result &&
+          typeof result === "object" &&
+          "size" in result &&
+          typeof result.size === "number"
+        ) {
+          if (
+            "errors" in result &&
+            Array.isArray(result.errors) &&
+            result.errors.length > 0
+          ) {
+            log.warn("get-desync-cache-size partial errors:", result.errors);
+          }
+          return result.size;
+        }
+
+        return 0;
+      }
+      return 0;
+    });
+
     ipcMain.handle("remove-desync-cache", async (_event) => {
-      const desyncCachePath = path.join(app.getPath("temp"), "caidx");
-      if (fs.existsSync(desyncCachePath)) {
-        fs.rmSync(desyncCachePath, { recursive: true, force: true });
+      if (fs.existsSync(this.DESYNC_TEMP_PATH)) {
+        fs.rmSync(this.DESYNC_TEMP_PATH, { recursive: true, force: true });
         return true;
       }
       return false;
