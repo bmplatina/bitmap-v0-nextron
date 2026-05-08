@@ -13,39 +13,13 @@ import {
 import serve from "electron-serve";
 import * as helpers from "./helpers";
 import i18next from "../next-i18next.config";
-import * as electronUpdaterModule from "electron-updater";
-import type { UpdateInfo, ProgressInfo } from "electron-updater";
-import log from "electron-log";
-
-type ElectronUpdaterModule = {
-  autoUpdater?: (typeof import("electron-updater"))["autoUpdater"];
-  default?: {
-    autoUpdater?: (typeof import("electron-updater"))["autoUpdater"];
-  };
-};
-
-const autoUpdater =
-  (electronUpdaterModule as ElectronUpdaterModule).autoUpdater ??
-  (electronUpdaterModule as ElectronUpdaterModule).default?.autoUpdater;
-
-if (!autoUpdater) {
-  throw new Error("Failed to resolve electron-updater autoUpdater export.");
-}
-
-// 1. 초기 설정 (앱 실행 시 한 번만 설정)
-log.errorHandler.startCatching();
-
-// 로그 포맷 설정
-log.transports.console.format =
-  "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
-log.transports.file.format = "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}";
-
-// 파일 저장 임계값 설정: 'info'로 설정하면 info, warn, error가 모두 파일에 기록됩니다.
-log.transports.file.level = "info";
 
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
 const platformName = process.platform;
+
+// electron-updater
+const ElectronUpdater = new helpers.updater.ElectronUpdater();
 
 // Window State
 let windowIsReady: boolean = false;
@@ -53,13 +27,6 @@ let mainWindow: BrowserWindow = null;
 
 // Deeplinks
 const protocolScheme: string = "bitmap";
-
-// 로거 설정 (업데이트 상태를 파일로 기록)
-autoUpdater.logger = log;
-(autoUpdater.logger as typeof log).transports.file.level = "info";
-autoUpdater.autoDownload = true; // 자동 다운로드 명시적 설정
-autoUpdater.autoInstallOnAppQuit = true; // 앱 종료 시 자동 설치
-autoUpdater.allowPrerelease = true; // 알파/베타 버전 업데이트 허용 (현재 버전이 -alpha이므로 필수)
 
 if (bIsProd) {
   serve({ directory: "app" });
@@ -155,7 +122,7 @@ const getMainWindowWhenReady = async () => {
   });
 
   const locale = helpers.userStore.get("locale", i18next.i18n.defaultLocale);
-  log.info("Using locale:", locale);
+  helpers.log.info("Using locale:", locale);
 
   // iframe 내부에서 열리는 외부 링크 (유튜브 제목 등)를 기본 브라우저로 리디렉션
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -241,9 +208,9 @@ const getMainWindowWhenReady = async () => {
 
   // 창이 렌더링 준비를 마쳤을 때 업데이트 확인 시작
   mainWindow.once("ready-to-show", () => {
-    log.info("앱이 실행되었습니다. 업데이트를 확인합니다.");
+    helpers.log.info("앱이 실행되었습니다. 업데이트를 확인합니다.");
     if (app.isPackaged) {
-      autoUpdater.checkForUpdatesAndNotify();
+      ElectronUpdater.checkForUpdates();
     }
   });
 
@@ -267,7 +234,10 @@ const getMainWindowWhenReady = async () => {
 
   ipcImplement.initializeIpc();
 
-  console.log("Log file location:", log.transports.file.getFile().path);
+  console.log(
+    "helpers.log file location:",
+    helpers.log.transports.file.getFile().path,
+  );
 })();
 
 app.on("window-all-closed", () => {
@@ -331,8 +301,8 @@ function getIsMac(): boolean {
 }
 
 // 업데이트 확인 중
-autoUpdater.on("checking-for-update", () => {
-  log.info("업데이트 확인 중...");
+helpers.updater.autoUpdater.on("checking-for-update", () => {
+  helpers.log.info("업데이트 확인 중...");
   mainWindow?.webContents.send("app-update-status", {
     status: "checking",
     message: "업데이트를 확인 중입니다.",
@@ -340,26 +310,32 @@ autoUpdater.on("checking-for-update", () => {
 });
 
 // 새로운 업데이트가 있을 때 (UpdateInfo 타입 적용)
-autoUpdater.on("update-available", (info: UpdateInfo) => {
-  log.info(`업데이트가 가능합니다. 새 버전: ${info.version}`);
-  mainWindow?.webContents.send("app-update-status", {
-    status: "available",
-    message: `새 버전 ${info.version}을 다운로드합니다.`,
-  });
-});
+helpers.updater.autoUpdater.on(
+  "update-available",
+  (info: helpers.updater.UpdateInfo) => {
+    helpers.log.info(`업데이트가 가능합니다. 새 버전: ${info.version}`);
+    mainWindow?.webContents.send("app-update-status", {
+      status: "available",
+      message: `새 버전 ${info.version}을 다운로드합니다.`,
+    });
+  },
+);
 
 // 현재 최신 버전일 때 (UpdateInfo 타입 적용)
-autoUpdater.on("update-not-available", (info: UpdateInfo) => {
-  log.info(`현재 최신 버전(${info.version})입니다.`);
-  mainWindow?.webContents.send("app-update-status", {
-    status: "not-available",
-    message: `현재 최신 버전(${info.version})입니다.`,
-  });
-});
+helpers.updater.autoUpdater.on(
+  "update-not-available",
+  (info: helpers.updater.UpdateInfo) => {
+    helpers.log.info(`현재 최신 버전(${info.version})입니다.`);
+    mainWindow?.webContents.send("app-update-status", {
+      status: "not-available",
+      message: `현재 최신 버전(${info.version})입니다.`,
+    });
+  },
+);
 
 // 업데이트 다운로드 중 오류 발생 시
-autoUpdater.on("error", (err: Error) => {
-  log.error("업데이트 오류 발생:", err.message);
+helpers.updater.autoUpdater.on("error", (err: Error) => {
+  helpers.log.error("업데이트 오류 발생:", err.message);
   mainWindow?.webContents.send("app-update-status", {
     status: "error",
     message: `업데이트 중 오류 발생: ${err.message}`,
@@ -367,36 +343,44 @@ autoUpdater.on("error", (err: Error) => {
 });
 
 // 다운로드 진행 상태 (ProgressInfo 타입 적용)
-autoUpdater.on("download-progress", (progressObj: ProgressInfo) => {
-  const speed = (progressObj.bytesPerSecond / 1024 / 1024).toFixed(2); // MB/s로 변환
-  const percent = progressObj.percent.toFixed(2);
-  const transferred = (progressObj.transferred / 1024 / 1024).toFixed(2);
-  const total = (progressObj.total / 1024 / 1024).toFixed(2);
+helpers.updater.autoUpdater.on(
+  "download-progress",
+  (progressObj: helpers.updater.ProgressInfo) => {
+    const speed = (progressObj.bytesPerSecond / 1024 / 1024).toFixed(2); // MB/s로 변환
+    const percent = progressObj.percent.toFixed(2);
+    const transferred = (progressObj.transferred / 1024 / 1024).toFixed(2);
+    const total = (progressObj.total / 1024 / 1024).toFixed(2);
 
-  log.info(
-    `다운로드 속도: ${speed} MB/s - 진행률: ${percent}% (${transferred}MB / ${total}MB)`,
-  );
+    helpers.log.info(
+      `다운로드 속도: ${speed} MB/s - 진행률: ${percent}% (${transferred}MB / ${total}MB)`,
+    );
 
-  mainWindow?.webContents.send("app-update-download-progress", {
-    percent: progressObj.percent,
-    transferred: progressObj.transferred,
-    total: progressObj.total,
-    bytesPerSecond: progressObj.bytesPerSecond,
-  });
-});
+    mainWindow?.webContents.send("app-update-download-progress", {
+      percent: progressObj.percent,
+      transferred: progressObj.transferred,
+      total: progressObj.total,
+      bytesPerSecond: progressObj.bytesPerSecond,
+    });
+  },
+);
 
 // 다운로드가 완료되었을 때 (UpdateInfo 타입 적용)
-autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
-  log.info(`업데이트 다운로드 완료. 다운로드된 버전: ${info.version}`);
+helpers.updater.autoUpdater.on(
+  "update-downloaded",
+  (info: helpers.updater.UpdateInfo) => {
+    helpers.log.info(
+      `업데이트 다운로드 완료. 다운로드된 버전: ${info.version}`,
+    );
 
-  mainWindow?.webContents.send("app-update-status", {
-    status: "downloaded",
-    message: "업데이트 다운로드 완료. 재시작 시 적용됩니다.",
-  });
+    mainWindow?.webContents.send("app-update-status", {
+      status: "downloaded",
+      message: "업데이트 다운로드 완료. 재시작 시 적용됩니다.",
+    });
 
-  // 사용자가 하던 작업을 저장할 수 있도록 바로 종료하지 않고,
-  // 렌더러 프로세스에 알려서 사용자에게 팝업을 띄우는 것이 좋습니다.
-  // 아래 코드는 주석 처리해 두고, 필요시 활성화합니다.
+    // 사용자가 하던 작업을 저장할 수 있도록 바로 종료하지 않고,
+    // 렌더러 프로세스에 알려서 사용자에게 팝업을 띄우는 것이 좋습니다.
+    // 아래 코드는 주석 처리해 두고, 필요시 활성화합니다.
 
-  // autoUpdater.quitAndInstall();
-});
+    // autoUpdater.quitAndInstall();
+  },
+);
