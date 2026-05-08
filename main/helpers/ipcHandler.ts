@@ -7,13 +7,13 @@ import {
   shell,
   nativeTheme,
 } from "electron";
-import { autoUpdater } from "./auto-updater";
 import { userStore } from "./user-store";
 import * as types from "./types";
 import path, { dirname, join } from "path";
 import fs, { promises } from "fs";
 import { exec } from "child_process";
-import log from "electron-log";
+import log from "./logger";
+import updater from "./auto-updater";
 import { spawn } from "child_process";
 import { pipeline } from "stream/promises";
 import getFoldersize from "get-folder-size";
@@ -91,7 +91,10 @@ class ipcHandle {
     }
   >();
 
-  private runningGames = new Map<number, import("child_process").ChildProcess>();
+  private runningGames = new Map<
+    number,
+    import("child_process").ChildProcess
+  >();
 
   /**
    * API 링크 생성
@@ -191,7 +194,7 @@ class ipcHandle {
 
     // 렌더러로부터 설치 명령 수신
     ipcMain.on("quit-and-install", () => {
-      autoUpdater.quitAndInstall();
+      updater.quitAndInstall();
     });
   }
 
@@ -734,15 +737,17 @@ class ipcHandle {
         }
 
         log.info(`Requesting graceful shutdown for game ${gameId}...`);
-        
+
         // 1. 안전한 종료(SIGTERM) 요청
-        child.kill('SIGTERM');
+        child.kill("SIGTERM");
 
         // 2. 5초 뒤에도 프로세스가 살아있다면 강제 종료(SIGKILL)
         const forceKillTimeout = setTimeout(() => {
           if (this.runningGames.has(gameId)) {
-            log.warn(`Game ${gameId} did not gracefully shutdown. Force killing...`);
-            child.kill('SIGKILL');
+            log.warn(
+              `Game ${gameId} did not gracefully shutdown. Force killing...`,
+            );
+            child.kill("SIGKILL");
           }
         }, 5000); // 5초 대기
 
