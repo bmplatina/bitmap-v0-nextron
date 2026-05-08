@@ -7,7 +7,7 @@ import {
   shell,
   nativeTheme,
 } from "electron";
-import { autoUpdater } from "electron-updater";
+import { autoUpdater } from "./auto-updater";
 import { userStore } from "./user-store";
 import * as types from "./types";
 import path, { dirname, join } from "path";
@@ -16,7 +16,7 @@ import { exec } from "child_process";
 import log from "electron-log";
 import { spawn } from "child_process";
 import { pipeline } from "stream/promises";
-import getFildersize from "get-folder-size";
+import getFoldersize from "get-folder-size";
 
 // Game Downloader
 import axios from "axios";
