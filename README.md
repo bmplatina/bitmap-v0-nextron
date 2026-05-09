@@ -16,7 +16,7 @@ Bitmap Application and ESD Project (Bitmap App) is an Application project which 
 ```bash
 $ yarn install # Install dependencies
 $ yarn build:win # Build Windows binary
-$ yarn build:mac # Build macOS Universal Binary
+$ yarn build:mac # Build macOS Apple Silicon Binary
 ```
 
 # Features

@@ -95,6 +95,14 @@ const DownloadManagerPage = observer(function () {
                     {activeMgr.getDownloadSpeedRealtime} Mbps
                   </Text>
                 </Flex>
+                <Flex direction="column">
+                  <Text size="1" color="gray">
+                    {t("downloading-eta")}
+                  </Text>
+                  <Text size="4" weight="bold">
+                    {activeMgr.getDownloadEta}
+                  </Text>
+                </Flex>
                 <Flex direction="column" gap="1" mt="1">
                   <Flex justify="between">
                     <Text size="1" color="gray">

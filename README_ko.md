@@ -14,7 +14,7 @@
 ```bash
 $ yarn install # 의존성 패키지 설치
 $ yarn build:win # Windows 바이너리 빌드
-$ yarn build:mac # macOS 유니버설 바이너리 빌드
+$ yarn build:mac # macOS Apple Silicon 바이너리 빌드
 ```
 
 # Features

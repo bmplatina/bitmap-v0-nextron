@@ -273,6 +273,7 @@ class GameInstallManager {
   private installState: EInstallState = EInstallState.NotInstalled;
   private downloadProgress: number = 0;
   private downloadSpeedRealtime: number = 0;
+  private downloadEta: string = "";
   private extractProgress: number = 0;
   private currentVersion: number = 0;
   private bIsUpdatable: boolean = false;
@@ -490,6 +491,10 @@ class GameInstallManager {
     return this.downloadSpeedRealtime;
   }
 
+  get getDownloadEta(): string {
+    return this.downloadEta;
+  }
+
   get getExtractProgress(): number {
     return this.extractProgress;
   }
@@ -584,8 +589,9 @@ class GameInstallManager {
         (progress) => {
           this.downloadProgress = progress.percent;
           this.downloadSpeedRealtime = progress.speed;
+          this.downloadEta = progress.eta;
           console.log(
-            `다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}`,
+            `다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}, ETA: ${progress.eta}`,
           );
         },
       );

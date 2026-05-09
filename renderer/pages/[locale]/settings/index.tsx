@@ -22,9 +22,11 @@ import {
   Select,
   Text,
   Tabs,
+  Spinner,
 } from "@radix-ui/themes";
 import { getDownloadCacheSize, removeDownloadCache } from "@/lib/utils-client";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
+import { error } from "electron-log";
 
 interface i18nProp {
   t: TFunction;
@@ -221,13 +223,20 @@ function DisplaySettings({ t }: i18nProp) {
 
 function DownloadSettings({ t }: i18nProp) {
   const [cacheSize, setCacheSize] = useState<number>(0);
+  const [bIsCachePurging, setIsCachePurging] = useState<boolean>(false);
 
   function formatBytesToGB(bytes: number) {
     return Number((bytes / 1024 ** 3).toFixed(2));
   }
 
   async function purgeCache() {
-    await removeDownloadCache(window.bitmapApi, setCacheSize);
+    try {
+      setIsCachePurging(true);
+      await removeDownloadCache(window.bitmapApi, setCacheSize);
+    } catch (error) {
+    } finally {
+      setIsCachePurging(false);
+    }
   }
 
   useEffect(() => {
@@ -249,11 +258,13 @@ function DownloadSettings({ t }: i18nProp) {
         <CardContent>
           <Flex gap="2" direction="column">
             <Text>{formatBytesToGB(cacheSize)}GiB / 7.5GiB</Text>
-            <Progress value={formatBytesToGB(cacheSize) / 7.5} />
+            <Progress value={(formatBytesToGB(cacheSize) / 7.5) * 100} />
           </Flex>
         </CardContent>
         <CardFooter>
-          <Button onClick={purgeCache}>캐시 제거</Button>
+          <Button onClick={purgeCache} disabled={bIsCachePurging}>
+            {bIsCachePurging ? <Spinner /> : <Text>캐시 제거</Text>}
+          </Button>
         </CardFooter>
       </Card>
 

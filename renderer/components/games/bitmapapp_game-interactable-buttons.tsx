@@ -376,6 +376,8 @@ const GameInteractableButtons = observer(function ({
     }
   }, []);
 
+  if(!!!game.isApproved || !!!game.isReleased) return null;
+
   return (
     <div className="mt-6 space-y-4">
       <Flex direction="column" gap="2">
