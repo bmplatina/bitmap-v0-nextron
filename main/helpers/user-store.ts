@@ -1,4 +1,5 @@
 import { app } from "electron";
+import path from "path";
 import Store from "electron-store";
 
 interface Settings {
@@ -10,7 +11,7 @@ interface Settings {
 
 const defaultGamePath =
   process.platform === "win32"
-    ? ""
+    ? path.join(app.getPath("appData"), "BitmapApps")
     : process.platform === "darwin"
       ? "/Users/Shared/Bitmap Production"
       : "";

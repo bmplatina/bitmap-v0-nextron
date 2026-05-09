@@ -58,6 +58,10 @@ class ipcHandle {
     this.desyncPath = !app.isPackaged
       ? path.join(process.cwd(), "resources", processPlatform, desyncBinaryName)
       : path.join(process.resourcesPath, "bin", desyncBinaryName);
+    this.DESYNC_TEMP_PATH =
+      this.platformName === "darwin"
+        ? path.join(app.getPath("temp"), "caidx")
+        : path.join(app.getPath("userData"), "caidx");
   }
 
   // Electron
@@ -77,10 +81,7 @@ class ipcHandle {
   private readonly API_URI: string = "https://api.prodbybitmap.com/";
   private readonly DEPOT_URI: string = "https://depot.prodbybitmap.com/";
 
-  private readonly DESYNC_TEMP_PATH: string = path.join(
-    app.getPath("temp"),
-    "caidx",
-  );
+  private readonly DESYNC_TEMP_PATH: string;
 
   private activeDownloads = new Map<string, Electron.DownloadItem>();
   private pendingDownloads = new Map<
