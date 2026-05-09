@@ -24,9 +24,12 @@ import {
   Tabs,
   Spinner,
 } from "@radix-ui/themes";
-import { getDownloadCacheSize, removeDownloadCache } from "@/lib/utils-client";
+import {
+  getDownloadCacheSize,
+  removeDownloadCache,
+  formatBytesToGB,
+} from "@/lib/utils-client";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import { error } from "electron-log";
 
 interface i18nProp {
   t: TFunction;
@@ -108,7 +111,7 @@ function GeneralSettings({ t }: i18nProp) {
   }, []);
 
   return (
-    <>
+    <Flex direction="column" gap="3">
       <Card>
         <CardHeader>
           <CardTitle>{t("language")}</CardTitle>
@@ -139,12 +142,12 @@ function GeneralSettings({ t }: i18nProp) {
       </Card>
 
       <Separator />
-    </>
+    </Flex>
   );
 }
 
 function DisplaySettings({ t }: i18nProp) {
-  const { theme, setTheme } = useTheme();
+  const { theme: screenMode, setTheme: setScreenMode } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // 클라이언트 사이드에서만 테마 관련 UI를 렌더링
@@ -152,8 +155,8 @@ function DisplaySettings({ t }: i18nProp) {
     setMounted(true);
   }, []);
 
-  const setScreenMode = (newTheme: "light" | "system" | "dark") => {
-    setTheme(newTheme);
+  const setNewScreenMode = (newTheme: "light" | "system" | "dark") => {
+    setScreenMode(newTheme);
     window.bitmapApi.setScreenMode(newTheme);
   };
 
@@ -182,24 +185,24 @@ function DisplaySettings({ t }: i18nProp) {
   // 현재 테마 정보 가져오기
   const getCurrentThemeInfo = () => {
     return (
-      themeOptions.find((option) => option.value === theme) || themeOptions[2]
+      themeOptions.find((option) => option.value === screenMode) ||
+      themeOptions[2]
     );
   };
 
   return (
-    <>
+    <Flex direction="column" gap="3">
       {/* 테마 설정 */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("theme")}</CardTitle>
-          <CardDescription>{t("theme-desc")}</CardDescription>
+          <CardTitle>{t("screen-mode")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
               <RadioCards.Root
-                value={theme}
-                onValueChange={setScreenMode}
+                value={screenMode}
+                onValueChange={setNewScreenMode}
                 columns={{ initial: "1", sm: "3" }}
               >
                 {themeOptions.map((option) => (
@@ -217,17 +220,13 @@ function DisplaySettings({ t }: i18nProp) {
       </Card>
 
       <Separator />
-    </>
+    </Flex>
   );
 }
 
 function DownloadSettings({ t }: i18nProp) {
   const [cacheSize, setCacheSize] = useState<number>(0);
   const [bIsCachePurging, setIsCachePurging] = useState<boolean>(false);
-
-  function formatBytesToGB(bytes: number) {
-    return Number((bytes / 1024 ** 3).toFixed(2));
-  }
 
   async function purgeCache() {
     try {
@@ -249,7 +248,7 @@ function DownloadSettings({ t }: i18nProp) {
   }, []);
 
   return (
-    <>
+    <Flex direction="column" gap="3">
       <Card>
         <CardHeader>
           <CardTitle>{t("download-cache")}</CardTitle>
@@ -269,7 +268,7 @@ function DownloadSettings({ t }: i18nProp) {
       </Card>
 
       <Separator />
-    </>
+    </Flex>
   );
 }
 

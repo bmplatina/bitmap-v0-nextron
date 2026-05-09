@@ -4,8 +4,6 @@
   "download": "Download",
   "language": "Language",
   "language-desc": "Set the application language",
-  "theme": "Theme",
-  "theme-desc": "Set the application theme",
   "current-theme": "Current Theme",
   "screen-mode": "Screen Mode",
   "screen-mode-dark": "Dark Mode",
