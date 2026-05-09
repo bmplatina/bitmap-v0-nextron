@@ -10,6 +10,7 @@ import { AuthProvider } from "@/lib/AuthContext";
 import NextToploader from "nextjs-toploader";
 import "./globals.css";
 import "@radix-ui/themes/styles.css";
+import LoginSplash from "@/components/common/login-splash";
 import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../../next-i18next.config";
@@ -59,6 +60,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
               <div
                 className={`${pretendard.variable} font-pretendard font-sans antialiased`}
               >
+                <LoginSplash />
                 <div className="flex flex-col h-screen overflow-hidden">
                   <div className="sticky top-0 z-50 w-full">
                     <TokenHandler />
