@@ -58,10 +58,15 @@ class ipcHandle {
     this.desyncPath = !app.isPackaged
       ? path.join(process.cwd(), "resources", processPlatform, desyncBinaryName)
       : path.join(process.resourcesPath, "bin", desyncBinaryName);
-    this.DESYNC_TEMP_PATH =
-      this.platformName === "darwin"
-        ? path.join(app.getPath("temp"), "caidx")
-        : path.join(app.getPath("userData"), "caidx");
+    // this.DESYNC_TEMP_PATH =
+    //   this.platformName === "darwin"
+    //     ? path.join(app.getPath("temp"), "caidx")
+    //     : path.join(app.getPath("userData"), "caidx");
+    this.DESYNC_TEMP_PATH = path.join(
+      app.getPath("temp"),
+      "Bitmap Production",
+      "caidx",
+    );
   }
 
   // Electron
@@ -428,7 +433,7 @@ class ipcHandle {
 
     ipcMain.handle(
       "pull-game",
-      async (event, gameId: number, destPath: string) => {
+      async (event, gameId: number, destPath: string, bUseCache: boolean) => {
         // caidx를 저장할 임시 경로. <temp>/caidx/games/${gameId}/<file>.caidx
         const caidxDirPath = path.join(
           this.DESYNC_TEMP_PATH,
@@ -477,8 +482,7 @@ class ipcHandle {
           "-i",
           "-s",
           this.DEPOT_URI,
-          "-c",
-          desyncCachePath,
+          ...(bUseCache ? ["-c", desyncCachePath] : []),
           caidxSavePath,
           destPath,
         ];

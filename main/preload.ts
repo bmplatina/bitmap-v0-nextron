@@ -120,8 +120,8 @@ const bitmapApi = {
     ipcRenderer.invoke("download-file", { url, savePath }),
 
   // Pull Game via desync
-  pullGame: (gameId: number, destPath: string) =>
-    ipcRenderer.invoke("pull-game", gameId, destPath),
+  pullGame: (gameId: number, destPath: string, bUseCache: boolean) =>
+    ipcRenderer.invoke("pull-game", gameId, destPath, bUseCache),
 
   onGameInstallProgress: (
     gameId: number,
