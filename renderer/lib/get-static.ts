@@ -60,6 +60,7 @@ export function makeStaticProperties(namespaces: i18nNamespaces[] = []) {
     "GamesView",
     "Sidebar",
     "common",
+    "Notifications",
     "Footer",
     "Settings",
   ];

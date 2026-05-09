@@ -1,7 +1,6 @@
-"use client";
-
 import * as React from "react";
 import Image from "next/image";
+import { cn, pretendard } from "@/lib/utils";
 import { useTranslation } from "next-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getNotifications } from "@/lib/notifications";
@@ -141,7 +140,12 @@ function NotificationListContent() {
                 style={{ flexGrow: 1 }}
               >
                 <BellOff size={32} style={{ opacity: 0.3 }} />
-                <Text size="2" color="gray" weight="medium">
+                <Text
+                  size="2"
+                  color="gray"
+                  weight="medium"
+                  className={cn(pretendard.className)}
+                >
                   {t("all-read")}
                 </Text>
               </Flex>
@@ -157,7 +161,7 @@ function NotificationListContent() {
               style={{ width: "100%", cursor: "pointer" }}
               onClick={() => setScope("all")}
             >
-              {t("view-read")}
+              <Text className={cn(pretendard.className)}>{t("view-read")}</Text>
             </Button>
           </Box>
         </>

@@ -24,6 +24,7 @@ import ClientMarkdown from "../common/markdown/client-markdown";
 import AppleLogo from "@/public/images/platforms/platformMac.png";
 import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
 import { Card, CardContent } from "../ui/card";
+import { cn, pretendard } from "@/lib/utils";
 
 interface GameEulaDislogContentProps {
   eulaName: string;
@@ -60,7 +61,7 @@ function GameEulaDialogContent({
   );
 
   return (
-    <Flex direction="column" gap="5">
+    <Flex direction="column" gap="5" className={cn(pretendard.className)}>
       <Text
         size="5"
         weight="bold"
@@ -83,7 +84,7 @@ function GameEulaDialogContent({
           size="2"
           style={{ cursor: "pointer" }}
         >
-          {t("cancel")}
+          <Text className={cn(pretendard.className)}>{t("cancel")}</Text>
         </Button>
         <Button
           onClick={() => nextFunction(true)}
@@ -92,7 +93,7 @@ function GameEulaDialogContent({
           color="blue"
           style={{ cursor: "pointer" }}
         >
-          {t("confirm")}
+          <Text className={cn(pretendard.className)}>{t("confirm")}</Text>
         </Button>
       </Flex>
     </Flex>
@@ -161,7 +162,7 @@ const GameInstallDialogContent = observer(function ({
 
   return (
     <Flex direction="column" gap="5">
-      <Box>
+      <Box className={cn(pretendard.className)}>
         <Text
           size="5"
           weight="bold"
@@ -187,32 +188,38 @@ const GameInstallDialogContent = observer(function ({
             alt="Game Image"
             className="object-cover object-top rounded-lg"
           />
-          <Text size="3" weight="bold" ml="4" as="div">
+          <Text
+            size="3"
+            weight="bold"
+            ml="4"
+            as="div"
+            className={cn(pretendard.className)}
+          >
             {gameMgr.getGameTitle}
           </Text>
         </Flex>
-        <Text size="2" color="gray">
+        <Text size="2" color="gray" className={cn(pretendard.className)}>
           {gameMgr.getGameInfo.size[bIsMac ? 1 : 0]} GB
         </Text>
       </Flex>
       <Separator />
 
-      <Text as="label" size="2">
-        <Flex as="span" gap="2">
-          <Checkbox
-            size="1"
-            checked={bCreateShortcut}
-            onCheckedChange={(checked) => setCreateShortcut(checked as boolean)}
-            disabled={
-              gameMgr.getInstallState === EInstallState.Downloading ||
-              gameMgr.getInstallState === EInstallState.Extracting
-            }
-          />{" "}
+      <Flex as="span" gap="2">
+        <Checkbox
+          size="1"
+          checked={bCreateShortcut}
+          onCheckedChange={(checked) => setCreateShortcut(checked as boolean)}
+          disabled={
+            gameMgr.getInstallState === EInstallState.Downloading ||
+            gameMgr.getInstallState === EInstallState.Extracting
+          }
+        />
+        <Text as="label" size="2" className={cn(pretendard.className)}>
           {t("add-shortcut")}
-        </Flex>
-      </Text>
+        </Text>
+      </Flex>
 
-      <Box>
+      <Box className={cn(pretendard.className)}>
         <Text as="div" size="2" weight="bold" color="gray" mb="2">
           {t("installation-path")}
         </Text>
@@ -264,9 +271,11 @@ const GameInstallDialogContent = observer(function ({
           size="2"
           style={{ cursor: "pointer" }}
         >
-          {gameMgr.getInstallState === EInstallState.NotInstalled
-            ? t("cancel")
-            : t("confirm")}
+          <Text className={cn(pretendard.className)}>
+            {gameMgr.getInstallState === EInstallState.NotInstalled
+              ? t("cancel")
+              : t("confirm")}
+          </Text>
         </Button>
         <Button
           onClick={handleDownloadAndInstall}
@@ -279,7 +288,7 @@ const GameInstallDialogContent = observer(function ({
           color="blue"
           style={{ cursor: "pointer" }}
         >
-          {t("install")}
+          <Text className={cn(pretendard.className)}>{t("install")}</Text>
         </Button>
       </Flex>
     </Flex>
@@ -376,7 +385,7 @@ const GameInteractableButtons = observer(function ({
     }
   }, []);
 
-  if(!!!game.isApproved || !!!game.isReleased) return null;
+  if (!!!game.isApproved || !!!game.isReleased) return null;
 
   return (
     <div className="mt-6 space-y-4">
