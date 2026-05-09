@@ -1,5 +1,3 @@
-"use client";
-
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 // import rehypePrettyCode from "rehype-pretty-code";
@@ -11,7 +9,7 @@ export default function ClientMarkdown({ content }: { content: string }) {
     <div
       className="prose dark:prose-invert max-w-none 
                  prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-4
-                 prose-blockquote:not-italic prose-pre:bg-[#1e1e1e]"
+                 prose-blockquote:not-italic prose-pre:bg-[#1e1e1e] "
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

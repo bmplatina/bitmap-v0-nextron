@@ -2,12 +2,11 @@ import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import GameInstallationCard from "@/components/games/game-installation-card";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { EInstallState, GameInstallManager } from "@/lib/types";
-import { Flex, Text, Card } from "@radix-ui/themes";
+import { Flex, Text, Card, Progress } from "@radix-ui/themes";
 import { Download } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "next-i18next";
 import { useState, useEffect } from "react";
-import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, ResponsiveContainer, YAxis } from "recharts";
 
 const SpeedChart = observer(({ manager }: { manager: GameInstallManager }) => {

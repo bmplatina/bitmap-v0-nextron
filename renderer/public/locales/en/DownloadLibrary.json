@@ -3,7 +3,7 @@
   "downloading": "Downloading data…",
   "installing": "Installing files…",
   "downloading-spped-current": "Current Speed",
-  "downloading-spped-average": "Average Speed",
+  "downloading-eta": "ETA",
   "progress": "Progress",
   "queue": "Queue",
   "queue-empty": "There are no pending downloads.",

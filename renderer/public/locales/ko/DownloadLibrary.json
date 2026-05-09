@@ -3,7 +3,7 @@
   "downloading": "데이터 다운로드 중",
   "installing": "파일 설치 중",
   "downloading-spped-current": "현재 속도",
-  "downloading-spped-average": "평균 속도",
+  "downloading-eta": "남은 시간",
   "progress": "진행률",
   "queue": "대기",
   "queue-empty": "대기 중인 다운로드가 없습니다.",

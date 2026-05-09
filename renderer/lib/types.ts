@@ -564,6 +564,22 @@ class GameInstallManager {
     await context.createShortcut(this.binaryAbsPath, this.gameTitle);
   }
 
+  formatTime(timeStr: string, type: "ko" | "digital"): string {
+    const regex = /(\d+)m(\d+)s/;
+    const match = timeStr.match(regex);
+
+    if (!match) return "00:00"; // 혹은 에러 처리
+
+    const [_, m, s] = match;
+
+    if (type === "ko") {
+      return `${m}분 ${s}초`;
+    }
+
+    // 한 자리 숫자일 경우 앞에 0을 붙여 00:00 포맷 유지
+    return `${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
+  }
+
   /**
    * Download and Install Game. Do not call this function directly.
    * @param bCreateShortcut boolean to create a shortcut upon install
@@ -589,9 +605,9 @@ class GameInstallManager {
         (progress) => {
           this.downloadProgress = progress.percent;
           this.downloadSpeedRealtime = progress.speed;
-          this.downloadEta = progress.eta;
+          this.downloadEta = this.formatTime(progress.eta, "digital");
           console.log(
-            `다운로드 중: ${this.downloadProgress}% 속도: ${progress.speed}, ETA: ${progress.eta}`,
+            `다운로드 중: ${this.downloadProgress}% 속도: ${this.downloadSpeedRealtime}, ETA: ${this.downloadEta}`,
           );
         },
       );
@@ -625,7 +641,7 @@ class GameInstallManager {
         },
       );
 
-      context.pullGame(this.gameId, destPath).catch((err) => {
+      context.pullGame(this.gameId, destPath, this.bIsMac).catch((err) => {
         unsubscribeProgress();
         unsubscribeComplete();
         this.installState = EInstallState.InstallError;
