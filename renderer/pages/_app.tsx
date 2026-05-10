@@ -14,7 +14,7 @@ import LoginSplash from "@/components/common/login-splash";
 import TokenHandler from "@/components/common/token-handler";
 import { appWithTranslation } from "next-i18next";
 import nextI18NextConfig from "../../next-i18next.config";
-import { pretendard } from "@/lib/utils";
+import { cn, pretendard } from "@/lib/utils";
 import {
   getDownloadCacheSize,
   removeDownloadCache,
@@ -22,10 +22,15 @@ import {
 } from "@/lib/utils-client";
 import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
 import DeeplinkHandler from "@/lib/DeeplinkHandler";
+import { useRouter } from "next/router";
 
 function RootLayout({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   const [cacheSize, setCacheSize] = useState<number>(0);
   const [bIsMounted, setIsMounted] = useState(false);
+  const showMainSidebar = router.query.sidebar === "main";
+  const useLibrarySidebarOffset =
+    router.pathname.includes("/library") && !showMainSidebar;
 
   async function autoPurgeDesyncCache() {
     const size = await getDownloadCacheSize(window.bitmapApi);
@@ -71,7 +76,12 @@ function RootLayout({ Component, pageProps }: AppProps) {
                       <Sidebar />
                     </aside>
                     <ScrollArea className="flex-1 w-full h-[calc(100vh-48px)]">
-                      <main className="w-full pb-10">
+                      <main
+                        className={cn(
+                          "w-full pb-10",
+                          useLibrarySidebarOffset && "md:pl-64",
+                        )}
+                      >
                         <Component {...pageProps} />
                         <Footer />
                         <BottomDrawer />

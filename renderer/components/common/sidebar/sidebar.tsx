@@ -4,25 +4,22 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import { sidebarItems } from "@/lib/sidebar-items";
 import { useTranslation } from "next-i18next";
-import LanguageSwitcher from "./language-changer";
+import { Text } from "@radix-ui/themes";
 import React from "react";
 import { openExternal } from "@/lib/utils-client";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 export default function Sidebar() {
-  const router = useRouter();
   const { bIsLoggedIn, bIsDeveloper, bIsTeammate, bIsAdmin } = useAuth();
   const { t } = useTranslation("Sidebar");
-
+  const router = useRouter();
   // 현재 경로에서 /[locale] 부분을 제거하여 "/games", "/settings" 등 베이스 경로만 추출
+
+  const showMainSidebar = router.query.sidebar === "main";
+  const bIsLibraryPage = router.pathname.includes("/library");
   const currentPath =
     router.pathname === "/[locale]"
       ? "/"
       : router.pathname.replace("/[locale]", "") || "/";
-
-  const isLibraryPage = router.pathname.includes("/library");
-  const showMainSidebar = router.query.sidebar === "main";
 
   function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(event, window.electronTools);
@@ -32,28 +29,12 @@ export default function Sidebar() {
     console.log("Current Base Path: ", currentPath);
   }, [currentPath]);
 
-  if (isLibraryPage && !showMainSidebar) {
+  if (bIsLibraryPage && !showMainSidebar) {
     return null;
   }
 
   return (
     <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
-      {isLibraryPage && (
-        <div className="p-4 border-b">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={() => {
-              const { sidebar, ...restQuery } = router.query;
-              router.push({ pathname: router.pathname, query: restQuery });
-            }}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("toggle-library-sidebar")}
-          </Button>
-        </div>
-      )}
-      {/* 사이드바 콘텐츠 */}
       <div className="flex-1 overflow-y-auto p-4">
         {sidebarItems.map((section) => {
           // 섹션 레벨 권한 체크
@@ -111,7 +92,6 @@ export default function Sidebar() {
           );
         })}
       </div>
-      <div className="p-4 border-t">{/* <LanguageSwitcher /> */}</div>
     </div>
   );
 }

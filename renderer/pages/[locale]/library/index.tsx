@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
-import { ContextMenu, Container, Flex, ScrollArea } from "@radix-ui/themes";
+import { Container, Flex, ScrollArea } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import {
   GameInstallManager,
@@ -182,97 +181,82 @@ const LibraryPage = observer(function () {
   const showMainSidebar = router.query.sidebar === "main";
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full relative overflow-hidden bg-background">
+    <>
       {/* Collapsible Sidebar (Overlay for mobile, Static for desktop) */}
-      {!showMainSidebar && (
-        <>
-          <div
-            className={cn(
-              "fixed md:static top-[4rem] md:top-auto left-0 h-[calc(100vh-4rem)] md:h-full apple-blur md:bg-background border-r flex-col transition-all duration-300 ease-in-out z-40 shadow-xl md:shadow-none w-64 flex-shrink-0 flex md:translate-x-0 md:opacity-100 md:pointer-events-auto",
-              isSidebarOpen
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-full opacity-0 pointer-events-none",
-            )}
-          >
-            <ScrollArea
-              type="auto"
-              scrollbars="vertical"
-              className="flex-1 p-4 w-64"
-            >
-              <div className="mb-4">
-                <button
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-                  onClick={() =>
-                    router.push({
-                      pathname: router.pathname,
-                      query: { ...router.query, sidebar: "main" },
-                    })
-                  }
-                >
-                  {t("toggle-sidebar")}
-                </button>
-              </div>
-              {gameManagers.length > 0 && (
-                <>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
-                    {t("games")}
-                  </h3>
-                  <div className="space-y-1">
-                    {gameManagers.map((manager) => (
-                      <GameListButton
-                        key={manager.getGameInfo.gameId}
-                        gameMgr={manager}
-                        gameIdCallback={setGameDetail}
-                        bIsSelected={
-                          selectedGameId === manager.getGameInfo.gameId
-                        }
-                        removeCallback={fetchInstallInfos}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </ScrollArea>
-          </div>
-
-          {/* Toggle Button (Mobile only) */}
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className={cn(
-              "md:hidden fixed top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-6 h-12 apple-blur border border-border rounded-r-md shadow-md hover:bg-accent/50 transition-all duration-300 focus:outline-none",
-              isSidebarOpen ? "left-64" : "left-0",
-            )}
-            aria-label="Toggle Sidebar"
-          >
-            {isSidebarOpen ? (
-              <ChevronLeft size={16} className="text-muted-foreground" />
-            ) : (
-              <ChevronRight size={16} className="text-muted-foreground" />
-            )}
-          </button>
-        </>
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col w-full h-full overflow-y-auto">
-        <Container size="4" className="h-full">
-          <Flex direction="column" p="6" gap="4" className="h-full">
-            {libraryViewedGameInfo && libraryViewedGameRating ? (
-              <GameDetail
-                game={libraryViewedGameInfo}
-                gameRates={libraryViewedGameRating}
-              />
-            ) : (
-              gameManagers.length === 0 && (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  {t("nothing-chosen")}
+      <aside
+        className={cn(
+          "fixed top-12 left-0 h-[calc(100vh-48px)] w-64 hidden md:block z-31",
+          showMainSidebar && "md:hidden",
+        )}
+      >
+        {!showMainSidebar && (
+          <div className="w-64 h-full bg-background border-r flex-col hidden md:flex">
+            <div className={cn("flex-1 overflow-y-auto p-4")}>
+              <ScrollArea
+                type="auto"
+                scrollbars="vertical"
+                className="flex-1 p-4 w-64"
+              >
+                <div className="mb-4">
+                  <button
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                    onClick={() =>
+                      router.push({
+                        pathname: router.pathname,
+                        query: { ...router.query, sidebar: "main" },
+                      })
+                    }
+                  >
+                    {t("toggle-sidebar")}
+                  </button>
                 </div>
-              )
-            )}
-          </Flex>
-        </Container>
+                {gameManagers.length > 0 && (
+                  <>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 whitespace-nowrap">
+                      {t("games")}
+                    </h3>
+                    <div className="space-y-1">
+                      {gameManagers.map((manager) => (
+                        <GameListButton
+                          key={manager.getGameInfo.gameId}
+                          gameMgr={manager}
+                          gameIdCallback={setGameDetail}
+                          bIsSelected={
+                            selectedGameId === manager.getGameInfo.gameId
+                          }
+                          removeCallback={fetchInstallInfos}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </ScrollArea>
+            </div>
+          </div>
+        )}
+      </aside>
+      <div className="flex w-full h-full min-h-0">
+        {/* Main Content */}
+        <div className="min-w-0 flex-1 flex flex-col h-full overflow-y-auto">
+          <Container size="4" className="h-full">
+            <Flex direction="column" p="6" gap="4" className="h-full">
+              {libraryViewedGameInfo && libraryViewedGameRating ? (
+                <GameDetail
+                  game={libraryViewedGameInfo}
+                  gameRates={libraryViewedGameRating}
+                />
+              ) : (
+                gameManagers.length === 0 && (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    {t("nothing-chosen")}
+                  </div>
+                )
+              )}
+            </Flex>
+          </Container>
+        </div>
       </div>
-    </div>
+    </>
   );
 });
 
