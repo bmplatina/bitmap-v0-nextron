@@ -47,15 +47,46 @@ export interface tools {
 
 export interface bitmapApi {
   // Axios
+  axiosGet: <T>(
+    identifier: string,
+    uriSubstring: string,
+    token?: string,
+  ) => Promise<T>;
+  onAxiosGetProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => () => void;
+
   axiosPost: <T>(
+    identifier: string,
     uriSubstring: string,
     body: object,
     token?: string,
     contentType?: string,
   ) => Promise<T>;
-  onAxiosPostProgress: (callback: (progress: number) => void) => () => void;
-  axiosGet: <T>(uriSubstring: string, token?: string) => Promise<T>;
-  onAxiosGetProgress: (callback: (progress: number) => void) => () => void;
+  onAxiosPostProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => () => void;
+
+  axiosPut: <T>(
+    identifier: string,
+    uriSubstring: string,
+    body: object,
+    token?: string,
+    contentType?: string,
+  ) => Promise<T>;
+  onAxiosPutProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => () => void;
+
+  axiosDelete: <T>(
+    uriSubstring: string,
+    body: object,
+    token?: string,
+    contentType?: string,
+  ) => Promise<T>;
 
   // Token Handler
   setToken: (token: string) => void;

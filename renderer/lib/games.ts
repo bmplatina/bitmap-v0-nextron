@@ -6,7 +6,12 @@ import {
   GameWithSize,
 } from "@/lib/types";
 import { getApiLinkByPurpose } from "@/lib/utils";
-import { csrAxiosGet, csrAxiosPost } from "./utils-client";
+import {
+  csrAxiosDelete,
+  csrAxiosGet,
+  csrAxiosPost,
+  csrAxiosPut,
+} from "./utils-client";
 import { bitmapApi } from "@/types/electron";
 
 // API에서 게임 데이터를 가져오는 함수 - 서버 컴포넌트에서만 호출
@@ -20,7 +25,11 @@ async function getGames(
       typeof listPage === "number"
         ? `games/list?page=${listPage}`
         : "games/list";
-    const data = await csrAxiosGet<GameList[]>(context, API_LINK);
+    const data = await csrAxiosGet<GameList[]>(
+      context,
+      "getGameList",
+      API_LINK,
+    );
 
     if (getPendingOnly === "all") {
       return data;
@@ -45,7 +54,11 @@ async function getGameById(
   id: string,
 ): Promise<GameWithSize | null> {
   try {
-    const data = await csrAxiosGet<GameWithSize>(context, `games/pick/${id}`);
+    const data = await csrAxiosGet<GameWithSize>(
+      context,
+      "getGameById",
+      `games/pick/${id}`,
+    );
     return data || null;
   } catch (error) {
     console.error("게임 데이터를 가져오는 중 오류 발생:", error);
@@ -76,11 +89,13 @@ async function submitGame(
   newGame: Game,
   bIsEditingExisting: boolean,
 ): Promise<{ message: string; id: string }> {
-  const apiRoutesLink = bIsEditingExisting ? "games/edit" : "games/submit";
+  const apiRoutesLink = "games/publish";
   try {
+    const axiosAction = bIsEditingExisting ? csrAxiosPut : csrAxiosPost;
     // API 호출
-    const data = await csrAxiosPost<{ message: string; id: string }>(
+    const data = await axiosAction<{ message: string; id: string }>(
       context,
+      "submitGame",
       apiRoutesLink,
       newGame,
       token,
@@ -105,12 +120,13 @@ async function uploadGameImage(
 ): Promise<string> {
   if (!file) return "file-not-found";
   if (gameBinaryName === "") return "name-not-specified";
+  const POST_NAME = `upload${gameBinaryName}`;
   const formData = new FormData();
   // Multer에서 req.body를 파일 처리 시점에 읽으려면 텍스트 필드를 파일보다 먼저 append 해야 합니다.
   formData.append("gameBinaryName", gameBinaryName);
   formData.append("image", file); // Express의 upload.single('image')와 일치해야 함
 
-  const removeListener = context.onAxiosPostProgress((progress) => {
+  const removeListener = context.onAxiosPostProgress(POST_NAME, (progress) => {
     // React 상태 업데이트 로직 등을 여기에 작성
     if (onProgress) {
       onProgress(progress);
@@ -125,6 +141,7 @@ async function uploadGameImage(
       uploaderUid: string;
     }>(
       context,
+      POST_NAME,
       "upload/game/image",
       formData, // 별도의 Header 설정 없이 body에 바로 전달
       token,
@@ -147,7 +164,11 @@ async function getGameRatesById(
   id: string,
 ): Promise<GameRating[] | null> {
   try {
-    const data = await csrAxiosGet<GameRating[]>(context, `games/rate/${id}`);
+    const data = await csrAxiosGet<GameRating[]>(
+      context,
+      "getGameRatesById",
+      `games/rate/${id}`,
+    );
     return data;
   } catch (error) {
     console.error("게임 데이터를 가져오는 중 오류 발생:", error);
@@ -162,12 +183,13 @@ async function submitGameRate(
   newGame: GameRatingRequest,
   bIsUpdating: boolean,
 ): Promise<{ message: string }> {
-  const apiRoutesLink = bIsUpdating ? "games/rate/edit" : "games/rate/add";
+  const axiosAction = bIsUpdating ? csrAxiosPut : csrAxiosPost;
   try {
     // API 호출
-    const data = await csrAxiosPost<{ message: string }>(
+    const data = await axiosAction<{ message: string }>(
       context,
-      apiRoutesLink,
+      `submitGameRate-${newGame.gameId}`,
+      `games/rate/${newGame.gameId}`,
       newGame,
       token,
     );
@@ -189,10 +211,10 @@ async function deleteGameRate(
 ): Promise<{ message: string }> {
   try {
     // API 호출
-    const data = await csrAxiosPost<{ message: string }>(
+    const data = await csrAxiosDelete<{ message: string }>(
       context,
-      "games/rate/delete",
-      { gameId },
+      `games/rate/${gameId}`,
+      {},
       token,
     );
 

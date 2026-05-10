@@ -10,6 +10,7 @@ async function getNotifications(
   try {
     const response = await csrAxiosGet<Notification[]>(
       context,
+      "getNotifications",
       `notify/${scope}`,
       token,
     );

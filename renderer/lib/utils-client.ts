@@ -8,21 +8,62 @@ const BitmapInternalLink: RegExp = /^\/(auth|games|legal)/;
 
 async function csrAxiosGet<T>(
   bitmapApi: BitmapAPI,
+  identifier: string,
   uriSubstring: string,
   token?: string,
 ): Promise<T> {
-  const response = await bitmapApi.axiosGet<T>(uriSubstring, token ?? "");
+  const response = await bitmapApi.axiosGet<T>(
+    identifier,
+    uriSubstring,
+    token ?? "",
+  );
   return response;
 }
 
 async function csrAxiosPost<T>(
   bitmapApi: BitmapAPI,
+  identifier: string,
   uriSubstring: string,
   body: object,
   token?: string,
   contentType?: string,
 ): Promise<T> {
   const response = await bitmapApi.axiosPost<T>(
+    uriSubstring,
+    identifier,
+    body,
+    token,
+    contentType,
+  );
+  return response;
+}
+
+async function csrAxiosPut<T>(
+  bitmapApi: BitmapAPI,
+  identifier: string,
+  uriSubstring: string,
+  body: object,
+  token?: string,
+  contentType?: string,
+): Promise<T> {
+  const response = await bitmapApi.axiosPut<T>(
+    uriSubstring,
+    identifier,
+    body,
+    token,
+    contentType,
+  );
+  return response;
+}
+
+async function csrAxiosDelete<T>(
+  bitmapApi: BitmapAPI,
+  uriSubstring: string,
+  body: object,
+  token?: string,
+  contentType?: string,
+): Promise<T> {
+  const response = await bitmapApi.axiosDelete<T>(
     uriSubstring,
     body,
     token,
@@ -109,6 +150,8 @@ export {
   BitmapInternalLink,
   csrAxiosGet,
   csrAxiosPost,
+  csrAxiosPut,
+  csrAxiosDelete,
   openExternal,
   openExternalByUri,
   getPlatform,

@@ -278,7 +278,12 @@ class ipcHandle {
 
     ipcMain.handle(
       "axios-get",
-      async (event, uriSubstring: string, token?: string) => {
+      async (
+        event,
+        identifier: string,
+        uriSubstring: string,
+        token?: string,
+      ) => {
         const response = await axios.get(
           this.getApiLinkByPurpose(uriSubstring),
           {
@@ -293,7 +298,10 @@ class ipcHandle {
                 const percentCompleted = Math.round(
                   (progressEvent.loaded * 100) / progressEvent.total,
                 );
-                event.sender.send("axios-get-progress", percentCompleted);
+                event.sender.send(
+                  `axios-get-progress-${identifier}}`,
+                  percentCompleted,
+                );
               }
             },
           },
@@ -306,6 +314,7 @@ class ipcHandle {
       "axios-post",
       async (
         event,
+        identifier: string,
         uriSubstring: string,
         body: object,
         token?: string,
@@ -326,8 +335,74 @@ class ipcHandle {
                 const percentCompleted = Math.round(
                   (progressEvent.loaded * 100) / progressEvent.total,
                 );
-                event.sender.send("axios-post-progress", percentCompleted);
+                event.sender.send(
+                  `axios-post-progress-${identifier}`,
+                  percentCompleted,
+                );
               }
+            },
+          },
+        );
+        return response.data;
+      },
+    );
+
+    ipcMain.handle(
+      "axios-put",
+      async (
+        event,
+        identifier: string,
+        uriSubstring: string,
+        body: object,
+        token?: string,
+        contentType?: string,
+      ) => {
+        const response = await axios.put(
+          this.getApiLinkByPurpose(uriSubstring),
+          body,
+          {
+            timeout: 30000,
+            headers: {
+              "Content-Type": contentType || "application/json",
+              "User-Agent": this.SAFARI_USERAGENT,
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percentCompleted = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total,
+                );
+                event.sender.send(
+                  `axios-put-progress-${identifier}`,
+                  percentCompleted,
+                );
+              }
+            },
+          },
+        );
+        return response.data;
+      },
+    );
+
+    ipcMain.handle(
+      "axios-delete",
+      async (
+        _event,
+        uriSubstring: string,
+        body: object,
+        token?: string,
+        contentType?: string,
+      ) => {
+        const response = await axios.delete(
+          this.getApiLinkByPurpose(uriSubstring),
+
+          {
+            data: body,
+            timeout: 30000,
+            headers: {
+              "Content-Type": contentType || "application/json",
+              "User-Agent": this.SAFARI_USERAGENT,
+              ...(token && { Authorization: `Bearer ${token}` }),
             },
           },
         );

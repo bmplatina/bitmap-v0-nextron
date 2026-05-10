@@ -15,6 +15,7 @@ async function getEula(
   try {
     const response = await csrAxiosGet<stringLocalized>(
       context,
+      `getEula-${eula}`,
       `general/eula/${eula}`,
     );
 
@@ -34,6 +35,7 @@ async function getAllArchiveDocs(
   try {
     const response = await csrAxiosGet<DocumentArchives[]>(
       context,
+      "getAllArchiveDocs",
       "general/archive",
     );
 
@@ -54,6 +56,7 @@ async function getArchiveDocument(
   try {
     const response = await csrAxiosGet<DocumentArchives>(
       context,
+      `getArchiveDocument-${documentTitle}`,
       `general/archive/${documentTitle}`,
     );
 
@@ -74,6 +77,7 @@ async function getMembers(
   try {
     const response = await csrAxiosGet<MembershipApplies[]>(
       context,
+      `getMembers-${scope}`,
       `general/members/${scope}`,
     );
 
@@ -93,6 +97,7 @@ async function getPortfolio(
   try {
     const response = await csrAxiosGet<Portfolio>(
       context,
+      `getPortfolio-${uid}`,
       `general/portfolio/${uid}`,
     );
 
@@ -118,6 +123,7 @@ async function getBitmapAppFromGitHub(context: bitmapApi) {
   try {
     const response = await csrAxiosGet<GitHubRelease[]>(
       context,
+      "getBitmapAppFromGitHub",
       "https://api.github.com/repos/bmplatina/bitmap-v0-nextron/releases",
     );
 

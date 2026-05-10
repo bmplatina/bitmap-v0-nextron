@@ -41,6 +41,7 @@ async function applyMembership(
   try {
     const response = await csrAxiosPost<MembershipApplies[]>(
       context,
+      "ApplyBitmap",
       "permissions/members/apply",
       body,
       token,
@@ -64,6 +65,7 @@ async function getMembershipApplications(context: bitmapApi, token: string) {
   try {
     const response = await csrAxiosGet<MembershipApplies[]>(
       context,
+      "GetMembershipApplications",
       "permissions/members/apply",
       token,
     );
@@ -91,6 +93,7 @@ async function getMembershipApplicationById(
   try {
     const response = await csrAxiosGet<MembershipApplies>(
       context,
+      `getMembershipApplicationById-${id}`,
       `permissions/members/apply/${id}`,
       token,
     );
@@ -115,6 +118,7 @@ async function grantMembershipApplyByUid(
   try {
     const response = await csrAxiosPost<{ message: string }>(
       context,
+      "GrantBitmapApply",
       `permissions/members/apply/grant/${uid}`,
       {},
       token,
@@ -140,6 +144,7 @@ async function leaveMembership(
   try {
     const response = await csrAxiosPost<{ message: string }>(
       context,
+      "LeaveBitmapRequest",
       "permissions/members/leave",
       body,
       token,
@@ -161,6 +166,7 @@ async function getMembershipLeaveReqs(
   try {
     const response = await csrAxiosGet<MembershipLeaves[]>(
       context,
+      "GetLeaveBitmapRequest",
       "permissions/members/leave",
       token,
     );
@@ -182,6 +188,7 @@ async function getMembershipLeaveReqById(
   try {
     const response = await csrAxiosGet(
       context,
+      `getMembershipLeaveReqById-${id}`,
       `permissions/members/leave/${id}`,
       token,
     );
@@ -208,6 +215,7 @@ async function grantMembershipLeavingByUid(
   try {
     const response = await csrAxiosPost<{ message: string }>(
       context,
+      "GrantBitmapLeaveRequest",
       `permissions/members/leave/grant/${uid}`,
       {},
       token,
@@ -226,6 +234,7 @@ async function switchBitmapDeveloper(
   try {
     const response = await csrAxiosPost<{ message: string }>(
       context,
+      "SwitchBitmapDeveloper",
       "permissions/developer/apply",
       {},
       token,

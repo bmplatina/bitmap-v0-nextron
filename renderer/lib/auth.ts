@@ -36,6 +36,7 @@ const getProfile = async (
   try {
     const response = await csrAxiosPost<UserProfile>(
       context,
+      `getProfile-${uid}`,
       "auth/profile/query/uid", // 백엔드 라우트 주소와 일치 확인
       {
         uid,
@@ -77,7 +78,12 @@ async function getMyProfile(
   token: string,
 ): Promise<UserProfile> {
   try {
-    const res = await csrAxiosGet<UserProfile>(context, "auth/profile", token);
+    const res = await csrAxiosGet<UserProfile>(
+      context,
+      "getMyProfile",
+      "auth/profile",
+      token,
+    );
     return res;
   } catch (error) {
     console.error("유저 정보 불러오기 실패", error);
@@ -111,11 +117,16 @@ async function login(
 ): Promise<AuthResponseInternal> {
   try {
     console.log("Electron Axios Posting");
-    const response = await csrAxiosPost<AuthResponse>(context, "auth/login", {
-      email: email,
-      password: password,
-      bKeepLoggedIn: bKeepLoggedIn,
-    });
+    const response = await csrAxiosPost<AuthResponse>(
+      context,
+      "login",
+      "auth/login",
+      {
+        email: email,
+        password: password,
+        bKeepLoggedIn: bKeepLoggedIn,
+      },
+    );
 
     if (response.token) {
       return { success: true, token: response.token };
@@ -139,6 +150,7 @@ async function signup(
   try {
     const response = await csrAxiosPost<SignupResponse>(
       context,
+      "signup",
       "auth/signup",
       { locale, username, email, password, avatarUri },
     );
@@ -158,6 +170,7 @@ async function verifyEmail(
   try {
     const response = await csrAxiosPost<string>(
       context,
+      "email-verify",
       "auth/email/verify",
       { code },
       token,
@@ -182,6 +195,7 @@ async function sendVerifyEmail(
   try {
     const response = await csrAxiosPost<string>(
       context,
+      "send-email",
       "auth/email/send",
       { locale },
       token,
@@ -205,6 +219,7 @@ async function checkIsEmailDuplicated(
   try {
     const response = await csrAxiosPost<boolean>(
       context,
+      "check-email-duplication",
       "auth/signup/check-duplicate",
       { email },
     );
@@ -228,6 +243,7 @@ async function editProfileElement(
   try {
     const response = await csrAxiosPost<{ message: string }>(
       context,
+      "editProfile",
       `auth/edit/${method}`,
       { [formattedKey]: newValue },
       token,
@@ -254,7 +270,8 @@ async function uploadProfilePics(
   uri: string;
   uploaderUid: string;
 }> {
-  const removeListener = context.onAxiosPostProgress((progress) => {
+  const IDENTIFIER = "uploadAvatar";
+  const removeListener = context.onAxiosPostProgress(IDENTIFIER, (progress) => {
     // React 상태 업데이트 로직 등을 여기에 작성
     if (onProgress) {
       onProgress(progress);
@@ -267,7 +284,14 @@ async function uploadProfilePics(
       filePath: string;
       uri: string;
       uploaderUid: string;
-    }>(context, "upload/avatar", formData, token, "multipart/form-data");
+    }>(
+      context,
+      IDENTIFIER,
+      "upload/avatar",
+      formData,
+      token,
+      "multipart/form-data",
+    );
     // "Content-Type": "",
     if (response.uri) {
       return response;

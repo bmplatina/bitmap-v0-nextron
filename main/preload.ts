@@ -79,34 +79,97 @@ const electronTools = {
 
 const bitmapApi = {
   // Axios
+  axiosGet: <T>(
+    identifier: string,
+    uriSubstring: string,
+    token?: string,
+  ): Promise<T> =>
+    ipcRenderer.invoke("axios-get", identifier, uriSubstring, token),
+
+  onAxiosGetProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => {
+    const subscription = (_event: IpcRendererEvent, progress: number) =>
+      callback(progress);
+    ipcRenderer.on(`axios-get-progress-${identifier}`, subscription);
+    return () => {
+      ipcRenderer.removeListener(
+        `axios-get-progress-${identifier}`,
+        subscription,
+      );
+    };
+  },
+
   axiosPost: <T>(
+    identifier: string,
     uriSubstring: string,
     body: object,
     token?: string,
     contentType?: string,
   ): Promise<T> =>
-    ipcRenderer.invoke("axios-post", uriSubstring, body, token, contentType),
+    ipcRenderer.invoke(
+      "axios-post",
+      identifier,
+      uriSubstring,
+      body,
+      token,
+      contentType,
+    ),
 
-  onAxiosPostProgress: (callback: (progress: number) => void) => {
+  onAxiosPostProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => {
     const subscription = (_event: IpcRendererEvent, progress: number) =>
       callback(progress);
-    ipcRenderer.on("axios-post-progress", subscription);
+    ipcRenderer.on(`axios-post-progress-${identifier}`, subscription);
     return () => {
-      ipcRenderer.removeListener("axios-post-progress", subscription);
+      ipcRenderer.removeListener(
+        `axios-post-progress-${identifier}`,
+        subscription,
+      );
     };
   },
 
-  axiosGet: <T>(uriSubstring: string, token?: string): Promise<T> =>
-    ipcRenderer.invoke("axios-get", uriSubstring, token),
+  axiosPut: <T>(
+    identifier: string,
+    uriSubstring: string,
+    body: object,
+    token?: string,
+    contentType?: string,
+  ): Promise<T> =>
+    ipcRenderer.invoke(
+      "axios-put",
+      identifier,
+      uriSubstring,
+      body,
+      token,
+      contentType,
+    ),
 
-  onAxiosGetProgress: (callback: (progress: number) => void) => {
+  onAxiosPutProgress: (
+    identifier: string,
+    callback: (progress: number) => void,
+  ) => {
     const subscription = (_event: IpcRendererEvent, progress: number) =>
       callback(progress);
-    ipcRenderer.on("axios-get-progress", subscription);
+    ipcRenderer.on(`axios-put-progress-${identifier}`, subscription);
     return () => {
-      ipcRenderer.removeListener("axios-get-progress", subscription);
+      ipcRenderer.removeListener(
+        `axios-put-progress-${identifier}`,
+        subscription,
+      );
     };
   },
+
+  axiosDelete: <T>(
+    uriSubstring: string,
+    body: object,
+    token?: string,
+    contentType?: string,
+  ): Promise<T> =>
+    ipcRenderer.invoke("axios-delete", uriSubstring, body, token, contentType),
 
   setToken: (token: string) => ipcRenderer.invoke("set-token", token),
   getToken: () => ipcRenderer.invoke("get-token"),

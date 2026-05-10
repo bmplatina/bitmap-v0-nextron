@@ -150,6 +150,7 @@ async function getYouTubeVideos(
   try {
     const data = await csrAxiosGet<YouTubeQuery>(
       context,
+      "BitmapYouTube",
       `youtube/get-videos/${channelId}`,
     );
 
@@ -165,7 +166,11 @@ async function getYouTubeVideos(
 
 async function getCarousel(context: bitmapApi): Promise<Carousel[]> {
   try {
-    const data = await csrAxiosGet<Carousel[]>(context, "general/carousel");
+    const data = await csrAxiosGet<Carousel[]>(
+      context,
+      "BitmapCarousel",
+      "general/carousel",
+    );
 
     return data;
   } catch (err: any) {
