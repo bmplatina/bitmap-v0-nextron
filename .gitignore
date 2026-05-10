@@ -32,3 +32,4 @@ settings.db
 .github/
 .gemini/
 gha-creds-*.json
+tsconfig.tsbuildinfo

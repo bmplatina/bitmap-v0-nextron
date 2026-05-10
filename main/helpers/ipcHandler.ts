@@ -136,9 +136,24 @@ class ipcHandle {
   }
 
   initializeIpc() {
+    this.appLifecycleHandlers();
     this.electronTools();
     this.bitmapAPI();
     this.deprecatedHandlers();
+  }
+
+  private appLifecycleHandlers() {
+    app.on("before-quit", () => {
+      for (const [gameId, child] of this.runningGames.entries()) {
+        try {
+          child.kill("SIGTERM");
+          log.info(`Stopped running game on app quit: ${gameId}`);
+        } catch (error: any) {
+          log.error(`Failed to stop running game on app quit: ${gameId}`, error);
+        }
+      }
+      this.runningGames.clear();
+    });
   }
 
   private electronTools() {

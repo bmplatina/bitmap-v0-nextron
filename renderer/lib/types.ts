@@ -1,5 +1,6 @@
 import { bitmapApi, tools } from "@/types/electron";
 import { makeAutoObservable, runInAction } from "mobx";
+import { getGamePlaytime, setGamePlaytime, updateGamePlaytime } from "./games";
 
 interface stringLocalized {
   en: string;
@@ -257,6 +258,74 @@ interface Portfolio {
   portfolioPdfUri: string; // text
 }
 
+interface UpdateProgress {
+  percent: number;
+  transferred: number;
+  total: number;
+  bytesPerSecond: number;
+}
+
+type UpdateStatusType =
+  | "idle"
+  | "checking"
+  | "available"
+  | "not-available"
+  | "downloading"
+  | "downloaded"
+  | "error";
+
+interface UpdateStatus {
+  message: string;
+  status: UpdateStatusType;
+}
+
+interface GitHubRelease {
+  id: number;
+  url: string;
+  html_url: string;
+  tag_name: string;
+  target_commitish: string;
+  name: string;
+  body: string; // 마크다운 형식의 릴리스 노트
+  draft: boolean;
+  prerelease: boolean;
+  created_at: string; // ISO 8601 날짜
+  published_at: string;
+  author: GitHubUser;
+  assets: GitHubAsset[];
+  tarball_url: string;
+  zipball_url: string;
+}
+
+interface GitHubAsset {
+  id: number;
+  name: string; // 파일명 (예: Bitmap.Setup.0.1.1-a.exe)
+  label: string | null;
+  uploader: GitHubUser;
+  content_type: string;
+  state: "uploaded" | string;
+  size: number; // 바이트 단위
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+  browser_download_url: string; // 실제 다운로드 링크
+}
+
+interface GitHubUser {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+  type: string;
+}
+
+interface Playtime {
+  id: number;
+  uid: string;
+  gameId: number;
+  playtime: number;
+}
+
 class GameInstallManager {
   constructor(isPlatformMac: boolean) {
     makeAutoObservable(this);
@@ -277,6 +346,7 @@ class GameInstallManager {
   private extractProgress: number = 0;
   private currentVersion: number = 0;
   private bIsUpdatable: boolean = false;
+  private playtime: number = 0;
 
   // Interface Game
   private game: GameWithSize = {
@@ -513,6 +583,14 @@ class GameInstallManager {
 
   get getCustomEula(): string {
     return this.customEula;
+  }
+
+  get getPlaytime(): number {
+    return this.playtime;
+  }
+
+  set setPlaytime(newPlaytime: number) {
+    this.playtime = newPlaytime;
   }
 
   pauseDownload(context: bitmapApi) {
@@ -780,22 +858,20 @@ class GameInstallManager {
   }
 
   async openApp(context: bitmapApi) {
-    // let openCommand: string = "";
+    const token = await context.getToken();
+    try {
+      const playtime = await getGamePlaytime(context, token, this.gameId);
 
-    // if (this.installationPath) {
-    //   if (this.bIsMac) {
-    //     openCommand = `open "${this.installationPath}/${this.game.gameBinaryName}.app"`;
-    //   } else {
-    //     if (this.installationPath.charAt(0) === "C") {
-    //       openCommand = `"${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
-    //     } else {
-    //       openCommand = `${this.installationPath.charAt(0)}: ; "${this.installationPath}\\${this.game.gameBinaryName}.exe"`;
-    //     }
-    //   }
-    // }
+      if (!playtime) {
+        await setGamePlaytime(context, token, this.gameId, 0);
+      } else {
+        this.playtime = playtime.playtime;
+      }
+    } catch (error: any) {
+      console.log("플레이타임 조회 오류:", error);
+    }
 
     try {
-      // const result: string = await context.runCommand(openCommand);
       if (!this.binaryAbsPath) {
         runInAction(() => {
           this.binaryAbsPath = this.bIsMac
@@ -803,8 +879,21 @@ class GameInstallManager {
             : `${this.installationPath}\\${this.game.gameBinaryName}.exe`;
         });
       }
+      const unsubscribeGameClosed = context.onGameClosed(
+        this.gameId,
+        (durationInMinutes: number) => {
+          runInAction(() => {
+            this.playtime += durationInMinutes;
+          });
+          unsubscribeGameClosed();
+        },
+      );
       const result = await context.runGame(this.gameId, this.binaryAbsPath);
+      if (!result.success) {
+        unsubscribeGameClosed();
+      }
       console.log("명령 실행 성공:", result.success);
+      await updateGamePlaytime(context, token, this.gameId, this.playtime);
     } catch (error: any) {
       console.error("명령 실행 중 오류:", error?.error);
     }
@@ -824,67 +913,6 @@ class GameInstallManager {
       }
     }
   }
-}
-
-interface UpdateProgress {
-  percent: number;
-  transferred: number;
-  total: number;
-  bytesPerSecond: number;
-}
-
-type UpdateStatusType =
-  | "idle"
-  | "checking"
-  | "available"
-  | "not-available"
-  | "downloading"
-  | "downloaded"
-  | "error";
-
-interface UpdateStatus {
-  message: string;
-  status: UpdateStatusType;
-}
-
-interface GitHubRelease {
-  id: number;
-  url: string;
-  html_url: string;
-  tag_name: string;
-  target_commitish: string;
-  name: string;
-  body: string; // 마크다운 형식의 릴리스 노트
-  draft: boolean;
-  prerelease: boolean;
-  created_at: string; // ISO 8601 날짜
-  published_at: string;
-  author: GitHubUser;
-  assets: GitHubAsset[];
-  tarball_url: string;
-  zipball_url: string;
-}
-
-interface GitHubAsset {
-  id: number;
-  name: string; // 파일명 (예: Bitmap.Setup.0.1.1-a.exe)
-  label: string | null;
-  uploader: GitHubUser;
-  content_type: string;
-  state: "uploaded" | string;
-  size: number; // 바이트 단위
-  download_count: number;
-  created_at: string;
-  updated_at: string;
-  browser_download_url: string; // 실제 다운로드 링크
-}
-
-interface GitHubUser {
-  login: string;
-  id: number;
-  avatar_url: string;
-  html_url: string;
-  type: string;
 }
 
 export { EInstallState, GameInstallManager };
@@ -921,4 +949,5 @@ export type {
   UpdateStatusType,
   UpdateStatus,
   GitHubRelease,
+  Playtime,
 };

@@ -139,6 +139,12 @@ export interface bitmapApi {
     gameId: number,
     gamePath: string,
   ) => Promise<{ success: boolean; error?: any }>;
+
+  onGameClosed: (
+    gameId: number,
+    callback: (durationInMinutes: number) => void,
+  ) => () => void;
+
   stopGame: (gameId: number) => Promise<{ success: boolean; error?: any }>;
   onGameTerminated: (
     gameId: number,

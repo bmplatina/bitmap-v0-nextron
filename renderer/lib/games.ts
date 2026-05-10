@@ -4,6 +4,7 @@ import {
   GameRating,
   GameRatingRequest,
   GameWithSize,
+  Playtime,
 } from "@/lib/types";
 import { getApiLinkByPurpose } from "@/lib/utils";
 import {
@@ -228,6 +229,72 @@ async function deleteGameRate(
   }
 }
 
+async function getGamePlaytime(
+  context: bitmapApi,
+  token: string,
+  gameId: number,
+) {
+  try {
+    const data = await csrAxiosGet<Playtime>(
+      context,
+      "getGamePlaytime",
+      `games/playtime/${gameId}`,
+      token,
+    );
+    return data;
+  } catch (error) {
+    console.error("게임 플레이타임을 가져오는 중 오류 발생:", error);
+    return null;
+  }
+}
+
+async function setGamePlaytime(
+  context: bitmapApi,
+  token: string,
+  gameId: number,
+  playtime: number,
+) {
+  try {
+    const data = await csrAxiosPost<{
+      message: string;
+      id: string;
+    }>(
+      context,
+      "setGamePlaytime",
+      `games/playtime/${gameId}`,
+      { playtime },
+      token,
+    );
+    return data;
+  } catch (error) {
+    console.error("게임 플레이타임을 설정하는 중 오류 발생:", error);
+    return null;
+  }
+}
+
+async function updateGamePlaytime(
+  context: bitmapApi,
+  token: string,
+  gameId: number,
+  playtime: number,
+) {
+  try {
+    const data = await csrAxiosPut<{
+      message: string;
+    }>(
+      context,
+      "updateGamePlaytime",
+      `games/playtime/${gameId}`,
+      { playtime },
+      token,
+    );
+    return data;
+  } catch (error) {
+    console.error("게임 플레이타임을 업데이트하는 중 오류 발생:", error);
+    return null;
+  }
+}
+
 export {
   getGames,
   getGameById,
@@ -237,4 +304,7 @@ export {
   getGameRatesById,
   submitGameRate,
   deleteGameRate,
+  getGamePlaytime,
+  setGamePlaytime,
+  updateGamePlaytime,
 };

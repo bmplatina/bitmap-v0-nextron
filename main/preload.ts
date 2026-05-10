@@ -262,9 +262,7 @@ const bitmapApi = {
   runGame: (gameId: number, gamePath: string) =>
     ipcRenderer.invoke("run-game", gameId, gamePath),
 
-  stopGame: (gameId: number) => ipcRenderer.invoke("stop-game", gameId),
-
-  onGameTerminated: (
+  onGameClosed: (
     gameId: number,
     callback: (durationInMinutes: number) => void,
   ) => {
@@ -276,6 +274,13 @@ const bitmapApi = {
       ipcRenderer.removeListener(channel, subscription);
     };
   },
+
+  stopGame: (gameId: number) => ipcRenderer.invoke("stop-game", gameId),
+
+  onGameTerminated: (
+    gameId: number,
+    callback: (durationInMinutes: number) => void,
+  ) => bitmapApi.onGameClosed(gameId, callback),
 
   // Get desync cache size
   getDesyncCacheSize: () => ipcRenderer.invoke("get-desync-cache-size"),

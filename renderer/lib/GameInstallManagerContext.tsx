@@ -7,12 +7,12 @@ import React, {
 } from "react";
 import { GameInstallManager, GameWithSize } from "@/lib/types";
 import { getPlatform } from "./utils-client";
-import { makeAutoObservable, observable } from "mobx";
+import { makeAutoObservable, observable, type ObservableMap } from "mobx";
 
 interface GameInstallManagerContextType {
   bIsMac: boolean;
   store: {
-    managers: Map<number, GameInstallManager>;
+    managers: ObservableMap<number, GameInstallManager>;
     add: (manager: GameInstallManager) => void;
     remove: (gameId: number) => void;
     clear: () => void;

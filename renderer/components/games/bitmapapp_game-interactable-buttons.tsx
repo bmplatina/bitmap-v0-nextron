@@ -438,6 +438,12 @@ const GameInteractableButtons = observer(function ({
                 </Text>
               </Flex>
             </Button>
+
+            <Card>
+              <CardContent className="mt-4">
+                게임 플레이 시간: {gameInstallManager.getPlaytime} 분
+              </CardContent>
+            </Card>
           </>
         )}
 
