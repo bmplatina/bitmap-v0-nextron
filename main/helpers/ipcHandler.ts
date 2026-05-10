@@ -548,6 +548,12 @@ class ipcHandle {
           fs.mkdirSync(installParentPath, { recursive: true });
         }
 
+        const isMacBundleTarget =
+          this.platformName === "darwin" && destPath.endsWith(".app");
+        if (isMacBundleTarget && !fs.existsSync(destPath)) {
+          fs.mkdirSync(destPath, { recursive: true });
+        }
+
         const writer = fs.createWriteStream(caidxSavePath);
 
         const response = await axios.get(
@@ -566,7 +572,10 @@ class ipcHandle {
 
         await pipeline(response.data, writer);
 
-        // desync untar -i -s DEPOT_URI <path/to/caidx.caidx> destPath
+        // macOS 앱 번들은 .app 내부에서 untar 해야 Contents/가 번들 내부로 배치됨
+        const untarTargetPath = isMacBundleTarget ? "." : destPath;
+
+        // desync untar -i -s DEPOT_URI <path/to/caidx.caidx> <target>
         const desyncArgs = [
           "untar",
           "-i",
@@ -574,10 +583,11 @@ class ipcHandle {
           this.DEPOT_URI,
           ...(bUseCache ? ["-c", desyncCachePath] : []),
           caidxSavePath,
-          destPath,
+          untarTargetPath,
         ];
 
         const child = spawn(this.desyncPath, desyncArgs, {
+          ...(isMacBundleTarget ? { cwd: destPath } : {}),
           env: {
             ...process.env,
             DESYNC_ENABLE_PARSABLE_PROGRESS: "1",

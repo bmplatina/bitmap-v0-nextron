@@ -29,8 +29,8 @@ async function csrAxiosPost<T>(
   contentType?: string,
 ): Promise<T> {
   const response = await bitmapApi.axiosPost<T>(
-    uriSubstring,
     identifier,
+    uriSubstring,
     body,
     token,
     contentType,
@@ -47,8 +47,8 @@ async function csrAxiosPut<T>(
   contentType?: string,
 ): Promise<T> {
   const response = await bitmapApi.axiosPut<T>(
-    uriSubstring,
     identifier,
+    uriSubstring,
     body,
     token,
     contentType,

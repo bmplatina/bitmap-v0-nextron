@@ -881,11 +881,12 @@ class GameInstallManager {
       }
       const unsubscribeGameClosed = context.onGameClosed(
         this.gameId,
-        (durationInMinutes: number) => {
+        async (durationInMinutes: number) => {
           runInAction(() => {
             this.playtime += durationInMinutes;
           });
           unsubscribeGameClosed();
+          await updateGamePlaytime(context, token, this.gameId, this.playtime);
         },
       );
       const result = await context.runGame(this.gameId, this.binaryAbsPath);
@@ -893,7 +894,6 @@ class GameInstallManager {
         unsubscribeGameClosed();
       }
       console.log("명령 실행 성공:", result.success);
-      await updateGamePlaytime(context, token, this.gameId, this.playtime);
     } catch (error: any) {
       console.error("명령 실행 중 오류:", error?.error);
     }
