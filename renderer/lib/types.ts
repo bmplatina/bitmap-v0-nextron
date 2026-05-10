@@ -1,5 +1,5 @@
 import { bitmapApi, tools } from "@/types/electron";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 
 interface stringLocalized {
   en: string;
@@ -598,14 +598,18 @@ class GameInstallManager {
       : installRootPath;
 
     return new Promise<string>((resolve, reject) => {
-      this.installState = EInstallState.Downloading;
+      runInAction(() => {
+        this.installState = EInstallState.Downloading;
+      });
 
       const unsubscribeProgress = context.onGameInstallProgress(
         this.gameId,
         (progress) => {
-          this.downloadProgress = progress.percent;
-          this.downloadSpeedRealtime = progress.speed;
-          this.downloadEta = this.formatTime(progress.eta, "digital");
+          runInAction(() => {
+            this.downloadProgress = progress.percent;
+            this.downloadSpeedRealtime = progress.speed;
+            this.downloadEta = this.formatTime(progress.eta, "digital");
+          });
           console.log(
             `다운로드 중: ${this.downloadProgress}% 속도: ${this.downloadSpeedRealtime}, ETA: ${this.downloadEta}`,
           );
@@ -619,22 +623,28 @@ class GameInstallManager {
           unsubscribeComplete();
 
           if (success) {
-            this.installState = EInstallState.Installed; // 작업 완료
-            this.currentVersion = this.getGameInfo.gameLatestRevision;
-            this.bIsUpdatable = false;
+            runInAction(() => {
+              this.installState = EInstallState.Installed; // 작업 완료
+              this.currentVersion = this.getGameInfo.gameLatestRevision;
+              this.bIsUpdatable = false;
+            });
             await this.pushInstallState(context);
             console.log(`설치 완료!`);
 
-            this.binaryAbsPath = this.bIsMac
-              ? destPath
-              : `${destPath}\\${this.gameBinaryName}.exe`;
+            runInAction(() => {
+              this.binaryAbsPath = this.bIsMac
+                ? destPath
+                : `${destPath}\\${this.gameBinaryName}.exe`;
+            });
 
             if (bCreateShortcut) {
               this.createShortcut(context);
             }
             resolve("success");
           } else {
-            this.installState = EInstallState.InstallError;
+            runInAction(() => {
+              this.installState = EInstallState.InstallError;
+            });
             console.error("오류 발생: 다운로드 실패");
             resolve("failed");
           }
@@ -644,7 +654,9 @@ class GameInstallManager {
       context.pullGame(this.gameId, destPath, this.bIsMac).catch((err) => {
         unsubscribeProgress();
         unsubscribeComplete();
-        this.installState = EInstallState.InstallError;
+        runInAction(() => {
+          this.installState = EInstallState.InstallError;
+        });
         console.error("오류 발생:", err);
         resolve(err as string);
       });
@@ -704,7 +716,9 @@ class GameInstallManager {
         ? `${defaultPath}/${this.game.gameBinaryName}`
         : `${defaultPath}\\BitmapApps\\${this.game.gameBinaryName}`;
 
-      this.defaultInstallationPath = DefaultInstallationPathLocal;
+      runInAction(() => {
+        this.defaultInstallationPath = DefaultInstallationPathLocal;
+      });
 
       const getResultLocal = await BitmapAPI.getGameInstallInfoByIndex(
         this.game.gameId,
@@ -712,25 +726,27 @@ class GameInstallManager {
 
       console.log("pullInstallState::resolvedData", getResultLocal);
       // If getting from store succeed, allocate it to property
-      if (!!getResultLocal) {
-        console.log(
-          "pullInstallState: If getting from store succeed, allocate it to property",
-          getResultLocal,
-        );
-        this.installState = getResultLocal.gameInstallState;
-        this.installationPath = getResultLocal.gameInstallationPath;
-        this.currentVersion = getResultLocal.gameInstalledVersion;
-        if (this.game.gameLatestRevision > this.currentVersion) {
-          this.bIsUpdatable = true;
+      runInAction(() => {
+        if (!!getResultLocal) {
+          console.log(
+            "pullInstallState: If getting from store succeed, allocate it to property",
+            getResultLocal,
+          );
+          this.installState = getResultLocal.gameInstallState;
+          this.installationPath = getResultLocal.gameInstallationPath;
+          this.currentVersion = getResultLocal.gameInstalledVersion;
+          if (this.game.gameLatestRevision > this.currentVersion) {
+            this.bIsUpdatable = true;
+          }
         }
-      }
-      // Otherwise, initialize property
-      else {
-        console.log("pullInstallState: Otherwise, initialize property");
-        this.installationPath = this.defaultInstallationPath;
-        this.installState = EInstallState.NotInstalled;
-        this.currentVersion = 0;
-      }
+        // Otherwise, initialize property
+        else {
+          console.log("pullInstallState: Otherwise, initialize property");
+          this.installationPath = this.defaultInstallationPath;
+          this.installState = EInstallState.NotInstalled;
+          this.currentVersion = 0;
+        }
+      });
 
       // Check is installation path valid
       if (this.installationPath) {
@@ -740,15 +756,21 @@ class GameInstallManager {
 
         BitmapAPI.checkPathValid(literalInstallationPath).then(
           (bIsValid: boolean) => {
-            console.log(
-              `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
-            );
-            this.installState = bIsValid
-              ? EInstallState.Installed
-              : EInstallState.NotInstalled;
+            runInAction(() => {
+              console.log(
+                `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
+              );
+              this.installState = bIsValid
+                ? EInstallState.Installed
+                : EInstallState.NotInstalled;
+            });
           },
         );
-      } else this.installState = EInstallState.NotInstalled;
+      } else {
+        runInAction(() => {
+          this.installState = EInstallState.NotInstalled;
+        });
+      }
 
       // Sync installation state
       this.pushInstallState(BitmapAPI);
@@ -775,9 +797,11 @@ class GameInstallManager {
     try {
       // const result: string = await context.runCommand(openCommand);
       if (!this.binaryAbsPath) {
-        this.binaryAbsPath = this.bIsMac
-          ? `${this.installationPath}/${this.game.gameBinaryName}.app`
-          : `${this.installationPath}\\${this.game.gameBinaryName}.exe`;
+        runInAction(() => {
+          this.binaryAbsPath = this.bIsMac
+            ? `${this.installationPath}/${this.game.gameBinaryName}.app`
+            : `${this.installationPath}\\${this.game.gameBinaryName}.exe`;
+        });
       }
       const result = await context.runGame(this.gameId, this.binaryAbsPath);
       console.log("명령 실행 성공:", result.success);
@@ -791,8 +815,10 @@ class GameInstallManager {
       console.log(this.installationPath);
       await context.removeShortcut(this.gameTitle);
       if (await context.removeFile(this.installationPath)) {
-        this.installState = EInstallState.NotInstalled;
-        this.installationPath = this.defaultInstallationPath;
+        runInAction(() => {
+          this.installState = EInstallState.NotInstalled;
+          this.installationPath = this.defaultInstallationPath;
+        });
         await context.deleteGameInstallInfo(this.gameId);
         await this.pushInstallState(context);
       }
