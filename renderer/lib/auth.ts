@@ -37,7 +37,7 @@ const getProfile = async (
     const response = await csrAxiosPost<UserProfile>(
       context,
       `getProfile-${uid}`,
-      "auth/profile/query/uid", // 백엔드 라우트 주소와 일치 확인
+      "auth/profile/uid", // 백엔드 라우트 주소와 일치 확인
       {
         uid,
       },
@@ -244,7 +244,7 @@ async function editProfileElement(
     const response = await csrAxiosPost<{ message: string }>(
       context,
       "editProfile",
-      `auth/edit/${method}`,
+      `auth/profile/${method}`,
       { [formattedKey]: newValue },
       token,
     );
