@@ -11,10 +11,10 @@ import { userStore } from "./user-store";
 import * as types from "./types";
 import path, { dirname, join } from "path";
 import fs, { promises } from "fs";
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
+import type { ChildProcess } from "child_process";
 import log from "./logger";
 import updater from "./auto-updater";
-import { spawn } from "child_process";
 import { pipeline } from "stream/promises";
 import getFoldersize from "get-folder-size";
 
@@ -102,10 +102,8 @@ class ipcHandle {
     }
   >();
 
-  private runningGames = new Map<
-    number,
-    import("child_process").ChildProcess
-  >();
+  private runningGames = new Map<number, ChildProcess>();
+  private runningDesyncProcesses = new Set<ChildProcess>();
 
   /**
    * API 링크 생성
@@ -135,6 +133,28 @@ class ipcHandle {
     }
   }
 
+  private terminateChildProcess(child: ChildProcess): void {
+    try {
+      if (!child.pid) {
+        child.kill("SIGTERM");
+        return;
+      }
+
+      if (this.platformName !== "win32") {
+        try {
+          process.kill(-child.pid, "SIGTERM");
+          return;
+        } catch {
+          // Not a process-group leader or already exited; fall through.
+        }
+      }
+
+      child.kill("SIGTERM");
+    } catch (error: any) {
+      log.error("Failed to terminate child process", error);
+    }
+  }
+
   initializeIpc() {
     this.appLifecycleHandlers();
     this.electronTools();
@@ -145,14 +165,15 @@ class ipcHandle {
   private appLifecycleHandlers() {
     app.on("before-quit", () => {
       for (const [gameId, child] of this.runningGames.entries()) {
-        try {
-          child.kill("SIGTERM");
-          log.info(`Stopped running game on app quit: ${gameId}`);
-        } catch (error: any) {
-          log.error(`Failed to stop running game on app quit: ${gameId}`, error);
-        }
+        this.terminateChildProcess(child);
+        log.info(`Stopped running game on app quit: ${gameId}`);
       }
       this.runningGames.clear();
+
+      for (const child of this.runningDesyncProcesses) {
+        this.terminateChildProcess(child);
+      }
+      this.runningDesyncProcesses.clear();
     });
   }
 
@@ -277,7 +298,7 @@ class ipcHandle {
           }
         });
 
-        item.once("done", (event, state) => {
+        item.once("done", (_event, state) => {
           if (state === "completed") {
             pending.resolve(pending.savePath);
           } else if (state === "cancelled") {
@@ -314,7 +335,7 @@ class ipcHandle {
                   (progressEvent.loaded * 100) / progressEvent.total,
                 );
                 event.sender.send(
-                  `axios-get-progress-${identifier}}`,
+                  `axios-get-progress-${identifier}`,
                   percentCompleted,
                 );
               }
@@ -594,6 +615,7 @@ class ipcHandle {
             ...(authToken && { BITMAP_AUTH_TOKEN: authToken }),
           },
         });
+        this.runningDesyncProcesses.add(child);
 
         let isCompleted = false;
         let stderrBuffer = "";
@@ -667,11 +689,13 @@ class ipcHandle {
         });
 
         child.on("error", (error) => {
+          this.runningDesyncProcesses.delete(child);
           log.error("pull-game: failed to start desync", error);
           cleanupCaidxAndNotify(false);
         });
 
         child.on("close", (code) => {
+          this.runningDesyncProcesses.delete(child);
           cleanupCaidxAndNotify(code === 0);
         });
       },

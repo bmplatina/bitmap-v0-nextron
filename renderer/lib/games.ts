@@ -72,7 +72,12 @@ async function getGamesByUid(
   token: string,
 ): Promise<Game[]> {
   try {
-    const data = await csrAxiosGet<Game[]>(context, "games/list/uid", token);
+    const data = await csrAxiosGet<Game[]>(
+      context,
+      "getGamesByUid",
+      "games/list/uid",
+      token,
+    );
 
     return data;
   } catch (error) {

@@ -29,6 +29,8 @@ dist
 gameInstallInfo.db
 settings.db
 
+.env*
+
 .github/
 .gemini/
 gha-creds-*.json
