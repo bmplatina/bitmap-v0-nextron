@@ -736,7 +736,9 @@ class GameInstallManager {
           this.installState = EInstallState.InstallError;
         });
         console.error("오류 발생:", err);
-        resolve(err as string);
+        const errorMessage =
+          err instanceof Error ? err.message : String(err ?? "failed");
+        resolve(errorMessage);
       });
     });
   }

@@ -30,17 +30,17 @@ const GameInstallationCard = observer(function ({
     i18n: { language: locale },
   } = useTranslation("GamesView");
 
-  function cancelDownload() {
-    if (manager) manager.cancelDownload(window.bitmapApi);
-  }
+  // function cancelDownload() {
+  //   if (manager) manager.cancelDownload(window.bitmapApi);
+  // }
 
-  function pauseDownload() {
-    if (manager) manager.pauseDownload(window.bitmapApi);
-  }
+  // function pauseDownload() {
+  //   if (manager) manager.pauseDownload(window.bitmapApi);
+  // }
 
-  function resumeDownload() {
-    if (manager) manager.resumeDownload(window.bitmapApi);
-  }
+  // function resumeDownload() {
+  //   if (manager) manager.resumeDownload(window.bitmapApi);
+  // }
 
   function removeManager() {
     if (manager) store.remove(manager.getGameInfo.gameId);
@@ -139,7 +139,7 @@ const GameInstallationCard = observer(function ({
               </Box>
 
               {/* Dismiss Button (Top Right) */}
-              <Flex
+              {/*<Flex
                 gap="2"
                 style={{ margin: "-4px -4px 0 0", alignSelf: "center" }}
               >
@@ -172,7 +172,7 @@ const GameInstallationCard = observer(function ({
                 >
                   <Trash2 size={16} color="red" />
                 </IconButton>
-              </Flex>
+              </Flex>*/}
             </Flex>
 
             <Box mt="2">

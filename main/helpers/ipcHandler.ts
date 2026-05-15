@@ -104,6 +104,7 @@ class ipcHandle {
 
   private runningGames = new Map<number, ChildProcess>();
   private runningDesyncProcesses = new Set<ChildProcess>();
+  private activePullGameId: number | null = null;
 
   /**
    * API 링크 생성
@@ -545,6 +546,18 @@ class ipcHandle {
     ipcMain.handle(
       "pull-game",
       async (event, gameId: number, destPath: string, bUseCache: boolean) => {
+        if (
+          this.activePullGameId !== null ||
+          this.runningDesyncProcesses.size > 0
+        ) {
+          const runningGameId = this.activePullGameId;
+          log.warn(
+            `pull-game blocked: gameId=${gameId}, runningGameId=${runningGameId}`,
+          );
+          throw new Error("Another game installation is already in progress.");
+        }
+        this.activePullGameId = gameId;
+
         // caidx를 저장할 임시 경로. <temp>/caidx/games/${gameId}/<file>.caidx
         const caidxDirPath = path.join(
           this.DESYNC_TEMP_PATH,
@@ -575,23 +588,28 @@ class ipcHandle {
           fs.mkdirSync(destPath, { recursive: true });
         }
 
-        const writer = fs.createWriteStream(caidxSavePath);
+        try {
+          const writer = fs.createWriteStream(caidxSavePath);
 
-        const response = await axios.get(
-          this.getApiLinkByPurpose(
-            `games/caidx/${gameId}?platform=${platform}&version=latest`,
-          ),
-          {
-            responseType: "stream",
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": this.SAFARI_USERAGENT,
-              ...(authToken && { Authorization: `Bearer ${authToken}` }),
+          const response = await axios.get(
+            this.getApiLinkByPurpose(
+              `games/caidx/${gameId}?platform=${platform}&version=latest`,
+            ),
+            {
+              responseType: "stream",
+              headers: {
+                "Content-Type": "application/json",
+                "User-Agent": this.SAFARI_USERAGENT,
+                ...(authToken && { Authorization: `Bearer ${authToken}` }),
+              },
             },
-          },
-        );
+          );
 
-        await pipeline(response.data, writer);
+          await pipeline(response.data, writer);
+        } catch (error) {
+          this.activePullGameId = null;
+          throw error;
+        }
 
         // macOS 앱 번들은 .app 내부에서 untar 해야 Contents/가 번들 내부로 배치됨
         const untarTargetPath = isMacBundleTarget ? "." : destPath;
@@ -607,14 +625,20 @@ class ipcHandle {
           untarTargetPath,
         ];
 
-        const child = spawn(this.desyncPath, desyncArgs, {
-          ...(isMacBundleTarget ? { cwd: destPath } : {}),
-          env: {
-            ...process.env,
-            DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
-            ...(authToken && { BITMAP_AUTH_TOKEN: authToken }),
-          },
-        });
+        let child: ChildProcess;
+        try {
+          child = spawn(this.desyncPath, desyncArgs, {
+            ...(isMacBundleTarget ? { cwd: destPath } : {}),
+            env: {
+              ...process.env,
+              DESYNC_ENABLE_PARSABLE_PROGRESS: "1",
+              ...(authToken && { BITMAP_AUTH_TOKEN: authToken }),
+            },
+          });
+        } catch (error) {
+          this.activePullGameId = null;
+          throw error;
+        }
         this.runningDesyncProcesses.add(child);
 
         let isCompleted = false;
@@ -690,12 +714,14 @@ class ipcHandle {
 
         child.on("error", (error) => {
           this.runningDesyncProcesses.delete(child);
+          this.activePullGameId = null;
           log.error("pull-game: failed to start desync", error);
           cleanupCaidxAndNotify(false);
         });
 
         child.on("close", (code) => {
           this.runningDesyncProcesses.delete(child);
+          this.activePullGameId = null;
           cleanupCaidxAndNotify(code === 0);
         });
       },
