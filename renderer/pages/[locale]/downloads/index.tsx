@@ -53,6 +53,9 @@ const SpeedChart = observer(({ manager }: { manager: GameInstallManager }) => {
 const DownloadManagerPage = observer(function () {
   const { store, queueManager } = useGameInstallManager();
   const { t } = useTranslation("DownloadLibrary");
+  const [lastActiveMgr, setLastActiveMgr] = useState<GameInstallManager | null>(
+    null,
+  );
 
   const visibleManagers = Array.from(store.managers.values()).filter(
     (mgr) => mgr.getShowInDownloadDrawer,
@@ -67,10 +70,29 @@ const DownloadManagerPage = observer(function () {
   const nextQueuedMgr = queuedGameIds.length
     ? visibleManagers.find((mgr) => mgr.getGameInfo.gameId === queuedGameIds[0])
     : undefined;
+  const summaryMgr = activeMgr ?? nextQueuedMgr ?? lastActiveMgr;
+
+  useEffect(() => {
+    if (activeMgr) {
+      setLastActiveMgr(activeMgr);
+    }
+  }, [activeMgr]);
+
+  useEffect(() => {
+    if (!lastActiveMgr) {
+      return;
+    }
+    const bStillVisible = visibleManagers.some(
+      (mgr) => mgr.getGameInfo.gameId === lastActiveMgr.getGameInfo.gameId,
+    );
+    if (!bStillVisible && !activeMgr && !nextQueuedMgr) {
+      setLastActiveMgr(null);
+    }
+  }, [activeMgr, nextQueuedMgr, lastActiveMgr, visibleManagers]);
 
   return (
     <Flex direction="column" gap="4" p="4">
-      {(activeMgr || nextQueuedMgr) && (
+      {summaryMgr && (
         <Card variant="surface" style={{ padding: "20px" }}>
           <Flex direction="column" gap="3">
             <Text size="1" color="gray" weight="bold" style={{ opacity: 0.6 }}>
@@ -78,16 +100,18 @@ const DownloadManagerPage = observer(function () {
                 ? activeMgr.getInstallState === EInstallState.Downloading
                   ? t("downloading")
                   : t("installing")
-                : t("queue")}
+                : nextQueuedMgr
+                  ? t("queue")
+                  : t("installing")}
             </Text>
             <Text size="5" weight="bold">
-              {(activeMgr || nextQueuedMgr)?.getGameTitle}
+              {summaryMgr.getGameTitle}
             </Text>
 
             <Flex gap="5" align="center" mt="2">
               <div style={{ flex: 1, minWidth: 0 }}>
-                {activeMgr ? (
-                  <SpeedChart manager={activeMgr} />
+                {activeMgr || lastActiveMgr ? (
+                  <SpeedChart manager={(activeMgr ?? lastActiveMgr)!} />
                 ) : (
                   <Flex
                     align="center"
@@ -110,7 +134,9 @@ const DownloadManagerPage = observer(function () {
                     {t("downloading-spped-current")}
                   </Text>
                   <Text size="4" weight="bold">
-                    {activeMgr ? `${activeMgr.getDownloadSpeedRealtime} Mbps` : "-"}
+                    {activeMgr || lastActiveMgr
+                      ? `${(activeMgr ?? lastActiveMgr)!.getDownloadSpeedRealtime} Mbps`
+                      : "-"}
                   </Text>
                 </Flex>
                 <Flex direction="column">
@@ -118,7 +144,9 @@ const DownloadManagerPage = observer(function () {
                     {t("downloading-eta")}
                   </Text>
                   <Text size="4" weight="bold">
-                    {activeMgr ? activeMgr.getDownloadEta : "-"}
+                    {activeMgr || lastActiveMgr
+                      ? (activeMgr ?? lastActiveMgr)!.getDownloadEta
+                      : "-"}
                   </Text>
                 </Flex>
                 <Flex direction="column" gap="1" mt="1">
@@ -127,10 +155,18 @@ const DownloadManagerPage = observer(function () {
                       {t("progress")}
                     </Text>
                     <Text size="1" weight="bold">
-                      {activeMgr ? `${Math.round(activeMgr.getDownloadProgress)}%` : "-"}
+                      {activeMgr || lastActiveMgr
+                        ? `${Math.round((activeMgr ?? lastActiveMgr)!.getDownloadProgress)}%`
+                        : "-"}
                     </Text>
                   </Flex>
-                  <Progress value={activeMgr ? activeMgr.getDownloadProgress : 0} />
+                  <Progress
+                    value={
+                      activeMgr || lastActiveMgr
+                        ? (activeMgr ?? lastActiveMgr)!.getDownloadProgress
+                        : 0
+                    }
+                  />
                 </Flex>
               </Flex>
             </Flex>
