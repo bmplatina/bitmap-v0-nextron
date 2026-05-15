@@ -600,8 +600,8 @@ class GameInstallManager {
   }
 }
 
-class GameDownloadQueueManager {
-  private static instance: GameDownloadQueueManager;
+class GameDownloadQueueMgr {
+  private static instance: GameDownloadQueueMgr;
   private queue: QueueTask[] = [];
   private currentTask: QueueTask | null = null;
   private bIsProcessing = false;
@@ -609,11 +609,11 @@ class GameDownloadQueueManager {
 
   private constructor() {}
 
-  public static getInstance(): GameDownloadQueueManager {
-    if (!GameDownloadQueueManager.instance) {
-      GameDownloadQueueManager.instance = new GameDownloadQueueManager();
+  public static getInstance(): GameDownloadQueueMgr {
+    if (!GameDownloadQueueMgr.instance) {
+      GameDownloadQueueMgr.instance = new GameDownloadQueueMgr();
     }
-    return GameDownloadQueueManager.instance;
+    return GameDownloadQueueMgr.instance;
   }
 
   /**
@@ -695,9 +695,7 @@ class GameDownloadQueueManager {
   }
 
   isQueuedOrRunning(gameId: number): boolean {
-    return (
-      this.currentTask?.gameId === gameId || this.taskByGameId.has(gameId)
-    );
+    return this.currentTask?.gameId === gameId || this.taskByGameId.has(gameId);
   }
 
   private processNext(): void {
@@ -740,5 +738,7 @@ interface QueueTask {
   promise: Promise<string>;
   resolve: (value: string) => void;
 }
+
+const GameDownloadQueueManager = GameDownloadQueueMgr.getInstance();
 
 export { GameInstallManager, GameDownloadQueueManager };
