@@ -1,5 +1,6 @@
 import { EInstallState } from "@/lib/types";
 import { GameInstallManager } from "@/lib/game-manager";
+import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { ContextMenu } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "next-i18next";
@@ -16,6 +17,11 @@ const GameContextMenu = observer(function ({
   children,
 }: GameContextMenuProps) {
   const { t } = useTranslation("DownloadLibrary");
+  const { queueManager } = useGameInstallManager();
+  const gameId = gameMgr.getGameInfo.gameId;
+  const bQueuedOnly =
+    gameMgr.getInstallState === EInstallState.NotInstalled &&
+    queueManager.getQueuePosition(gameId) !== null;
 
   async function removeApp() {
     await gameMgr.removeApp(window.bitmapApi);
@@ -55,10 +61,18 @@ const GameContextMenu = observer(function ({
           <></>
         )}
         {gameMgr.getInstallState !== EInstallState.Installed &&
-          gameMgr.getInstallState !== EInstallState.NotInstalled && (
+          (gameMgr.getInstallState !== EInstallState.NotInstalled ||
+            bQueuedOnly) && (
             <ContextMenu.Item
               color="green"
-              onClick={() => gameMgr.cancelDownload(window.bitmapApi)}
+              onClick={() => {
+                if (bQueuedOnly) {
+                  queueManager.removeFromQueue(gameId);
+                  removeCallback();
+                  return;
+                }
+                gameMgr.cancelDownload(window.bitmapApi);
+              }}
             >
               {t("cancel")}
             </ContextMenu.Item>
