@@ -1,7 +1,8 @@
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import GameInstallationCard from "@/components/games/game-installation-card";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
-import { EInstallState, GameInstallManager } from "@/lib/types";
+import { EInstallState } from "@/lib/types";
+import { GameInstallManager } from "@/lib/game-manager";
 import { Flex, Text, Card, Progress } from "@radix-ui/themes";
 import { Download } from "lucide-react";
 import { observer } from "mobx-react-lite";

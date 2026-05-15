@@ -5,7 +5,8 @@ import React, {
   ReactNode,
   useCallback,
 } from "react";
-import { GameInstallManager, GameWithSize } from "@/lib/types";
+import { GameWithSize } from "@/lib/types";
+import { GameInstallManager } from "@/lib/game-manager";
 import { getPlatform } from "./utils-client";
 import { makeAutoObservable, observable, type ObservableMap } from "mobx";
 

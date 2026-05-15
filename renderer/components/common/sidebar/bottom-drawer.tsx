@@ -1,7 +1,7 @@
 import { useTranslation } from "next-i18next";
 import GameInstallationCard from "@/components/games/game-installation-card";
 import { Download } from "lucide-react";
-import { EInstallState, GameInstallManager } from "@/lib/types";
+import { EInstallState } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import {
   Button,

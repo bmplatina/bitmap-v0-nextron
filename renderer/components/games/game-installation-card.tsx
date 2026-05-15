@@ -8,7 +8,8 @@ import {
   IconButton,
 } from "@radix-ui/themes";
 import Image from "next/image";
-import { EInstallState, GameInstallManager } from "@/lib/types";
+import { EInstallState } from "@/lib/types";
+import { GameInstallManager } from "@/lib/game-manager";
 import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { Download, X, Play, Trash2, Pause, Icon } from "lucide-react";

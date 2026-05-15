@@ -1,4 +1,5 @@
-import { EInstallState, GameInstallManager } from "@/lib/types";
+import { EInstallState } from "@/lib/types";
+import { GameInstallManager } from "@/lib/game-manager";
 import { ContextMenu } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "next-i18next";

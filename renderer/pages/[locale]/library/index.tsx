@@ -5,12 +5,8 @@ import { observer } from "mobx-react-lite";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
-import {
-  GameInstallManager,
-  GameWithSize,
-  GameRating,
-  EInstallState,
-} from "@/lib/types";
+import { GameWithSize, GameRating, EInstallState } from "@/lib/types";
+import { GameInstallManager } from "@/lib/game-manager";
 import { cn } from "@/lib/utils";
 import GameDetail from "@/components/games/game-details";
 import { getGameRatesById } from "@/lib/games";
