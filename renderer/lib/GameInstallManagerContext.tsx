@@ -6,12 +6,13 @@ import React, {
   useCallback,
 } from "react";
 import { GameWithSize } from "@/lib/types";
-import { GameInstallManager } from "@/lib/game-manager";
+import { GameDownloadQueueManager, GameInstallManager } from "@/lib/game-manager";
 import { getPlatform } from "./utils-client";
 import { makeAutoObservable, observable, type ObservableMap } from "mobx";
 
 interface GameInstallManagerContextType {
   bIsMac: boolean;
+  queueManager: typeof GameDownloadQueueManager;
   store: {
     managers: ObservableMap<number, GameInstallManager>;
     add: (manager: GameInstallManager) => void;
@@ -32,6 +33,7 @@ export function GameInstallManagerProvider({
   children: ReactNode;
 }) {
   const [bIsMac, setIsMac] = useState(false);
+  const queueManager = GameDownloadQueueManager;
 
   // MobX observable Map을 상태로 관리
   const [store] = useState(() =>
@@ -41,9 +43,11 @@ export function GameInstallManagerProvider({
         this.managers.set(manager.getGameInfo.gameId, manager);
       },
       remove(gameId: number) {
+        queueManager.removeFromQueue(gameId);
         this.managers.delete(gameId);
       },
       clear() {
+        queueManager.clearQueue();
         this.managers.clear();
       },
     }),
@@ -81,6 +85,7 @@ export function GameInstallManagerProvider({
     <GameInstallManagerContext.Provider
       value={{
         bIsMac,
+        queueManager,
         store,
         getManager,
       }}

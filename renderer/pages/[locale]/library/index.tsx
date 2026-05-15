@@ -61,7 +61,7 @@ const LibraryPage = observer(function () {
   const router = useRouter();
   const { t } = useTranslation("DownloadLibrary");
   const { gameId } = router.query;
-  const { bIsMac, store } = useGameInstallManager();
+  const { bIsMac, store, queueManager } = useGameInstallManager();
   const [gameManagers, setGameManagers] = React.useState<GameInstallManager[]>(
     [],
   );
@@ -118,10 +118,11 @@ const LibraryPage = observer(function () {
         allManagers.forEach((mgr) => {
           const title = mgr.getGameTitle;
           const state = mgr.getInstallState;
+          const bQueued = queueManager.isQueuedOrRunning(mgr.getGameInfo.gameId);
 
-          // 조건: NotInstalled가 아니고 중복되지 않은 제목만 표시
+          // 조건: 설치됨/진행중이거나 큐에 존재하고 중복되지 않은 제목만 표시
           if (
-            state !== EInstallState.NotInstalled &&
+            (state !== EInstallState.NotInstalled || bQueued) &&
             !uniqueByTitle.has(title)
           ) {
             uniqueByTitle.set(title, mgr);
@@ -151,7 +152,7 @@ const LibraryPage = observer(function () {
     function () {
       fetchInstallInfos();
     },
-    [bIsMac, store],
+    [bIsMac, store, queueManager],
   );
 
   React.useEffect(

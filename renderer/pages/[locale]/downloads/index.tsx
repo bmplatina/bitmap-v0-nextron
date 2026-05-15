@@ -51,7 +51,7 @@ const SpeedChart = observer(({ manager }: { manager: GameInstallManager }) => {
 });
 
 const DownloadManagerPage = observer(function () {
-  const { store } = useGameInstallManager();
+  const { store, queueManager } = useGameInstallManager();
   const { t } = useTranslation("DownloadLibrary");
 
   const visibleManagers = Array.from(store.managers.values()).filter(
@@ -63,24 +63,42 @@ const DownloadManagerPage = observer(function () {
       mgr.getInstallState === EInstallState.Downloading ||
       mgr.getInstallState === EInstallState.Extracting,
   );
+  const queuedGameIds = queueManager.getQueuedGameIds();
+  const nextQueuedMgr = queuedGameIds.length
+    ? visibleManagers.find((mgr) => mgr.getGameInfo.gameId === queuedGameIds[0])
+    : undefined;
 
   return (
     <Flex direction="column" gap="4" p="4">
-      {activeMgr && (
+      {(activeMgr || nextQueuedMgr) && (
         <Card variant="surface" style={{ padding: "20px" }}>
           <Flex direction="column" gap="3">
             <Text size="1" color="gray" weight="bold" style={{ opacity: 0.6 }}>
-              {activeMgr.getInstallState === EInstallState.Downloading
-                ? t("downloading")
-                : t("installing")}
+              {activeMgr
+                ? activeMgr.getInstallState === EInstallState.Downloading
+                  ? t("downloading")
+                  : t("installing")
+                : t("queue")}
             </Text>
             <Text size="5" weight="bold">
-              {activeMgr.getGameTitle}
+              {(activeMgr || nextQueuedMgr)?.getGameTitle}
             </Text>
 
             <Flex gap="5" align="center" mt="2">
               <div style={{ flex: 1, minWidth: 0 }}>
-                <SpeedChart manager={activeMgr} />
+                {activeMgr ? (
+                  <SpeedChart manager={activeMgr} />
+                ) : (
+                  <Flex
+                    align="center"
+                    justify="center"
+                    style={{ width: "100%", height: 80 }}
+                  >
+                    <Text size="2" color="gray">
+                      {t("queued")}
+                    </Text>
+                  </Flex>
+                )}
               </div>
               <Flex
                 direction="column"
@@ -92,7 +110,7 @@ const DownloadManagerPage = observer(function () {
                     {t("downloading-spped-current")}
                   </Text>
                   <Text size="4" weight="bold">
-                    {activeMgr.getDownloadSpeedRealtime} Mbps
+                    {activeMgr ? `${activeMgr.getDownloadSpeedRealtime} Mbps` : "-"}
                   </Text>
                 </Flex>
                 <Flex direction="column">
@@ -100,7 +118,7 @@ const DownloadManagerPage = observer(function () {
                     {t("downloading-eta")}
                   </Text>
                   <Text size="4" weight="bold">
-                    {activeMgr.getDownloadEta}
+                    {activeMgr ? activeMgr.getDownloadEta : "-"}
                   </Text>
                 </Flex>
                 <Flex direction="column" gap="1" mt="1">
@@ -109,10 +127,10 @@ const DownloadManagerPage = observer(function () {
                       {t("progress")}
                     </Text>
                     <Text size="1" weight="bold">
-                      {Math.round(activeMgr.getDownloadProgress)}%
+                      {activeMgr ? `${Math.round(activeMgr.getDownloadProgress)}%` : "-"}
                     </Text>
                   </Flex>
-                  <Progress value={activeMgr.getDownloadProgress} />
+                  <Progress value={activeMgr ? activeMgr.getDownloadProgress : 0} />
                 </Flex>
               </Flex>
             </Flex>

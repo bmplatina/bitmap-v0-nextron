@@ -110,7 +110,7 @@ const GameInstallDialogContent = observer(function ({
   gameMgr,
   openCallback,
 }: GameInstallDialogContentProps) {
-  const { store, bIsMac } = useGameInstallManager();
+  const { store, bIsMac, queueManager } = useGameInstallManager();
   const { t } = useTranslation("GamesView");
 
   const [bCreateShortcut, setCreateShortcut] = useState(true);
@@ -134,7 +134,8 @@ const GameInstallDialogContent = observer(function ({
     pushNewManager();
 
     try {
-      await gameMgr.downloadAndInstall(window.bitmapApi, bCreateShortcut);
+      await queueManager.enqueue(gameMgr, window.bitmapApi, bCreateShortcut);
+      openCallback(false);
     } catch (error: any) {
       console.error("Download and Install Error:", error);
     }
@@ -282,14 +283,19 @@ const GameInstallDialogContent = observer(function ({
           onClick={handleDownloadAndInstall}
           disabled={
             gameMgr.getInstallState === EInstallState.Downloading ||
-            gameMgr.getInstallState === EInstallState.Extracting
+            gameMgr.getInstallState === EInstallState.Extracting ||
+            queueManager.isQueuedOrRunning(gameMgr.getGameInfo.gameId)
           }
           size="2"
           variant="solid"
           color="blue"
           style={{ cursor: "pointer" }}
         >
-          <Text className={cn(pretendard.className)}>{t("install")}</Text>
+          <Text className={cn(pretendard.className)}>
+            {queueManager.isQueuedOrRunning(gameMgr.getGameInfo.gameId)
+              ? t("queued")
+              : t("install")}
+          </Text>
         </Button>
       </Flex>
     </Flex>

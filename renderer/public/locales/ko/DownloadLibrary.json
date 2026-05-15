@@ -6,6 +6,7 @@
   "downloading-eta": "남은 시간",
   "progress": "진행률",
   "queue": "대기",
+  "queued": "대기 중",
   "queue-empty": "대기 중인 다운로드가 없습니다.",
 
   "nothing-chosen": "사이드바에서 선택하여 자세한 내용을 확인하십시오.",

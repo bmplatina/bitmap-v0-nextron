@@ -18,7 +18,7 @@ import { useState } from "react";
 import LocalizedLink from "../localized-link";
 
 const BottomDrawer = observer(function () {
-  const { store } = useGameInstallManager();
+  const { store, queueManager } = useGameInstallManager();
   const { t } = useTranslation("GamesView");
   const [open, setOpen] = useState(false);
 
@@ -31,6 +31,8 @@ const BottomDrawer = observer(function () {
       mgr.getInstallState === EInstallState.Downloading ||
       mgr.getInstallState === EInstallState.Extracting,
   ).length;
+  const queuedCount = queueManager.getQueueLength;
+  const badgeCount = activeDownloadsCount + queuedCount;
 
   return (
     <Box className="fixed bottom-6 right-6 z-50">
@@ -52,9 +54,9 @@ const BottomDrawer = observer(function () {
             <Flex align="center" gap="2">
               <Download size={20} />
               <Text weight="medium">{t("downloads")}</Text>
-              {activeDownloadsCount > 0 && (
+              {badgeCount > 0 && (
                 <Badge color="blue" variant="solid" radius="full">
-                  {activeDownloadsCount}
+                  {badgeCount}
                 </Badge>
               )}
             </Flex>
@@ -107,7 +109,7 @@ const BottomDrawer = observer(function () {
                   >
                     <Download size={48} color="var(--gray-8)" />
                     <Text color="gray" size="2">
-                      다운로드 중인 항목이 없습니다.
+                      {t("queue-empty")}
                     </Text>
                   </Flex>
                 )}

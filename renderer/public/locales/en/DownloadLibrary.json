@@ -6,6 +6,7 @@
   "downloading-eta": "ETA",
   "progress": "Progress",
   "queue": "Queue",
+  "queued": "Queued",
   "queue-empty": "There are no pending downloads.",
 
   "nothing-chosen": "Select from sidebar to view details.",

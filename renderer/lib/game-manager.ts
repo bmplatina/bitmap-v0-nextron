@@ -607,7 +607,9 @@ class GameDownloadQueueMgr {
   private bIsProcessing = false;
   private taskByGameId = new Map<number, QueueTask>();
 
-  private constructor() {}
+  private constructor() {
+    makeAutoObservable(this, {}, { autoBind: true });
+  }
 
   public static getInstance(): GameDownloadQueueMgr {
     if (!GameDownloadQueueMgr.instance) {
@@ -692,6 +694,17 @@ class GameDownloadQueueMgr {
 
   getQueuedGameIds(): number[] {
     return this.queue.map((task) => task.gameId);
+  }
+
+  getQueuePosition(gameId: number): number | null {
+    if (this.currentTask?.gameId === gameId) {
+      return 0;
+    }
+    const queueIndex = this.queue.findIndex((task) => task.gameId === gameId);
+    if (queueIndex < 0) {
+      return null;
+    }
+    return queueIndex + 1;
   }
 
   isQueuedOrRunning(gameId: number): boolean {

@@ -25,7 +25,7 @@ const GameInstallationCard = observer(function ({
   manager,
 }: GameInstallationCardProps) {
   const router = useRouter();
-  const { bIsMac, store } = useGameInstallManager();
+  const { bIsMac, store, queueManager } = useGameInstallManager();
   const {
     t,
     i18n: { language: locale },
@@ -75,6 +75,12 @@ const GameInstallationCard = observer(function ({
     return "/downloads";
     // router.push(`/${locale}/library?gameId=${manager.getGameInfo.gameId}`);
   }
+
+  const queuePosition = queueManager.getQueuePosition(manager.getGameInfo.gameId);
+  const bIsQueued = queuePosition !== null && queuePosition > 0;
+  const bIsActiveDownload =
+    manager.getInstallState === EInstallState.Downloading ||
+    manager.getInstallState === EInstallState.Extracting;
 
   return (
     <GameContextMenu gameMgr={manager} removeCallback={removeManager}>
@@ -126,6 +132,10 @@ const GameInstallationCard = observer(function ({
                   {manager.getGameTitle}
                 </Text>
                 <Text as="div" size="2" color="gray">
+                  {bIsQueued &&
+                    t("queued-position", {
+                      position: queuePosition,
+                    })}
                   {manager.getInstallState === EInstallState.Downloading &&
                     t("downloading", {
                       progress: Math.round(manager.getDownloadProgress),
@@ -178,7 +188,8 @@ const GameInstallationCard = observer(function ({
 
             <Box mt="2">
               {/* Progress Bar */}
-              {manager.getInstallState !== EInstallState.Installed && (
+              {manager.getInstallState !== EInstallState.Installed &&
+                bIsActiveDownload && (
                 <Progress
                   value={
                     manager.getInstallState === EInstallState.Downloading
