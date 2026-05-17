@@ -48,7 +48,7 @@ interface Game {
   isApproved: boolean;
   uid: string;
   gameTitle: string;
-  gameLatestRevision: number;
+  gameLatestRevision: string;
   gamePlatformWindows: boolean;
   gamePlatformMac: boolean;
   gameEngine: string;
@@ -92,7 +92,7 @@ interface GameList extends Pick<
 
 interface GameInstallInfo extends GameWithSize {
   gameInstallationPath: string;
-  gameInstalledVersion: number;
+  gameInstalledVersion: string;
   gameInstallState: EInstallState;
 }
 

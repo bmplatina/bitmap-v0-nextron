@@ -27,7 +27,7 @@ class GameInstallManager {
   private downloadSpeedRealtime: number = 0;
   private downloadEta: string = "";
   private extractProgress: number = 0;
-  private currentVersion: number = 0;
+  private currentVersion: string = "1.0";
   private bIsUpdatable: boolean = false;
   private playtime: number = 0;
 
@@ -37,7 +37,7 @@ class GameInstallManager {
     isApproved: false,
     uid: "",
     gameTitle: "",
-    gameLatestRevision: 0,
+    gameLatestRevision: "1.0",
     gamePlatformWindows: false,
     gamePlatformMac: false,
     gameEngine: "",
@@ -67,7 +67,7 @@ class GameInstallManager {
   private isApproved: boolean = false;
   private uid: string = "";
   private gameTitle: string = "";
-  private gameLatestRevision: number = 0;
+  private gameLatestRevision: string = "1.0";
   private gamePlatformWindows: boolean = false;
   private gamePlatformMac: boolean = false;
   private gameEngine: string = "";
@@ -252,11 +252,11 @@ class GameInstallManager {
     return this.extractProgress;
   }
 
-  get getCurrentVersion(): number {
+  get getCurrentVersion(): string {
     return this.currentVersion;
   }
 
-  set setCurrentVersion(newCurrentVersion: number) {
+  set setCurrentVersion(newCurrentVersion: string) {
     this.currentVersion = newCurrentVersion;
   }
 
@@ -436,9 +436,7 @@ class GameInstallManager {
     try {
       const resolvedData =
         existingInfo ??
-        (await context.getGameInstallInfoByIndex(
-          this.getGameInfo.gameId,
-        )) ??
+        (await context.getGameInstallInfoByIndex(this.getGameInfo.gameId)) ??
         null;
       console.log("pushInstallState::resolvedData", resolvedData);
       const installInfo: GameInstallInfo = {
@@ -492,7 +490,7 @@ class GameInstallManager {
       console.log("pullInstallState::resolvedData", getResultLocal);
       let nextInstallationPath = DefaultInstallationPathLocal;
       let nextInstallState = EInstallState.NotInstalled;
-      let nextCurrentVersion = 0;
+      let nextCurrentVersion = "1.0";
 
       if (getResultLocal) {
         console.log(
@@ -510,7 +508,9 @@ class GameInstallManager {
         const literalInstallationPath = this.bIsMac
           ? `${nextInstallationPath}/${this.game.gameBinaryName}`
           : `${nextInstallationPath}\\${this.game.gameBinaryName}`;
-        const bIsValid = await BitmapAPI.checkPathValid(literalInstallationPath);
+        const bIsValid = await BitmapAPI.checkPathValid(
+          literalInstallationPath,
+        );
         console.log(
           `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
         );
