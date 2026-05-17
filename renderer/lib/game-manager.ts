@@ -358,7 +358,7 @@ class GameInstallManager {
       ? `${installRootPath}/${this.gameBinaryName}.app`
       : installRootPath;
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve) => {
       runInAction(() => {
         this.installState = EInstallState.Downloading;
       });
@@ -429,31 +429,33 @@ class GameInstallManager {
   /**
    * Insert or Update InstallState: GameInstallInfo to NeDB
    */
-  async pushInstallState(context: bitmapApi) {
+  async pushInstallState(
+    context: bitmapApi,
+    existingInfo?: GameInstallInfo | null,
+  ) {
     try {
-      const getResultLocal: Promise<GameInstallInfo> =
-        context.getGameInstallInfoByIndex(this.getGameInfo.gameId);
-      getResultLocal.then((resolvedData: GameInstallInfo) => {
-        console.log("pushInstallState::resolvedData", resolvedData);
-        let InstallInfo: GameInstallInfo = {
-          ...this.getGameInfo,
-          gameInstallationPath: this.installationPath ?? "",
-          gameInstallState: this.installState,
-          gameInstalledVersion: this.currentVersion,
-        };
+      const resolvedData =
+        existingInfo ??
+        (await context.getGameInstallInfoByIndex(
+          this.getGameInfo.gameId,
+        )) ??
+        null;
+      console.log("pushInstallState::resolvedData", resolvedData);
+      const installInfo: GameInstallInfo = {
+        ...this.getGameInfo,
+        gameInstallationPath: this.installationPath ?? "",
+        gameInstallState: this.installState,
+        gameInstalledVersion: this.currentVersion,
+      };
+      const payload = JSON.parse(JSON.stringify(installInfo));
 
-        const bUpdateExising: boolean = !!resolvedData;
-        console.log("pushInstallState::bUpdateExisting", bUpdateExising);
-        // If resolvedData valid, Update from the existing table, otherwise insert a new table
-        if (bUpdateExising) {
-          context.updateGameInstallInfo(
-            this.getGameInfo.gameId,
-            JSON.parse(JSON.stringify(InstallInfo)),
-          );
-        } else {
-          context.setGameInstallInfo(JSON.parse(JSON.stringify(InstallInfo)));
-        }
-      });
+      const bUpdateExising: boolean = !!resolvedData;
+      console.log("pushInstallState::bUpdateExisting", bUpdateExising);
+      if (bUpdateExising) {
+        await context.updateGameInstallInfo(this.getGameInfo.gameId, payload);
+        return;
+      }
+      await context.setGameInstallInfo(payload);
     } catch (error) {
       console.log(error);
     }
@@ -483,60 +485,62 @@ class GameInstallManager {
         this.defaultInstallationPath = DefaultInstallationPathLocal;
       });
 
-      const getResultLocal = await BitmapAPI.getGameInstallInfoByIndex(
+      const getResultLocal = (await BitmapAPI.getGameInstallInfoByIndex(
         this.game.gameId,
-      );
+      )) as GameInstallInfo | null;
 
       console.log("pullInstallState::resolvedData", getResultLocal);
-      // If getting from store succeed, allocate it to property
-      runInAction(() => {
-        if (!!getResultLocal) {
-          console.log(
-            "pullInstallState: If getting from store succeed, allocate it to property",
-            getResultLocal,
-          );
-          this.installState = getResultLocal.gameInstallState;
-          this.installationPath = getResultLocal.gameInstallationPath;
-          this.currentVersion = getResultLocal.gameInstalledVersion;
-          if (this.game.gameLatestRevision > this.currentVersion) {
-            this.bIsUpdatable = true;
-          }
-        }
-        // Otherwise, initialize property
-        else {
-          console.log("pullInstallState: Otherwise, initialize property");
-          this.installationPath = this.defaultInstallationPath;
-          this.installState = EInstallState.NotInstalled;
-          this.currentVersion = 0;
-        }
-      });
+      let nextInstallationPath = DefaultInstallationPathLocal;
+      let nextInstallState = EInstallState.NotInstalled;
+      let nextCurrentVersion = 0;
 
-      // Check is installation path valid
-      if (this.installationPath) {
-        const literalInstallationPath = this.bIsMac
-          ? `${this.installationPath}/${this.game.gameBinaryName}`
-          : `${this.installationPath}\\${this.game.gameBinaryName}`;
-
-        BitmapAPI.checkPathValid(literalInstallationPath).then(
-          (bIsValid: boolean) => {
-            runInAction(() => {
-              console.log(
-                `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
-              );
-              this.installState = bIsValid
-                ? EInstallState.Installed
-                : EInstallState.NotInstalled;
-            });
-          },
+      if (getResultLocal) {
+        console.log(
+          "pullInstallState: If getting from store succeed, allocate it to property",
+          getResultLocal,
         );
+        nextInstallationPath = getResultLocal.gameInstallationPath;
+        nextInstallState = getResultLocal.gameInstallState;
+        nextCurrentVersion = getResultLocal.gameInstalledVersion;
       } else {
-        runInAction(() => {
-          this.installState = EInstallState.NotInstalled;
-        });
+        console.log("pullInstallState: Otherwise, initialize property");
       }
 
-      // Sync installation state
-      this.pushInstallState(BitmapAPI);
+      if (nextInstallationPath) {
+        const literalInstallationPath = this.bIsMac
+          ? `${nextInstallationPath}/${this.game.gameBinaryName}`
+          : `${nextInstallationPath}\\${this.game.gameBinaryName}`;
+        const bIsValid = await BitmapAPI.checkPathValid(literalInstallationPath);
+        console.log(
+          `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
+        );
+        if (!bIsValid) {
+          nextInstallState = EInstallState.NotInstalled;
+        }
+      } else {
+        nextInstallState = EInstallState.NotInstalled;
+      }
+
+      const nextIsUpdatable =
+        nextInstallState === EInstallState.Installed &&
+        this.game.gameLatestRevision > nextCurrentVersion;
+
+      runInAction(() => {
+        this.installationPath = nextInstallationPath;
+        this.installState = nextInstallState;
+        this.currentVersion = nextCurrentVersion;
+        this.bIsUpdatable = nextIsUpdatable;
+      });
+
+      const bNeedsSync =
+        !!getResultLocal &&
+        (getResultLocal.gameInstallationPath !== nextInstallationPath ||
+          getResultLocal.gameInstallState !== nextInstallState ||
+          getResultLocal.gameInstalledVersion !== nextCurrentVersion);
+
+      if (bNeedsSync) {
+        await this.pushInstallState(BitmapAPI, getResultLocal);
+      }
     } catch (error) {
       console.log(error);
     }
