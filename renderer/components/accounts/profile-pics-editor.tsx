@@ -1,11 +1,8 @@
-"use client";
-
 import { useState, useRef, ChangeEvent } from "react";
 import { Avatar, Button, Flex, IconButton, Text } from "@radix-ui/themes";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "next-i18next";
-import { getApiLinkByPurpose } from "@/lib/utils";
 import { uploadProfilePics } from "@/lib/auth";
 
 interface UsernameProps {

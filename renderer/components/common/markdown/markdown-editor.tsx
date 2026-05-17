@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@radix-ui/themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, Edit } from "lucide-react";
 import { renderMarkdown } from "@/lib/utils";
@@ -58,22 +56,6 @@ export default function MarkdownEditor({
         </TabsList>
 
         <TabsContent value="edit" className="flex-1 mt-4">
-          {/* <Textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="마크다운 문법을 사용하여 게임 설명을 작성하세요...
-
-# 제목 1
-## 제목 2
-### 제목 3
-
-**굵은 글씨**
-*기울임 글씨*
-`코드`
-
-일반 텍스트..."
-            className="h-full resize-none font-mono text-sm"
-          /> */}
           <Editor
             height="100%"
             defaultLanguage="markdown" // 언어 마크다운 고정
@@ -109,9 +91,9 @@ export default function MarkdownEditor({
 
       <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
         <Button variant="outline" onClick={onCancel}>
-          취소
+          {t("cancel")}
         </Button>
-        <Button onClick={onSave}>저장</Button>
+        <Button onClick={onSave}>{t("apply")}</Button>
       </div>
     </div>
   );

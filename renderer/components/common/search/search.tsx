@@ -71,8 +71,9 @@ export default function Search({ className, placeholder, style }: SearchProps) {
   };
 
   const searchSummary = useMemo(() => {
-    if (!searchQuery.trim()) return "";
-    return `${searchResults.length}건의 결과`;
+    if (!searchQuery.trim()) return t("search-no-results");
+
+    return t("search-results", { results: searchResults.length });
   }, [searchQuery, searchResults]);
 
   useEffect(() => {

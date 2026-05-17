@@ -17,6 +17,7 @@
   "signin": "Sign In",
   "signout": "Sign Out",
   "search-no-results": "No search results found.",
+  "search-results": "{{results}} results found",
   "search-toggle": "Search Toggle",
   "bitmap-server-inaccessible": "Bitmap Store couldn't reach to server. Please check your internet connection.",
   "data-not-processable": "Bitmap couldn't process the data.",

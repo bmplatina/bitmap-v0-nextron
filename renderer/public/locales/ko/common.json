@@ -17,6 +17,7 @@
   "signin": "로그인",
   "signout": "로그아웃",
   "search-no-results": "검색 결과가 없습니다.",
+  "search-results": "검색 결과 {{results}}건",
   "search-toggle": "검색 토글",
   "bitmap-server-inaccessible": "서버에 접근할 수 없습니다. 인터넷 연결을 확인하십시오.",
   "data-not-processable": "데이터를 처리하지 못했습니다.",

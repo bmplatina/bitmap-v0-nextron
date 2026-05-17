@@ -68,12 +68,10 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
         <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Clock className="h-5 w-5" />
-            <span className="font-medium">
-              이 게임은 현재 승인 대기 중입니다.
-            </span>
+            <span className="font-medium">{t("pending-title")}</span>
           </div>
           <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-            관리자 검토 후 정식 게임 라이브러리에 추가됩니다.
+            {t("pending-desc")}
           </p>
         </div>
       )}
@@ -98,13 +96,14 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
               />
             </div>
           </Suspense>
+          <div className="mt-6 space-y-4 [&>*:first-child]:!mt-0 [&>*:nth-child(2)]:!mt-0">
+            <GameInteractableButtons game={game} />
 
-          <GameInteractableButtons game={game} />
-
-          <AgeRatingImage
-            ageRating={game.ageRating}
-            ratingContentDescriptors={game.ratingContentDescriptors}
-          />
+            <AgeRatingImage
+              ageRating={game.ageRating}
+              ratingContentDescriptors={game.ratingContentDescriptors}
+            />
+          </div>
         </div>
 
         {/* 오른쪽 컬럼 - 상세 정보 */}
