@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { makeAutoObservable, runInAction } from "mobx";
 import { getGamePlaytime, setGamePlaytime, updateGamePlaytime } from "./games";
+import semver from "semver";
 
 class GameInstallManager {
   constructor(isPlatformMac: boolean) {
@@ -27,7 +28,7 @@ class GameInstallManager {
   private downloadSpeedRealtime: number = 0;
   private downloadEta: string = "";
   private extractProgress: number = 0;
-  private currentVersion: string = "1.0";
+  private currentVersion: string = "0.0.0";
   private bIsUpdatable: boolean = false;
   private playtime: number = 0;
 
@@ -37,7 +38,7 @@ class GameInstallManager {
     isApproved: false,
     uid: "",
     gameTitle: "",
-    gameLatestRevision: "1.0",
+    gameLatestRevision: "0.0.0",
     gamePlatformWindows: false,
     gamePlatformMac: false,
     gameEngine: "",
@@ -67,7 +68,7 @@ class GameInstallManager {
   private isApproved: boolean = false;
   private uid: string = "";
   private gameTitle: string = "";
-  private gameLatestRevision: string = "1.0";
+  private gameLatestRevision: string = "0.0.0";
   private gamePlatformWindows: boolean = false;
   private gamePlatformMac: boolean = false;
   private gameEngine: string = "";
@@ -341,6 +342,25 @@ class GameInstallManager {
     return `${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
   }
 
+  private normalizeSemver(version: string): string | null {
+    if (!version) {
+      return null;
+    }
+    return semver.valid(version) ?? semver.valid(semver.coerce(version));
+  }
+
+  private isServerVersionNewer(installedVersion: string): boolean {
+    const latestVersion = this.normalizeSemver(this.game.gameLatestRevision);
+    if (!latestVersion) {
+      return false;
+    }
+    const normalizedInstalledVersion = this.normalizeSemver(installedVersion);
+    if (!normalizedInstalledVersion) {
+      return true;
+    }
+    return semver.gt(latestVersion, normalizedInstalledVersion);
+  }
+
   /**
    * Download and Install Game. Do not call this function directly.
    * @param bCreateShortcut boolean to create a shortcut upon install
@@ -490,7 +510,7 @@ class GameInstallManager {
       console.log("pullInstallState::resolvedData", getResultLocal);
       let nextInstallationPath = DefaultInstallationPathLocal;
       let nextInstallState = EInstallState.NotInstalled;
-      let nextCurrentVersion = "1.0";
+      let nextCurrentVersion = "0.0.0";
 
       if (getResultLocal) {
         console.log(
@@ -523,7 +543,7 @@ class GameInstallManager {
 
       const nextIsUpdatable =
         nextInstallState === EInstallState.Installed &&
-        this.game.gameLatestRevision > nextCurrentVersion;
+        this.isServerVersionNewer(nextCurrentVersion);
 
       runInAction(() => {
         this.installationPath = nextInstallationPath;
