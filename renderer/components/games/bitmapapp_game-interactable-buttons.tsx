@@ -418,18 +418,35 @@ const GameInteractableButtons = observer(function ({
         {/* When is installed */}
         {gameInstallManager.getInstallState === EInstallState.Installed && (
           <>
-            <Button
-              size="3"
-              className="w-full"
-              onClick={() => gameInstallManager.openApp(window.bitmapApi)}
-            >
-              <Flex gap="2" align="center" justify="center" width="100%">
-                <Play size={18} fill="currentColor" />
-                <Text size="2" weight="bold">
-                  {t("play")}
-                </Text>
-              </Flex>
-            </Button>
+            {gameInstallManager.getIsUpdatable ? (
+              <Button
+                size="3"
+                className="w-full"
+                onClick={() =>
+                  gameInstallManager.downloadAndInstall(window.bitmapApi, false)
+                }
+              >
+                <Flex gap="2" align="center" justify="center" width="100%">
+                  <Play size={18} fill="currentColor" />
+                  <Text size="2" weight="bold">
+                    {t("update")}
+                  </Text>
+                </Flex>
+              </Button>
+            ) : (
+              <Button
+                size="3"
+                className="w-full"
+                onClick={() => gameInstallManager.openApp(window.bitmapApi)}
+              >
+                <Flex gap="2" align="center" justify="center" width="100%">
+                  <Play size={18} fill="currentColor" />
+                  <Text size="2" weight="bold">
+                    {t("play")}
+                  </Text>
+                </Flex>
+              </Button>
+            )}
 
             <Button
               size="3"

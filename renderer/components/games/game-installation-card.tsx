@@ -57,6 +57,16 @@ const GameInstallationCard = observer(function ({
     }
   }
 
+  function updateApp() {
+    if (manager) {
+      console.log(`Requesting to update ${manager.getGameTitle}`);
+      manager.setIsMac = bIsMac;
+      manager.downloadAndInstall(window.bitmapApi, false);
+    } else {
+      console.log(`Failed to open. Game install manager is not valid.`);
+    }
+  }
+
   function removeApp() {
     if (manager) {
       console.log(`Requesting to remove ${manager.getGameTitle}`);
@@ -76,7 +86,9 @@ const GameInstallationCard = observer(function ({
     // router.push(`/${locale}/library?gameId=${manager.getGameInfo.gameId}`);
   }
 
-  const queuePosition = queueManager.getQueuePosition(manager.getGameInfo.gameId);
+  const queuePosition = queueManager.getQueuePosition(
+    manager.getGameInfo.gameId,
+  );
   const bIsQueued = queuePosition !== null && queuePosition > 0;
   const bIsActiveDownload =
     manager.getInstallState === EInstallState.Downloading ||
@@ -190,24 +202,32 @@ const GameInstallationCard = observer(function ({
               {/* Progress Bar */}
               {manager.getInstallState !== EInstallState.Installed &&
                 bIsActiveDownload && (
-                <Progress
-                  value={
-                    manager.getInstallState === EInstallState.Downloading
-                      ? Math.round(manager.getDownloadProgress)
-                      : manager.getExtractProgress
-                  }
-                  size="2"
-                  style={{ height: "6px" }}
-                />
-              )}
+                  <Progress
+                    value={
+                      manager.getInstallState === EInstallState.Downloading
+                        ? Math.round(manager.getDownloadProgress)
+                        : manager.getExtractProgress
+                    }
+                    size="2"
+                    style={{ height: "6px" }}
+                  />
+                )}
 
               {/* Action Buttons for Installed State */}
               {manager.getInstallState === EInstallState.Installed && (
                 <Flex gap="2" mt="2">
-                  <Button size="2" onClick={openApp} disabled={!manager}>
-                    <Play size={16} className="mr-1" />
-                    {t("play")}
-                  </Button>
+                  {manager.getIsUpdatable ? (
+                    <Button size="2" onClick={updateApp} disabled={!manager}>
+                      <Play size={16} className="mr-1" />
+                      {t("update")}
+                    </Button>
+                  ) : (
+                    <Button size="2" onClick={openApp} disabled={!manager}>
+                      <Play size={16} className="mr-1" />
+                      {t("play")}
+                    </Button>
+                  )}
+
                   <Button
                     size="2"
                     variant="soft"
