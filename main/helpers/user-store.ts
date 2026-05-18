@@ -20,7 +20,7 @@ export const userStore = new Store<Settings>({
   name: "com.prodbybitmap.esd",
   defaults: {
     token: "",
-    screenMode: "auto",
+    screenMode: "system",
     locale: "en",
     defaultGamePath,
   },
