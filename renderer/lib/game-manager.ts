@@ -497,7 +497,7 @@ class GameInstallManager {
       console.log("getDefaultInstallPath: ", defaultPath);
       let DefaultInstallationPathLocal = this.bIsMac
         ? `${defaultPath}/${this.game.gameBinaryName}`
-        : `${defaultPath}\\BitmapApps\\${this.game.gameBinaryName}`;
+        : `${defaultPath}\\${this.game.gameBinaryName}`;
 
       runInAction(() => {
         this.defaultInstallationPath = DefaultInstallationPathLocal;
