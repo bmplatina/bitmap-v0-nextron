@@ -49,8 +49,8 @@ function GameEulaDialogContent({
     function () {
       async function getLicense() {
         try {
-          const eula = await getEula(window.bitmapApi, eulaName);
-          setEula(locale === "en" ? eula.en : eula.ko);
+          const fetchedEula = await getEula(window.bitmapApi, eulaName);
+          setEula(locale === "en" ? fetchedEula.en : fetchedEula.ko);
           console.log(`EULANAME: ${eulaName}, CONTENT: ${eula}`);
         } catch (error: any) {
           console.log(`EULANAME: ${eulaName}, ERROR: `, error);
@@ -545,7 +545,7 @@ const GameInteractableButtons = observer(function ({
                   </Button>
                 )}
               </Dialog.Trigger>
-              <Dialog.Content className="apple-blur !bg-transparent border border-black/10 dark:border-white/10 shadow-2xl sm:max-w-[425px] !rounded-2xl !p-6">
+              <Dialog.Content className="apple-blur !bg-white/90 dark:!bg-transparent border border-black/10 dark:border-white/10 shadow-2xl sm:max-w-[425px] !rounded-2xl !p-6">
                 {!bIsEulaAccepted ? (
                   <GameEulaDialogContent
                     eulaName={gameInstallManager.getGameInfo.customEula}
