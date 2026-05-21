@@ -75,16 +75,14 @@ export default function SettingsPage() {
 function GeneralSettings({ t }: i18nProp) {
   const router = useRouter();
   const { i18n } = useTranslation();
+  const locale = (router.query.locale as string) || i18n.language || "en";
 
   async function handleLocaleChange(nextLocale: string) {
     // i18next 인스턴스에 언어 변경을 직접 지시하여 즉각적인 DOM 리렌더링 유도
     await i18n.changeLanguage(nextLocale);
 
     // Next.js 라우터 경로도 업데이트 (향후 새로고침이나 Link 이동을 위해)
-    const newAsPath = router.asPath.replace(
-      `/${i18n.language}`,
-      `/${nextLocale}`,
-    );
+    const newAsPath = router.asPath.replace(`/${locale}`, `/${nextLocale}`);
     router.replace(
       {
         pathname: router.pathname,
@@ -97,10 +95,10 @@ function GeneralSettings({ t }: i18nProp) {
 
   useEffect(
     function () {
-      const newLocale: "ko" | "en" = i18n.language === "ko" ? "ko" : "en";
+      const newLocale: "ko" | "en" = locale === "ko" ? "ko" : "en";
       window.electronTools.setLocale(newLocale);
     },
-    [i18n.language],
+    [locale],
   );
 
   useEffect(() => {
@@ -119,7 +117,7 @@ function GeneralSettings({ t }: i18nProp) {
         </CardHeader>
         <CardContent>
           <Select.Root
-            defaultValue={i18n.language || "en"}
+            value={locale}
             onValueChange={handleLocaleChange}
           >
             <Select.Trigger />
