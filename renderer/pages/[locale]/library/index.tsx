@@ -74,13 +74,13 @@ const LibraryPage = observer(function () {
 
   function setGameDetail(newGameId: number) {
     setSelectedGameId(newGameId);
-    // getGameById(window.bitmapApi, newGameId.toString()).then((payload) => {
-    //   if (payload) setLibraryViewedGameInfo(payload);
-    // });
-    const gameInfo = gameManagers.find(
-      (mgr) => mgr.getGameInfo.gameId === newGameId,
-    )?.getGameInfo;
-    setLibraryViewedGameInfo(gameInfo);
+
+    // Read from the MobX store directly (source of truth) instead of
+    // relying on the gameManagers React state, which may be stale in
+    // closures captured by useEffect.
+    const manager = store.managers.get(newGameId);
+    const gameInfo = manager?.getGameInfo;
+    setLibraryViewedGameInfo(gameInfo ? { ...gameInfo } : undefined);
     getGameRatesById(window.bitmapApi, newGameId.toString()).then((payload) => {
       if (payload) setLibraryViewedGameRating(payload);
     });
@@ -161,15 +161,24 @@ const LibraryPage = observer(function () {
         setGameDetail(Number(gameId));
       }
     },
-    [gameId],
+    [gameId, gameManagers],
   );
 
+  // When gameManagers updates and a game is currently selected, re-sync
+  // the detail view so it reflects the latest manager data (e.g. after
+  // fetchInstallInfos re-creates managers).
   React.useEffect(
     function () {
       if (gameManagers.length === 0) setIsSidebarOpen(false);
       // 설치된 게임이 있고 선택된 게임이 없으며 URL에 gameId가 없을 때 첫 번째 게임 자동 선택
       if (gameManagers.length > 0 && !selectedGameId && !gameId) {
         setGameDetail(gameManagers[0].getGameInfo.gameId);
+      } else if (gameManagers.length > 0 && selectedGameId && !gameId) {
+        // 매니저가 재생성되었을 수 있으므로 현재 선택된 게임의 정보를 갱신
+        const currentManager = store.managers.get(selectedGameId);
+        if (currentManager) {
+          setLibraryViewedGameInfo({ ...currentManager.getGameInfo });
+        }
       }
     },
     [gameManagers, selectedGameId, gameId],

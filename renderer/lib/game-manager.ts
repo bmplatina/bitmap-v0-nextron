@@ -172,7 +172,9 @@ class GameInstallManager {
       };
     }
 
-    return this.game;
+    // Return a shallow copy to prevent external consumers from holding
+    // a direct reference to the internal MobX observable object.
+    return { ...this.game };
   }
 
   get getIsDownloadingOrInstallingState(): boolean {
