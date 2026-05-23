@@ -17,6 +17,7 @@
   "all-releases-desc": "You can check and download all releases of the Bitmap app below.",
   "latest-release-note-desc": "Check the changelog for the latest Bitmap app release.",
   "download": "Download",
+  "update": "Update",
   "bitmap-app-update": "Updating Bitmap App…",
   "bitmap-app-update-now": "Restart and Install Now",
   "dismiss": "Dismiss"

@@ -63,6 +63,7 @@ export function makeStaticProperties(namespaces: i18nNamespaces[] = []) {
     "Notifications",
     "Footer",
     "Settings",
+    "BitmapApp",
   ];
   return async function (context: any) {
     return {
