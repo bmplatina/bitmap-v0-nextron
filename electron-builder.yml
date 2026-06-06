@@ -42,6 +42,8 @@ mac:
     - target: zip
       arch: [arm64]
   icon: resources/Bitmap_IconComposer.icon
+  extendInfo:
+    CFBundleAllowMixedLocalizations: true
   publish:
     # an object provider for github with additional options
     - provider: github

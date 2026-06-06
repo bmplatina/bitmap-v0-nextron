@@ -21,6 +21,7 @@ import {
   formatBytesToGB,
 } from "@/lib/utils-client";
 import { GameInstallManagerProvider } from "@/lib/GameInstallManagerContext";
+import MenuBarListener from "@/components/common/sidebar/menubar-listener";
 import DeeplinkHandler from "@/lib/DeeplinkHandler";
 import { useRouter } from "next/router";
 
@@ -54,6 +55,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
       <GameInstallManagerProvider>
         <NextToploader showSpinner={false} />
         <AuthProvider>
+          <MenuBarListener />
           <DeeplinkHandler />
           <ThemeProvider
             attribute="class"

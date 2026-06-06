@@ -43,6 +43,21 @@ export interface tools {
   onUpdateStatus: (cb: (status: UpdateStatus) => void) => void;
   onDownloadProgress: (cb: (progress: UpdateProgress) => void) => void;
   quitAndInstall: () => void;
+
+  onOpenHome: (callback: () => void) => () => void;
+  onOpenGames: (callback: () => void) => () => void;
+
+  onOpenDownloads: (callback: () => void) => () => void;
+  onOpenLibrary: (callback: () => void) => () => void;
+
+  onLogout: (callback: () => void) => () => void;
+  onOpenAccountSettings: (callback: () => void) => () => void;
+  onOpenPublisherDashboard: (callback: () => void) => () => void;
+  onLogin: (callback: () => void) => () => void;
+  onSignup: (callback: () => void) => () => void;
+
+  onOpenAbout: (callback: () => void) => () => void;
+  onOpenSettings: (callback: () => void) => () => void;
 }
 
 export interface bitmapApi {

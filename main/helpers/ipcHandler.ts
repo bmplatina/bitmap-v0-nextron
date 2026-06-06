@@ -15,6 +15,7 @@ import { exec, spawn } from "child_process";
 import type { ChildProcess } from "child_process";
 import log from "./logger";
 import updater from "./auto-updater";
+import setMenu from "./menu-bar";
 import { pipeline } from "stream/promises";
 import getFoldersize from "get-folder-size";
 
@@ -200,6 +201,11 @@ class ipcHandle {
       }
     });
 
+    ipcMain.on("app-restart", async (_event) => {
+      app.relaunch();
+      app.exit(0);
+    });
+
     ipcMain.handle("is-maximized", (event) => {
       const mainWindow = BrowserWindow.fromWebContents(event.sender);
       return mainWindow.isMaximized();
@@ -225,8 +231,10 @@ class ipcHandle {
       return userStore.get("locale");
     });
 
-    ipcMain.handle("set-locale", (_event, locale: "ko" | "en") => {
+    ipcMain.handle("set-locale", (event, locale: "ko" | "en") => {
       userStore.set("locale", locale);
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      setMenu(mainWindow);
     });
 
     ipcMain.handle("open-external", async (_event, url: string) => {
@@ -451,8 +459,10 @@ class ipcHandle {
       return userStore.get("token");
     });
 
-    ipcMain.handle("set-token", (_event, token: string) => {
+    ipcMain.handle("set-token", (event, token: string) => {
       userStore.set("token", token);
+      const mainWindow = BrowserWindow.fromWebContents(event.sender);
+      setMenu(mainWindow);
     });
 
     ipcMain.handle("get-screen-mode", (_event): string => {

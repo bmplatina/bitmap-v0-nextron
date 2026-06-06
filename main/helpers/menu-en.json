@@ -1,0 +1,28 @@
+{
+  "AppMenu": {
+    "label": "Bitmap",
+    "about": "About Bitmap App…",
+    "preferences": "Preferences",
+    "quit": "Quit Bitmap App"
+  },
+  "Downloads": {
+    "label": "Downloads",
+    "manage": "Manage Downloads",
+    "library": "Library"
+  },
+  "Accounts": {
+    "label": "Bitmap ID",
+    "login": "Sign In",
+    "signup": "Sign Up",
+    "logout": "Sign Out",
+    "accountSettings": "Open Account Settings…",
+    "publisherDashboard": "Open Publisher Dashboard…"
+  },
+  "Sidebar": {
+    "label": "Bitmap",
+    "back": "Back",
+    "search": "Search",
+    "home": "Bitmap",
+    "games": "Games"
+  }
+}

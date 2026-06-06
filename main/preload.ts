@@ -75,6 +75,87 @@ const electronTools = {
 
   // 업데이트 설치 명령 전달
   quitAndInstall: () => ipcRenderer.send("quit-and-install"),
+
+  onOpenHome: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-home", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-home", subscription);
+    };
+  },
+  onOpenGames: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-games", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-games", subscription);
+    };
+  },
+
+  onOpenDownloads: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-downloads", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-downloads", subscription);
+    };
+  },
+  onOpenLibrary: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-library", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-library", subscription);
+    };
+  },
+
+  onLogout: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-id-logout", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-id-logout", subscription);
+    };
+  },
+  onOpenAccountSettings: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-account-settings", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-account-settings", subscription);
+    };
+  },
+  onOpenPublisherDashboard: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-publisher-dashboard", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-publisher-dashboard", subscription);
+    };
+  },
+  onLogin: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-id-login", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-id-login", subscription);
+    };
+  },
+  onSignup: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-id-signup", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-id-signup", subscription);
+    };
+  },
+
+  onOpenAbout: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-about", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-about", subscription);
+    };
+  },
+  onOpenSettings: (callback: () => void) => {
+    const subscription = () => callback();
+    ipcRenderer.on("bitmap-settings", subscription);
+    return () => {
+      ipcRenderer.removeListener("bitmap-settings", subscription);
+    };
+  },
 };
 
 const bitmapApi = {

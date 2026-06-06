@@ -8,9 +8,13 @@ import { login as loginPost } from "@/lib/auth";
 import { useRouter } from "next/router";
 import LocalizedLink from "@/components/common/localized-link";
 import { useTranslation } from "next-i18next";
+import { openExternal } from "@/lib/utils-client";
 
 export default function LoginElements() {
-  const { t } = useTranslation("Authentication");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("Authentication");
   const router = useRouter();
 
   const [email, setEmail] = useState<string>("");
@@ -19,6 +23,10 @@ export default function LoginElements() {
   const [bIsRequestingLogin, setIsRequestingLogin] = useState<boolean>(false);
   const [loginFailMessage, setLoginFailMsg] = useState<string>("");
   const { isLoading, bIsLoggedIn, login } = useAuth();
+
+  function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    openExternal(event, window.electronTools);
+  }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -90,7 +98,10 @@ export default function LoginElements() {
         {bIsRequestingLogin ? <Spinner /> : <Text>{t("login")}</Text>}
       </Button>
 
-      <LocalizedLink href="/auth/signup">
+      <LocalizedLink
+        href={`https://prodbybitmap.com/${locale}/auth/signup`}
+        onClick={openExternalLink}
+      >
         <Button variant="ghost">{t("register")}</Button>
       </LocalizedLink>
 

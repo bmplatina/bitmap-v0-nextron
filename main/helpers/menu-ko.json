@@ -1,0 +1,28 @@
+{
+  "AppMenu": {
+    "label": "Bitmap",
+    "about": "Bitmap App에 관하여⋯",
+    "preferences": "설정",
+    "quit": "Bitmap App 종료"
+  },
+  "Downloads": {
+    "label": "다운로드",
+    "manage": "다운로드 관리",
+    "library": "라이브러리"
+  },
+  "Accounts": {
+    "label": "Bitmap ID",
+    "login": "로그인",
+    "signup": "가입",
+    "logout": "로그아웃",
+    "accountSettings": "계정 설정⋯",
+    "publisherDashboard": "퍼블리셔 대시보드⋯"
+  },
+  "Sidebar": {
+    "label": "Bitmap",
+    "back": "뒤로",
+    "search": "검색",
+    "home": "Bitmap",
+    "games": "게임"
+  }
+}

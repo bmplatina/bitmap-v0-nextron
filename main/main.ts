@@ -3,7 +3,7 @@ import path, { join } from "path";
 import {
   app,
   BrowserWindow,
-  dialog,
+  Menu,
   ipcMain,
   protocol,
   session,
@@ -230,6 +230,8 @@ const getMainWindowWhenReady = async () => {
   );
 
   ipcImplement.initializeIpc();
+
+  helpers.setMenu(mainWindow)
 
   console.log(
     "helpers.log file location:",
