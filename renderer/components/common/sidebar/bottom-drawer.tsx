@@ -67,7 +67,7 @@ const BottomDrawer = observer(function () {
           side="top"
           align="end"
           sideOffset={16}
-          className="apple-blur"
+          className="bg-black/5 dark:bg-white/10 p-5"
           style={{
             width: "400px",
             padding: 0,

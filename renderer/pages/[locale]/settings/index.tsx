@@ -223,20 +223,20 @@ function DisplaySettings({ t }: i18nProp) {
   const themeOptions = [
     {
       value: "light",
-      label: "screen-mode-light",
-      description: "screen-mode-light-desc",
+      label: "Settings:screen-mode-light",
+      description: "Settings:screen-mode-light-desc",
       icon: <Sun className="h-4 w-4" />,
     },
     {
       value: "system",
-      label: "screen-mode-system-default",
-      description: "screen-mode-system-default-desc",
+      label: "Settings:screen-mode-system-default",
+      description: "Settings:screen-mode-system-default-desc",
       icon: <Monitor className="h-4 w-4" />,
     },
     {
       value: "dark",
-      label: "screen-mode-dark",
-      description: "screen-mode-dark-desc",
+      label: "Settings:screen-mode-dark",
+      description: "Settings:screen-mode-dark-desc",
       icon: <Moon className="h-4 w-4" />,
     },
   ];
