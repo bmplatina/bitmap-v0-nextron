@@ -118,7 +118,10 @@ const getMainWindowWhenReady = async () => {
     },
   });
 
-  const locale = helpers.userStore.get("locale", i18next.i18n.defaultLocale);
+  const localeRegExp: RegExp = /[-_].*$/;
+  const systemLocale = app.getSystemLocale().replace(localeRegExp, "");
+
+  const locale = helpers.userStore.get("locale", systemLocale);
   helpers.log.info("Using locale:", locale);
 
   // iframe 내부에서 열리는 외부 링크 (유튜브 제목 등)를 기본 브라우저로 리디렉션
@@ -231,7 +234,7 @@ const getMainWindowWhenReady = async () => {
 
   ipcImplement.initializeIpc();
 
-  helpers.setMenu(mainWindow)
+  helpers.setMenu(mainWindow);
 
   console.log(
     "helpers.log file location:",
