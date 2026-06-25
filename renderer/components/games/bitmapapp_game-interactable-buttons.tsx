@@ -204,22 +204,24 @@ const GameInstallDialogContent = observer(function ({
           {gameMgr.getGameInfo.size[bIsMac ? 1 : 0]} GB
         </Text>
       </Flex>
+
       <Separator />
 
-      <Flex as="span" gap="2">
-        <Checkbox
-          size="1"
-          checked={bCreateShortcut}
-          onCheckedChange={(checked) => setCreateShortcut(checked as boolean)}
-          disabled={
-            gameMgr.getInstallState === EInstallState.Downloading ||
-            gameMgr.getInstallState === EInstallState.Extracting
-          }
-        />
-        <Text as="label" size="2" className={cn(pretendard.className)}>
+      <Text as="label" size="2" className={cn(pretendard.className)}>
+        <Flex as="span" gap="2">
+          <Checkbox
+            size="1"
+            checked={bCreateShortcut}
+            onCheckedChange={(checked) => setCreateShortcut(checked as boolean)}
+            disabled={
+              gameMgr.getInstallState === EInstallState.Downloading ||
+              gameMgr.getInstallState === EInstallState.Extracting
+            }
+          />
+
           {t("add-shortcut")}
-        </Text>
-      </Flex>
+        </Flex>
+      </Text>
 
       <Box className={cn(pretendard.className)}>
         <Text as="div" size="2" weight="bold" color="gray" mb="2">
