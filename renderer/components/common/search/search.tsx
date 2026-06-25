@@ -62,7 +62,7 @@ export default function Search({ className, placeholder, style }: SearchProps) {
         );
       } else {
         // Game 인가?
-        router.push(`/games/detail?id=${firstResult.gameId}`);
+        router.push(`/${locale}/games/detail?id=${firstResult.gameId}`);
       }
 
       setIsSearchOpen(false);
