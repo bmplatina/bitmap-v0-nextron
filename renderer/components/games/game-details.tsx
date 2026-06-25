@@ -182,13 +182,13 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
                       imageUriRegExp.test(url) && (
                         <div
                           key={index}
-                          className="shrink-0 w-[85vw] md:w-[500px] aspect-video relative rounded-lg overflow-hidden bg-muted"
+                          className="shrink-0 w-[85vw] md:w-[500px] aspect-video relative rounded-lg overflow-hidden bg-black"
                         >
                           <Image
                             src={url}
                             alt={`${game.gameTitle} screenshot ${index + 1}`}
                             fill
-                            className="object-cover"
+                            className="object-contain"
                           />
                         </div>
                       ),
