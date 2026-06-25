@@ -30,6 +30,7 @@ import {
 } from "@radix-ui/themes";
 import { submitGameRate, deleteGameRate } from "@/lib/games";
 import type { GameRating, GameRatingRequest } from "@/lib/types";
+import { cn, pretendard } from "@/lib/utils";
 import { Star } from "lucide-react";
 
 type GameIdProps = {
@@ -85,7 +86,7 @@ export default function GameRateSubmitter({
           <Popover>
             <PopoverTrigger asChild>
               <Button>
-                <Text>{t("rate-edit")}</Text>
+                <Text className={pretendard.className}>{t("rate-edit")}</Text>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[calc(100vw-32px)] sm:w-[480px]">
@@ -98,18 +99,26 @@ export default function GameRateSubmitter({
           </Popover>
           <AlertDialog.Root>
             <AlertDialog.Trigger>
-              <Button color="red">{t("rate-delete-btn")}</Button>
+              <Button color="red">
+                <Text className={pretendard.className}>
+                  {t("rate-delete-btn")}
+                </Text>
+              </Button>
             </AlertDialog.Trigger>
             <AlertDialog.Content maxWidth="450px">
               <AlertDialog.Title>{t("rate-delete")}</AlertDialog.Title>
               <AlertDialog.Description size="2">
-                {t("rate-delete-desc")}
+                <Text className={pretendard.className}>
+                  {t("rate-delete-desc")}
+                </Text>
               </AlertDialog.Description>
 
               <Flex gap="3" mt="4" justify="end">
                 <AlertDialog.Cancel>
                   <Button variant="soft" color="gray">
-                    {t("rate-delete-cancel-btn")}
+                    <Text className={pretendard.className}>
+                      {t("rate-delete-cancel-btn")}
+                    </Text>
                   </Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
@@ -121,7 +130,9 @@ export default function GameRateSubmitter({
                     {bIsDeleting ? (
                       <Spinner />
                     ) : (
-                      <Text>{t("rate-delete-btn")}</Text>
+                      <Text className={pretendard.className}>
+                        {t("rate-delete-btn")}
+                      </Text>
                     )}
                   </Button>
                 </AlertDialog.Action>
@@ -195,13 +206,16 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Text>{bIsEditing ? t("rate-edit") : t("new-rate")}</Text>
+            <Text className={pretendard.className}>
+              {bIsEditing ? t("rate-edit") : t("new-rate")}
+            </Text>
             <TextField.Root
               placeholder={t("rate-title")}
               onChange={(e) => setTitle(e.target.value)}
               value={title}
+              className={pretendard.className}
             >
-              <TextField.Slot></TextField.Slot>
+              <TextField.Slot className={pretendard.className}></TextField.Slot>
             </TextField.Root>
           </CardTitle>
           <CardDescription>
@@ -227,6 +241,7 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
             placeholder={t("rate-description")}
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            className={pretendard.className}
           ></TextArea>
           {postFailMessage && (
             <Text color="red" as="p">
@@ -239,7 +254,9 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
             {bIsSubmitting ? (
               <Spinner />
             ) : (
-              <Text>{bIsEditing ? t("rate-edit") : t("rate-submit")}</Text>
+              <Text className={pretendard.className}>
+                {bIsEditing ? t("rate-edit") : t("rate-submit")}
+              </Text>
             )}
           </Button>
         </CardFooter>
