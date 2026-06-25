@@ -114,7 +114,9 @@ const BottomDrawer = observer(function () {
                   </Flex>
                 )}
                 <Button asChild>
-                  <LocalizedLink href="/downloads">전체 화면</LocalizedLink>
+                  <LocalizedLink href="/downloads">
+                    {t("details")}
+                  </LocalizedLink>
                 </Button>
               </Flex>
             </ScrollArea>
