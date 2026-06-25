@@ -3,6 +3,9 @@ import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { openExternalByUri } from "@/lib/utils-client";
 import { useAuth } from "@/lib/AuthContext";
+import { Button, Dialog, Flex, Text } from "@radix-ui/themes";
+import { pretendard } from "@/lib/utils";
+import About from "../about";
 
 export default function MenuBarListener() {
   const router = useRouter();
@@ -11,11 +14,18 @@ export default function MenuBarListener() {
   } = useTranslation();
   const { logout } = useAuth();
 
+  const [bIsAboutOpen, setIsAboutOpen] = useState<boolean>(false);
+  const [appVersion, setAppVersion] = useState<string>("");
+  const [jwtToken, setJwtToken] = useState<string>("");
+
   function openExternal(uri: string) {
     openExternalByUri(uri, window.electronTools);
   }
 
-  const [jwtToken, setJwtToken] = useState<string>("");
+  async function getAppVersion() {
+    const ver = await window.electronTools.getAppVersion();
+    setAppVersion(ver);
+  }
 
   async function getToken() {
     const token = await window.bitmapApi.getToken();
@@ -25,6 +35,13 @@ export default function MenuBarListener() {
   useEffect(
     function () {
       getToken();
+      getAppVersion();
+
+      // Bitmap App 정보 클릭 시
+      const unsubscribeAbout = window.electronTools.onOpenAbout(() => {
+        console.log("About");
+        setIsAboutOpen(true);
+      });
 
       // 홈 메뉴 클릭 시
       const unsubscribeHome = window.electronTools.onOpenHome(() => {
@@ -79,6 +96,8 @@ export default function MenuBarListener() {
 
       // 컴포넌트 언마운트 시 리스너 해제 (메모리 누수 방지)
       return () => {
+        unsubscribeAbout();
+
         unsubscribeHome();
         unsubscribeGames();
 
@@ -95,8 +114,33 @@ export default function MenuBarListener() {
       };
     },
 
-    [router],
+    [],
   );
 
-  return null;
+  return (
+    <Dialog.Root open={bIsAboutOpen} onOpenChange={setIsAboutOpen}>
+      <Dialog.Content maxWidth="800px" className={pretendard.className}>
+        <Dialog.Title>
+          <Text className={pretendard.className} weight="bold">
+            Bitmap App™
+          </Text>
+        </Dialog.Title>
+        <Dialog.Description>
+          <Text className={pretendard.className} weight="medium">
+            Version {appVersion}
+          </Text>
+        </Dialog.Description>
+
+        <About />
+
+        <Flex gap="3" mt="4" justify="end">
+          <Dialog.Close>
+            <Button variant="soft" color="gray">
+              <div className={pretendard.className}>Close</div>
+            </Button>
+          </Dialog.Close>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
 }

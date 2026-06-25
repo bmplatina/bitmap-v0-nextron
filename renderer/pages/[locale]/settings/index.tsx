@@ -23,13 +23,17 @@ import {
   Text,
   Tabs,
   Spinner,
+  Dialog,
 } from "@radix-ui/themes";
 import {
   getDownloadCacheSize,
   removeDownloadCache,
   formatBytesToGB,
+  openExternal,
 } from "@/lib/utils-client";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
+import { pretendard } from "@/lib/utils";
+import About from "@/components/common/about";
 
 interface i18nProp {
   t: TFunction;
@@ -37,7 +41,7 @@ interface i18nProp {
 }
 
 export default function SettingsPage() {
-  const { t, i18n } = useTranslation("Settings");
+  const { t, i18n } = useTranslation(["Footer", "Settings"]);
   const [mounted, setMounted] = useState(false);
 
   // 클라이언트 사이드에서만 테마 관련 UI를 렌더링
@@ -50,9 +54,9 @@ export default function SettingsPage() {
   return (
     <Tabs.Root defaultValue="general">
       <Tabs.List>
-        <Tabs.Trigger value="general">{t("general")}</Tabs.Trigger>
-        <Tabs.Trigger value="display">{t("display")}</Tabs.Trigger>
-        <Tabs.Trigger value="download">{t("download")}</Tabs.Trigger>
+        <Tabs.Trigger value="general">{t("Settings:general")}</Tabs.Trigger>
+        <Tabs.Trigger value="display">{t("Settings:display")}</Tabs.Trigger>
+        <Tabs.Trigger value="download">{t("Settings:download")}</Tabs.Trigger>
       </Tabs.List>
 
       <Box pt="3" className="px-4">
@@ -76,6 +80,13 @@ function GeneralSettings({ t }: i18nProp) {
   const router = useRouter();
   const { i18n } = useTranslation();
   const locale = (router.query.locale as string) || i18n.language || "en";
+  const [appVersion, setAppVersion] = useState<string>("");
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  async function getAppVersion() {
+    const ver = await window.electronTools.getAppVersion();
+    setAppVersion(ver);
+  }
 
   async function handleLocaleChange(nextLocale: string) {
     // i18next 인스턴스에 언어 변경을 직접 지시하여 즉각적인 DOM 리렌더링 유도
@@ -106,20 +117,19 @@ function GeneralSettings({ t }: i18nProp) {
       const initialLocale = await window.electronTools.getLocale();
       await handleLocaleChange(initialLocale);
     })();
+
+    getAppVersion();
   }, []);
 
   return (
     <Flex direction="column" gap="3">
       <Card>
         <CardHeader>
-          <CardTitle>{t("language")}</CardTitle>
-          <CardDescription>{t("language-desc")}</CardDescription>
+          <CardTitle>{t("Settings:language")}</CardTitle>
+          <CardDescription>{t("Settings:language-desc")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Select.Root
-            value={locale}
-            onValueChange={handleLocaleChange}
-          >
+          <Select.Root value={locale} onValueChange={handleLocaleChange}>
             <Select.Trigger />
             <Select.Content>
               <Select.Group>
@@ -140,6 +150,57 @@ function GeneralSettings({ t }: i18nProp) {
       </Card>
 
       <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("Settings:info")}</CardTitle>
+          <CardDescription>
+            <Flex gap="1">
+              <Text className={pretendard.className} weight="bold">
+                Bitmap App™
+              </Text>
+              <Text className={pretendard.className} weight="medium">
+                Version {appVersion}
+              </Text>
+            </Flex>
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <Dialog.Root open={isAboutOpen} onOpenChange={setIsAboutOpen}>
+            <Dialog.Trigger>
+              <Button>
+                <Text size="2" weight="medium">
+                  {t("Footer:about")}
+                </Text>
+              </Button>
+            </Dialog.Trigger>
+
+            <Dialog.Content maxWidth="800px" className={pretendard.className}>
+              <Dialog.Title>
+                <Text className={pretendard.className} weight="bold">
+                  Bitmap App™
+                </Text>
+              </Dialog.Title>
+              <Dialog.Description>
+                <Text className={pretendard.className} weight="medium">
+                  Version {appVersion}
+                </Text>
+              </Dialog.Description>
+
+              <About />
+
+              <Flex gap="3" mt="4" justify="end">
+                <Dialog.Close>
+                  <Button variant="soft" color="gray">
+                    <div className={pretendard.className}>Close</div>
+                  </Button>
+                </Dialog.Close>
+              </Flex>
+            </Dialog.Content>
+          </Dialog.Root>
+        </CardContent>
+      </Card>
     </Flex>
   );
 }
@@ -193,7 +254,7 @@ function DisplaySettings({ t }: i18nProp) {
       {/* 테마 설정 */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("screen-mode")}</CardTitle>
+          <CardTitle>{t("Settings:screen-mode")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -249,8 +310,8 @@ function DownloadSettings({ t }: i18nProp) {
     <Flex direction="column" gap="3">
       <Card>
         <CardHeader>
-          <CardTitle>{t("download-cache")}</CardTitle>
-          <CardDescription>{t("download-cache-desc")}</CardDescription>
+          <CardTitle>{t("Settings:download-cache")}</CardTitle>
+          <CardDescription>{t("Settings:download-cache-desc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Flex gap="2" direction="column">

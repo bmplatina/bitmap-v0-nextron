@@ -4,7 +4,6 @@ import { ScrollArea, Theme } from "@radix-ui/themes";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import Sidebar from "@/components/common/sidebar/sidebar";
 import TopBar from "@/components/common/sidebar/top-bar";
-import Footer from "@/components/common/footer";
 import BottomDrawer from "@/components/common/sidebar/bottom-drawer";
 import { AuthProvider } from "@/lib/AuthContext";
 import NextToploader from "nextjs-toploader";
@@ -55,7 +54,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
       <GameInstallManagerProvider>
         <NextToploader showSpinner={false} />
         <AuthProvider>
-          <MenuBarListener />
+
           <DeeplinkHandler />
           <ThemeProvider
             attribute="class"
@@ -64,6 +63,7 @@ function RootLayout({ Component, pageProps }: AppProps) {
             disableTransitionOnChange
           >
             <Theme>
+              <MenuBarListener />
               <div
                 className={`${pretendard.variable} font-pretendard font-sans antialiased`}
               >
@@ -85,7 +85,6 @@ function RootLayout({ Component, pageProps }: AppProps) {
                         )}
                       >
                         <Component {...pageProps} />
-                        <Footer />
                         <BottomDrawer />
                       </main>
                     </ScrollArea>
