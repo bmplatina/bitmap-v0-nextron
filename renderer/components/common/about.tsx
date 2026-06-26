@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslation } from "next-i18next";
 import BitmapLogo from "@/public/images/bitmaplogo-notext.png";
 import { openExternal } from "@/lib/utils-client";
+import { cn, pretendard } from "@/lib/utils";
 
 export default function About() {
   const { t } = useTranslation("Footer");
@@ -14,7 +15,11 @@ export default function About() {
   }
 
   return (
-    <Flex direction="column" gap="3" className="pt-3">
+    <Flex
+      direction="column"
+      gap="3"
+      className={cn("pt-3", pretendard.className)}
+    >
       <Separator />
       <Container
         size="4"
@@ -57,7 +62,7 @@ export default function About() {
                 href="/legal?license=BitmapPrivacy"
                 className="hover:text-foreground transition-colors duration-200"
               >
-                <Text size="2" weight="medium">
+                <Text size="2" weight="medium" className={pretendard.className}>
                   {t("privacy-policy")}
                 </Text>
               </LocalizedLink>
@@ -70,7 +75,7 @@ export default function About() {
                 href="/legal?license=BitmapEULA"
                 className="hover:text-foreground transition-colors duration-200"
               >
-                <Text size="2" weight="medium">
+                <Text size="2" weight="medium" className={pretendard.className}>
                   {t("terms-of-use")}
                 </Text>
               </LocalizedLink>
@@ -83,7 +88,7 @@ export default function About() {
                 href="/legal?license=sla"
                 className="hover:text-foreground transition-colors duration-200"
               >
-                <Text size="2" weight="medium">
+                <Text size="2" weight="medium" className={pretendard.className}>
                   {t("legal")}
                 </Text>
               </LocalizedLink>
@@ -124,7 +129,7 @@ export default function About() {
                 onClick={openExternalLink}
                 className="hover:text-foreground transition-colors duration-200"
               >
-                <Text size="2" weight="medium">
+                <Text size="2" weight="medium" className={pretendard.className}>
                   GitHub
                 </Text>
               </LocalizedLink>
