@@ -12,7 +12,6 @@ import {
 } from "electron";
 import serve from "electron-serve";
 import * as helpers from "./helpers";
-import i18next from "../next-i18next.config";
 
 // Platform
 const bIsProd = process.env.NODE_ENV === "production";
@@ -118,11 +117,16 @@ const getMainWindowWhenReady = async () => {
     },
   });
 
-  const localeRegExp: RegExp = /[-_].*$/;
-  const systemLocale = app.getSystemLocale().replace(localeRegExp, "");
+  const bIsFirstRun = helpers.userStore.get("isFirstRun", true);
 
-  const locale = helpers.userStore.get("locale", systemLocale);
-  helpers.log.info("Using locale:", locale);
+  if (bIsFirstRun) {
+    const localeRegExp: RegExp = /[-_].*$/;
+    const systemLocale = app.getSystemLocale().replace(localeRegExp, "");
+    helpers.userStore.set("locale", systemLocale);
+    helpers.userStore.set("isFirstRun", false);
+  }
+
+  const locale = helpers.userStore.get("locale", "en");
 
   // iframe 내부에서 열리는 외부 링크 (유튜브 제목 등)를 기본 브라우저로 리디렉션
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

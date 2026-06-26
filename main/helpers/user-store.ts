@@ -7,6 +7,7 @@ interface Settings {
   screenMode: string;
   locale: string;
   defaultGamePath: string;
+  isFirstRun: boolean;
 }
 
 const defaultGamePath =
@@ -23,5 +24,6 @@ export const userStore = new Store<Settings>({
     screenMode: "system",
     locale: "en",
     defaultGamePath,
+    isFirstRun: true,
   },
 });
