@@ -8,7 +8,10 @@ import { openExternal } from "@/lib/utils-client";
 import { cn, pretendard } from "@/lib/utils";
 
 export default function About() {
-  const { t } = useTranslation("Footer");
+  const {
+    t,
+    i18n: { language: locale },
+  } = useTranslation("Footer");
 
   function openExternalLink(event: React.MouseEvent<HTMLAnchorElement>) {
     openExternal(event, window.electronTools);
@@ -32,7 +35,10 @@ export default function About() {
           align={{ initial: "start", md: "center" }}
         >
           <Flex gap="4" align="center">
-            <LocalizedLink href="/">
+            <LocalizedLink
+              href={`https://prodbybitmap.com/${locale}/`}
+              onClick={openExternalLink}
+            >
               <Image
                 src={BitmapLogo}
                 alt="Bitmap Production Logo"
