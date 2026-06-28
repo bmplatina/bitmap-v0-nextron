@@ -449,18 +449,33 @@ class GameInstallManager {
   }
 
   /**
-   * Insert or Update InstallState: GameInstallInfo to NeDB
+   * Insert or Update InstallState: GameInstallInfo to NeDB.
+   * NotInstalled 상태는 DB에 저장하지 않으며, 기존 레코드가 있으면 삭제한다.
    */
   async pushInstallState(
     context: bitmapApi,
     existingInfo?: GameInstallInfo | null,
   ) {
     try {
+      const gameId = this.getGameInfo.gameId;
       const resolvedData =
         existingInfo ??
-        (await context.getGameInstallInfoByIndex(this.getGameInfo.gameId)) ??
+        (await context.getGameInstallInfoByIndex(gameId)) ??
         null;
       console.log("pushInstallState::resolvedData", resolvedData);
+
+      // NotInstalled 상태는 DB에 보관하지 않음 — 기존 레코드만 정리
+      if (this.installState === EInstallState.NotInstalled) {
+        if (resolvedData) {
+          await context.deleteGameInstallInfo(gameId);
+          console.log(
+            "pushInstallState: deleted NotInstalled record for gameId",
+            gameId,
+          );
+        }
+        return;
+      }
+
       const installInfo: GameInstallInfo = {
         ...this.getGameInfo,
         gameInstallationPath: this.installationPath ?? "",
@@ -472,7 +487,7 @@ class GameInstallManager {
       const bUpdateExising: boolean = !!resolvedData;
       console.log("pushInstallState::bUpdateExisting", bUpdateExising);
       if (bUpdateExising) {
-        await context.updateGameInstallInfo(this.getGameInfo.gameId, payload);
+        await context.updateGameInstallInfo(gameId, payload);
         return;
       }
       await context.setGameInstallInfo(payload);
@@ -620,7 +635,6 @@ class GameInstallManager {
           this.installationPath = this.defaultInstallationPath;
         });
         await context.deleteGameInstallInfo(this.gameId);
-        await this.pushInstallState(context);
       }
     }
   }
