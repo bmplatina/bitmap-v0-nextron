@@ -352,14 +352,26 @@ const GameInteractableButtons = observer(function ({
     }
   }
 
+  // Resolve the correct manager from the store first, then set game info
+  // on the resolved manager. This prevents a stale closure from writing
+  // the new game's data into the previous game's manager when switching
+  // games in the library sidebar.
   useEffect(
     function () {
-      gameInstallManager.setGameInfo = game;
+      const existingManager = store.managers.get(game.gameId);
+
+      if (existingManager) {
+        setGameInstallManager(existingManager);
+        existingManager.setGameInfo = game;
+      } else {
+        gameInstallManager.setGameInfo = game;
+      }
+
       if (game.customEula) {
         setIsEulaAccepted(game.customEula.length === 0);
       } else setIsEulaAccepted(true);
     },
-    [game, gameInstallManager],
+    [game, game.gameId, store],
   );
 
   useEffect(() => {
@@ -376,17 +388,6 @@ const GameInteractableButtons = observer(function ({
     setIsCompatible(GetIsPlatformCompatible());
     console.log(`Game Compatibility: ${bIsCompatible ? "Yes" : "No"}`);
   }, [bIsMac, gameInstallManager, game]);
-
-  useEffect(
-    function () {
-      const existingManager = store.managers.get(game.gameId);
-
-      if (existingManager) {
-        setGameInstallManager(existingManager);
-      }
-    },
-    [store, game.gameId],
-  );
 
   useEffect(function () {
     if (router.pathname.includes("library")) {
