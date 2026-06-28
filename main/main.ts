@@ -120,9 +120,21 @@ const getMainWindowWhenReady = async () => {
   const bIsFirstRun = helpers.userStore.get("isFirstRun", true);
 
   if (bIsFirstRun) {
+    // app.getPreferredSystemLanguages()는 macOS의 NSLocale API를
+    // 직접 호출하므로 .lproj 폴더 유무에 관계없이 정확한 값을 반환한다.
+    // (app.getSystemLocale()은 앱 번들에 해당 .lproj 폴더가 없으면
+    //  지원하지 않는 언어로 간주하여 "en-US"로 fallback됨)
+    const supportedLocales = ["ko", "en"] as const;
+    const preferredLanguages = app.getPreferredSystemLanguages();
     const localeRegExp: RegExp = /[-_].*$/;
-    const systemLocale = app.getSystemLocale().replace(localeRegExp, "");
-    helpers.userStore.set("locale", systemLocale);
+
+    const detectedLocale = preferredLanguages
+      .map((lang) => lang.replace(localeRegExp, ""))
+      .find((code): code is (typeof supportedLocales)[number] =>
+        (supportedLocales as readonly string[]).includes(code),
+      );
+
+    helpers.userStore.set("locale", detectedLocale ?? "en");
     helpers.userStore.set("isFirstRun", false);
   }
 
