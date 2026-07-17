@@ -5722,6 +5722,7 @@ __metadata:
     nextjs-toploader: "npm:^3.9.17"
     nextron: "npm:^10.0.0"
     postcss: "npm:^8.5.8"
+    prettier: "npm:^3.9.5"
     react: "npm:^19.2.4"
     react-day-picker: "npm:8.10.1"
     react-dom: "npm:^19.2.4"
@@ -10104,6 +10105,15 @@ __metadata:
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
   checksum: 10c0/48138207cf5ef5581be1bfe2cb65ccfe0ac75e43888ba045afc8ed6043d7b56aeb3b9a9fe5b353ff554be943cd0cc15d826ccb991525159175971e5ee8ab0237
+  languageName: node
+  linkType: hard
+
+"prettier@npm:^3.9.5":
+  version: 3.9.5
+  resolution: "prettier@npm:3.9.5"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/0349dd9e6d8010965de6f69e6b6ee2484b8caf78c66675afced6c75ad60ff24c3a2a4f41153fb8adeaee4d8f539641b48cebc71d283cec4d146e9962126c5ceb
   languageName: node
   linkType: hard
 

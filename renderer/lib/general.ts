@@ -121,13 +121,12 @@ async function getPortfolio(
 
 async function getBitmapAppFromGitHub(context: bitmapApi) {
   try {
-    const response = await csrAxiosGet<GitHubRelease[]>(
-      context,
-      "getBitmapAppFromGitHub",
-      "https://api.github.com/repos/bmplatina/bitmap-v0-nextron/releases",
-    );
+    const response = await csrAxiosGet<{
+      cachedAt: string | null;
+      release: GitHubRelease;
+    }>(context, "getBitmapAppFromGitHub", `general/app/latest`);
 
-    if (response) return response;
+    if (response && response.release) return response.release;
   } catch (error) {
     console.error("Bitmap App 가져오는 중 오류 발생:", error);
   }

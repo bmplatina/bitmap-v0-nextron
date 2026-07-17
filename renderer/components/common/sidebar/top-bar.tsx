@@ -217,7 +217,7 @@ export default function TopBar() {
 const UpdateButton: React.FC = function () {
   const { t } = useTranslation("BitmapApp");
   const { bIsMac } = useGameInstallManager();
-  const [gitHubReleases, setGitHubReleases] = useState<GitHubRelease[]>([]);
+  const [gitHubReleases, setGitHubReleases] = useState<GitHubRelease>();
   const [latestReleaseDownloadURI, setLatestReleaseDownloadURI] = useState("");
   const [latestReleaseVersion, setLatestReleaseVersion] = useState("");
   const [latestTag, setLatestTag] = useState("");
@@ -239,13 +239,13 @@ const UpdateButton: React.FC = function () {
     async function checkUpdate() {
       try {
         // 1. 최신 릴리즈 정보 가져오기
-        const releases = await getBitmapAppFromGitHub(window.bitmapApi);
-        if (!releases || releases.length === 0) return;
+        const release = await getBitmapAppFromGitHub(window.bitmapApi);
+        if (!release) return;
 
         // UI 표시를 위한 상태 업데이트
-        setGitHubReleases(releases);
+        setGitHubReleases(release);
 
-        const latestRelease = releases[0];
+        const latestRelease = release;
         const latestTagName = latestRelease.tag_name;
 
         // 다운로드 자산 찾기
@@ -316,8 +316,8 @@ const UpdateButton: React.FC = function () {
         </Dialog.Description>
 
         <Flex direction="column" gap="3">
-          {gitHubReleases[0]?.body && (
-            <ClientMarkdown content={gitHubReleases[0].body} />
+          {gitHubReleases?.body && (
+            <ClientMarkdown content={gitHubReleases?.body} />
           )}
         </Flex>
 

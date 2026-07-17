@@ -103,6 +103,7 @@
     "next-themes": "latest",
     "nextron": "^10.0.0",
     "postcss": "^8.5.8",
+    "prettier": "^3.9.5",
     "react": "^19.2.4",
     "react-day-picker": "8.10.1",
     "react-dom": "^19.2.4",
