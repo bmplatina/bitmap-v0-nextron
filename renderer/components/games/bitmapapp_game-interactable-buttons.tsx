@@ -353,9 +353,11 @@ const GameInteractableButtons = observer(function ({
   }
 
   // Resolve the correct manager from the store first, then set game info
-  // on the resolved manager. This prevents a stale closure from writing
-  // the new game's data into the previous game's manager when switching
-  // games in the library sidebar.
+  // on the resolved manager. When no manager exists for this gameId we
+  // create a brand-new instance instead of reusing the current
+  // `gameInstallManager` state, which may still reference a *different*
+  // game's manager (stale closure). This prevents game A's data from
+  // being overwritten when the user clicks on game B in the sidebar.
   useEffect(
     function () {
       const existingManager = store.managers.get(game.gameId);
@@ -364,14 +366,17 @@ const GameInteractableButtons = observer(function ({
         setGameInstallManager(existingManager);
         existingManager.setGameInfo = game;
       } else {
-        gameInstallManager.setGameInfo = game;
+        // Create a fresh manager so we never mutate a previous game's instance
+        const freshManager = new GameInstallManager(bIsMac);
+        freshManager.setGameInfo = game;
+        setGameInstallManager(freshManager);
       }
 
       if (game.customEula) {
         setIsEulaAccepted(game.customEula.length === 0);
       } else setIsEulaAccepted(true);
     },
-    [game, game.gameId, store],
+    [game, game.gameId, store, bIsMac],
   );
 
   useEffect(() => {
