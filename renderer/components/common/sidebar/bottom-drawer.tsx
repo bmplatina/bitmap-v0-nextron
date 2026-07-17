@@ -1,6 +1,7 @@
 import { useTranslation } from "next-i18next";
 import GameInstallationCard from "@/components/games/game-installation-card";
 import { Download } from "lucide-react";
+import { cn, pretendard } from "@/lib/utils";
 import { EInstallState } from "@/lib/types";
 import { useGameInstallManager } from "@/lib/GameInstallManagerContext";
 import {
@@ -67,14 +68,17 @@ const BottomDrawer = observer(function () {
           side="top"
           align="end"
           sideOffset={16}
-          className="bg-black/5 dark:bg-white/10 p-5"
+          className={cn(
+            "bg-black/5 dark:bg-white/10 p-5",
+            pretendard.className,
+          )}
           style={{
             width: "400px",
             padding: 0,
             borderRadius: "var(--radius-4)",
             boxShadow: "var(--shadow-5)",
             overflow: "hidden",
-            backgroundColor: "transparent", // Override default popover background to show blur
+            // backgroundColor: "transparent", // Override default popover background to show blur
           }}
         >
           <Flex direction="column" style={{ maxHeight: "60vh" }}>
@@ -115,7 +119,7 @@ const BottomDrawer = observer(function () {
                 )}
                 <Button asChild>
                   <LocalizedLink href="/downloads">
-                    {t("details")}
+                    <Text className={pretendard.className}>{t("details")}</Text>
                   </LocalizedLink>
                 </Button>
               </Flex>
