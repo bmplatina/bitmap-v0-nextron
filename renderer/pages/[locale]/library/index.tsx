@@ -91,6 +91,23 @@ const LibraryPage = observer(function () {
     });
   }
 
+  function selectGameFromLibrary(newGameId: number) {
+    setGameDetail(newGameId);
+
+    // Keep the URL source of truth in sync with sidebar selection. Without
+    // this, a stale `?gameId=<A>` query re-selects game A after clicking B.
+    if (String(gameId) !== String(newGameId)) {
+      router.replace(
+        {
+          pathname: router.pathname,
+          query: { ...router.query, gameId: newGameId },
+        },
+        undefined,
+        { shallow: true },
+      );
+    }
+  }
+
   async function fetchInstallInfos() {
     try {
       const payloads = await window.bitmapApi.getGameInstallInfoAll();
@@ -233,7 +250,7 @@ const LibraryPage = observer(function () {
                         <GameListButton
                           key={manager.getGameInfo.gameId}
                           gameMgr={manager}
-                          gameIdCallback={setGameDetail}
+                          gameIdCallback={selectGameFromLibrary}
                           bIsSelected={
                             selectedGameId === manager.getGameInfo.gameId
                           }
