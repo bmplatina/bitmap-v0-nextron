@@ -46,6 +46,7 @@ class ipcHandle {
       filename: this.gameInstallInfoDbPath,
       autoload: true,
     });
+    this.gameInstallInfoDbReady = this.initializeGameInstallInfoDb();
 
     this.settingsDbPath = this.bIsProd
       ? join(app.getPath("userData"), "settings.db")
@@ -78,6 +79,7 @@ class ipcHandle {
   // neDB state store
   private readonly gameInstallInfoDbPath: string;
   private readonly gameInstallInfoDb: Datastore<any>;
+  private readonly gameInstallInfoDbReady: Promise<void>;
 
   private readonly settingsDbPath: string;
   private readonly settingsDb: Datastore<any>;
@@ -106,6 +108,62 @@ class ipcHandle {
   private runningGames = new Map<number, ChildProcess>();
   private runningDesyncProcesses = new Set<ChildProcess>();
   private activePullGameId: number | null = null;
+
+  /**
+   * Migrate legacy data before enabling the constraint. Older versions did
+   * not enforce gameId uniqueness, so creating the index first would fail on
+   * users who already have duplicate installation records.
+   */
+  private async initializeGameInstallInfoDb(): Promise<void> {
+    const documents = await new Promise<GameInstallInfo[]>(
+      (resolve, reject) => {
+        this.gameInstallInfoDb.find({}, (error, docs: GameInstallInfo[]) => {
+          if (error) reject(error);
+          else resolve(docs);
+        });
+      },
+    );
+
+    const seenGameIds = new Set<number>();
+    const duplicateDocumentIds = documents
+      .filter((document: GameInstallInfo & { _id?: string }) => {
+        if (seenGameIds.has(document.gameId)) return true;
+        seenGameIds.add(document.gameId);
+        return false;
+      })
+      .map((document: GameInstallInfo & { _id?: string }) => document._id)
+      .filter((id): id is string => Boolean(id));
+
+    if (duplicateDocumentIds.length > 0) {
+      const backupPath = `${this.gameInstallInfoDbPath}.before-gameid-unique-index.bak`;
+      if (!fs.existsSync(backupPath)) {
+        fs.copyFileSync(this.gameInstallInfoDbPath, backupPath);
+      }
+      log.warn(
+        `Removing ${duplicateDocumentIds.length} duplicate game installation record(s) before applying the gameId unique index. A backup was saved to ${backupPath}.`,
+      );
+      await new Promise<void>((resolve, reject) => {
+        this.gameInstallInfoDb.remove(
+          { _id: { $in: duplicateDocumentIds } },
+          { multi: true },
+          (error) => {
+            if (error) reject(error);
+            else resolve();
+          },
+        );
+      });
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      this.gameInstallInfoDb.ensureIndex(
+        { fieldName: "gameId", unique: true },
+        (error) => {
+          if (error) reject(error);
+          else resolve();
+        },
+      );
+    });
+  }
 
   /**
    * API 링크 생성
@@ -998,16 +1056,23 @@ class ipcHandle {
     // 데이터 설정
     ipcMain.handle(
       "game-install-info-insert",
-      (_, value: GameInstallInfo): Promise<any> => {
+      async (_, value: GameInstallInfo): Promise<any> => {
+        await this.gameInstallInfoDbReady;
         return new Promise((resolve, reject) => {
-          this.gameInstallInfoDb.insert(value, (err, newDoc) => {
-            if (err) {
-              reject(err);
-            } else {
-              this.gameInstallInfoDb.loadDatabase();
-              resolve(newDoc);
-            }
-          });
+          // An upsert is atomic within NeDB and closes the read-then-insert
+          // race that previously allowed duplicate gameId records.
+          this.gameInstallInfoDb.update(
+            { gameId: value.gameId },
+            { $set: value },
+            { upsert: true, returnUpdatedDocs: true },
+            (err, _numAffected, affectedDocument) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(affectedDocument);
+              }
+            },
+          );
         });
       },
     );
@@ -1015,7 +1080,8 @@ class ipcHandle {
     // 데이터 모두 가져오기
     ipcMain.handle(
       "game-install-info-get-all",
-      (_event): Promise<GameInstallInfo[]> => {
+      async (_event): Promise<GameInstallInfo[]> => {
+        await this.gameInstallInfoDbReady;
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.find({}, (err, docs: GameInstallInfo[]) => {
             if (err) {
@@ -1033,7 +1099,8 @@ class ipcHandle {
     // 데이터 가져오기
     ipcMain.handle(
       "game-install-info-get-by-index",
-      (_, gameIdIndex: number): Promise<GameInstallInfo> => {
+      async (_, gameIdIndex: number): Promise<GameInstallInfo> => {
+        await this.gameInstallInfoDbReady;
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.findOne(
             { gameId: gameIdIndex },
@@ -1054,10 +1121,12 @@ class ipcHandle {
     // 데이터 삭제
     ipcMain.handle(
       "game-install-info-delete",
-      (_, gameIdIndex: number): Promise<any> => {
+      async (_, gameIdIndex: number): Promise<any> => {
+        await this.gameInstallInfoDbReady;
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.remove(
             { gameId: gameIdIndex },
+            { multi: true },
             (err, numRemoved) => {
               if (err) {
                 reject(err);
@@ -1074,7 +1143,8 @@ class ipcHandle {
     // 데이터 업데이트
     ipcMain.handle(
       "game-install-info-update",
-      (_event, gameIdIndex: number, gameInstallInfo: GameInstallInfo) => {
+      async (_event, gameIdIndex: number, gameInstallInfo: GameInstallInfo) => {
+        await this.gameInstallInfoDbReady;
         // 조건에 맞는 데이터 업데이트
         return new Promise((resolve, reject) => {
           this.gameInstallInfoDb.update(

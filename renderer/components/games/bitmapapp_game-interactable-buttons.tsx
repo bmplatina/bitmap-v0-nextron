@@ -352,35 +352,39 @@ const GameInteractableButtons = observer(function ({
     }
   }
 
-  // Resolve the correct manager from the store first, then set game info
-  // on the resolved manager. This prevents a stale closure from writing
-  // the new game's data into the previous game's manager when switching
-  // games in the library sidebar.
+  // Always resolve/create the manager using the incoming game's ID.  This
+  // component is reused when the library selection changes, so mutating the
+  // current state manager here could otherwise write game B into game A.
   useEffect(
     function () {
-      const existingManager = store.managers.get(game.gameId);
+      let manager = store.managers.get(game.gameId);
 
-      if (existingManager) {
-        setGameInstallManager(existingManager);
-        existingManager.setGameInfo = game;
+      if (!manager) {
+        manager = new GameInstallManager(bIsMac);
+        manager.setGameInfo = game;
+        store.add(manager);
       } else {
-        gameInstallManager.setGameInfo = game;
+        manager.setGameInfo = game;
       }
+      setGameInstallManager(manager);
 
       if (game.customEula) {
         setIsEulaAccepted(game.customEula.length === 0);
       } else setIsEulaAccepted(true);
     },
-    [game, game.gameId, store],
+    [bIsMac, game, game.gameId, store],
   );
 
   useEffect(() => {
-    if (gameInstallManager)
+    // Do not run an installation lookup with the previous game's manager
+    // during the render immediately after a library selection changes.
+    if (gameInstallManager.getGameInfo.gameId === game.gameId) {
       gameInstallManager.pullInstallState(
         window.electronTools,
         window.bitmapApi,
       );
-  }, [gameInstallManager, game]);
+    }
+  }, [gameInstallManager, game.gameId]);
 
   useEffect(() => {
     // gameInstallManager.setIsMac = bIsMac;

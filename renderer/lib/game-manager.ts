@@ -31,6 +31,7 @@ class GameInstallManager {
   private currentVersion: string = "0.0.0";
   private bIsUpdatable: boolean = false;
   private playtime: number = 0;
+  private bHasPulledInstallState: boolean = false;
 
   // Interface Game
   private game: GameWithSize = {
@@ -496,11 +497,13 @@ class GameInstallManager {
     }
   }
 
-  // NeDB Installation Info saver
+  // Load the persisted installation state. This method intentionally does not
+  // treat a failed filesystem probe as an uninstall: a transient or incorrect
+  // path check must never delete the user's installation record.
   async pullInstallState(ElectronTools: tools, BitmapAPI: bitmapApi) {
-    if (this.getIsDownloadingOrInstallingState) {
+    if (this.bHasPulledInstallState || this.getIsDownloadingOrInstallingState) {
       console.log(
-        "Already downloading/installing, skipping pullInstallState to preserve state.",
+        "Installation state is already loaded or being changed, skipping pullInstallState.",
       );
       return;
     }
@@ -541,23 +544,6 @@ class GameInstallManager {
         console.log("pullInstallState: Otherwise, initialize property");
       }
 
-      if (nextInstallationPath) {
-        const literalInstallationPath = this.bIsMac
-          ? `${nextInstallationPath}/${this.game.gameBinaryName}`
-          : `${nextInstallationPath}\\${this.game.gameBinaryName}`;
-        const bIsValid = await BitmapAPI.checkPathValid(
-          literalInstallationPath,
-        );
-        console.log(
-          `pullInstallState::checkPathValid: ${bIsValid} from game ${this.game.gameTitle}`,
-        );
-        if (!bIsValid) {
-          nextInstallState = EInstallState.NotInstalled;
-        }
-      } else {
-        nextInstallState = EInstallState.NotInstalled;
-      }
-
       const nextIsUpdatable =
         nextInstallState === EInstallState.Installed &&
         this.isServerVersionNewer(nextCurrentVersion);
@@ -567,17 +553,8 @@ class GameInstallManager {
         this.installState = nextInstallState;
         this.currentVersion = nextCurrentVersion;
         this.bIsUpdatable = nextIsUpdatable;
+        this.bHasPulledInstallState = true;
       });
-
-      const bNeedsSync =
-        !!getResultLocal &&
-        (getResultLocal.gameInstallationPath !== nextInstallationPath ||
-          getResultLocal.gameInstallState !== nextInstallState ||
-          getResultLocal.gameInstalledVersion !== nextCurrentVersion);
-
-      if (bNeedsSync) {
-        await this.pushInstallState(BitmapAPI, getResultLocal);
-      }
     } catch (error) {
       console.log(error);
     }

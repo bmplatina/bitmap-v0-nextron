@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Container, Flex, ScrollArea } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
@@ -71,6 +71,7 @@ const LibraryPage = observer(function () {
     useState<GameWithSize>();
   const [libraryViewedGameRating, setLibraryViewedGameRating] =
     useState<GameRating[]>();
+  const ratingRequestId = useRef(0);
 
   function setGameDetail(newGameId: number) {
     setSelectedGameId(newGameId);
@@ -81,8 +82,12 @@ const LibraryPage = observer(function () {
     const manager = store.managers.get(newGameId);
     const gameInfo = manager?.getGameInfo;
     setLibraryViewedGameInfo(gameInfo ? { ...gameInfo } : undefined);
+    const requestId = ++ratingRequestId.current;
     getGameRatesById(window.bitmapApi, newGameId.toString()).then((payload) => {
-      if (payload) setLibraryViewedGameRating(payload);
+      // Ignore a late response for a game that is no longer selected.
+      if (requestId === ratingRequestId.current) {
+        setLibraryViewedGameRating(payload ?? []);
+      }
     });
   }
 
@@ -118,7 +123,9 @@ const LibraryPage = observer(function () {
         allManagers.forEach((mgr) => {
           const title = mgr.getGameTitle;
           const state = mgr.getInstallState;
-          const bQueued = queueManager.isQueuedOrRunning(mgr.getGameInfo.gameId);
+          const bQueued = queueManager.isQueuedOrRunning(
+            mgr.getGameInfo.gameId,
+          );
 
           // 조건: 설치됨/진행중이거나 큐에 존재하고 중복되지 않은 제목만 표시
           if (
@@ -248,6 +255,7 @@ const LibraryPage = observer(function () {
             <Flex direction="column" p="6" gap="4" className="h-full">
               {libraryViewedGameInfo && libraryViewedGameRating ? (
                 <GameDetail
+                  key={libraryViewedGameInfo.gameId}
                   game={libraryViewedGameInfo}
                   gameRates={libraryViewedGameRating}
                 />
