@@ -1,7 +1,7 @@
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Spinner } from "@radix-ui/themes";
 import { getGameById, getGameRatesById } from "@/lib/games";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import GameDetail from "@/components/games/game-details";
 import { useRouter } from "next/router";
 import { GameRating, GameWithSize } from "@/lib/types";
@@ -12,18 +12,19 @@ export default function GameDetailPage() {
   const [game, setGame] = useState<GameWithSize | null>();
   const [gameRates, setGameRates] = useState<GameRating[]>([]);
 
-  useEffect(() => {
-    const fetchGame = async () => {
-      if (typeof id === "string") {
-        const gameData = await getGameById(window.bitmapApi, id);
-        const gameRatesData =
-          (await getGameRatesById(window.bitmapApi, id)) ?? [];
-        setGameRates(gameRatesData);
-        setGame(gameData);
-      }
-    };
-    fetchGame();
+  const fetchGame = useCallback(async () => {
+    if (typeof id === "string") {
+      const gameData = await getGameById(window.bitmapApi, id);
+      const gameRatesData =
+        (await getGameRatesById(window.bitmapApi, id)) ?? [];
+      setGameRates(gameRatesData);
+      setGame(gameData);
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchGame();
+  }, [fetchGame]);
 
   if (!game) {
     return (
@@ -37,8 +38,9 @@ export default function GameDetailPage() {
     );
   }
 
-  return <GameDetail game={game} gameRates={gameRates ?? []} />;
+  return <GameDetail game={game} gameRates={gameRates ?? []} onRatesChanged={fetchGame} />;
 }
+
 
 export const getStaticProps = makeStaticProperties(["GamesView"]);
 export { getStaticPaths };

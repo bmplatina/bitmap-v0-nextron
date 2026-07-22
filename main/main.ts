@@ -113,7 +113,7 @@ const getMainWindowWhenReady = async () => {
     webPreferences: {
       preload: path.join(import.meta.dirname, "preload.js"),
       webviewTag: true,
-      devTools: true, // !bIsProd, // devTools: bIsDev,
+      devTools: !bIsProd, // devTools: bIsDev,
     },
   });
 

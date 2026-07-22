@@ -27,9 +27,10 @@ import AgeRatingImage from "./game-age-rating";
 type GameDetailProps = {
   game: GameWithSize;
   gameRates: GameRating[];
+  onRatesChanged?: () => void;
 };
 
-export default function GameDetail({ game, gameRates }: GameDetailProps) {
+export default function GameDetail({ game, gameRates, onRatesChanged }: GameDetailProps) {
   const {
     t,
     i18n: { language: locale },
@@ -258,8 +259,9 @@ export default function GameDetail({ game, gameRates }: GameDetailProps) {
                 gameId={game.gameId}
                 bIsEditing={false}
                 rates={gameRates}
+                onRatesChanged={onRatesChanged}
               />
-              <GameRateViewer gameRates={gameRates} />
+              <GameRateViewer gameRates={gameRates} onRatesChanged={onRatesChanged} />
             </div>
           </div>
         </div>

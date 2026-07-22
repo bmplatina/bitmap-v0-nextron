@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
 import { useAuth } from "@/lib/AuthContext";
 import {
   Card,
@@ -37,15 +36,16 @@ type GameIdProps = {
   gameId: number;
   bIsEditing: boolean;
   rates: GameRating[];
+  onRatesChanged?: () => void;
 };
 
 export default function GameRateSubmitter({
   gameId,
   bIsEditing,
   rates,
+  onRatesChanged,
 }: GameIdProps) {
   const { t } = useTranslation("GamesView");
-  const router = useRouter();
   const { bIsLoggedIn, uid } = useAuth();
 
   const [bIsAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
@@ -62,7 +62,7 @@ export default function GameRateSubmitter({
       console.error(err);
     } finally {
       setIsDeleting(false);
-      router.replace(router.asPath);
+      onRatesChanged?.();
     }
   }
 
@@ -94,6 +94,7 @@ export default function GameRateSubmitter({
                 gameId={gameId}
                 bIsEditing={bIsEditing}
                 rates={rates}
+                onRatesChanged={onRatesChanged}
               ></GameRateCard>
             </PopoverContent>
           </Popover>
@@ -142,16 +143,15 @@ export default function GameRateSubmitter({
         </Flex>
       ) : (
         <div className="my-2">
-          <GameRateCard gameId={gameId} bIsEditing={bIsEditing} rates={rates} />
+          <GameRateCard gameId={gameId} bIsEditing={bIsEditing} rates={rates} onRatesChanged={onRatesChanged} />
         </div>
       )}
     </>
   );
 }
 
-function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
+function GameRateCard({ gameId, bIsEditing, rates, onRatesChanged }: GameIdProps) {
   const { t } = useTranslation("GamesView");
-  const router = useRouter();
   const { uid } = useAuth();
   const [rating, setRating] = useState<number>(5);
   const [title, setTitle] = useState<string>("");
@@ -178,13 +178,12 @@ function GameRateCard({ gameId, bIsEditing, rates }: GameIdProps) {
       };
 
       await submitGameRate(window.bitmapApi, storageToken, newRate, bIsEditing);
-      router.replace(router.asPath);
     } catch (err: any) {
       setPostFailMessage(err.message || String(err));
       console.error(err);
     } finally {
       setIsSubmitting(false);
-      router.replace(router.asPath);
+      onRatesChanged?.();
     }
   }
 

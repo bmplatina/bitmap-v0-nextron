@@ -17,14 +17,15 @@ import { GameRating, UserProfile } from "@/lib/types";
 
 interface GameRateViewerProp {
   gameRates: GameRating[];
+  onRatesChanged?: () => void;
 }
 
-export default function GameRateViewer({ gameRates }: GameRateViewerProp) {
+export default function GameRateViewer({ gameRates, onRatesChanged }: GameRateViewerProp) {
   return (
     <>
       {gameRates.length > 0 ? (
         gameRates.map(
-          (rate) => rate && <GameRateSingle key={rate.id} rate={rate} />,
+          (rate) => rate && <GameRateSingle key={rate.id} rate={rate} onRatesChanged={onRatesChanged} />,
         )
       ) : (
         <GameRateEmpty />
@@ -35,9 +36,10 @@ export default function GameRateViewer({ gameRates }: GameRateViewerProp) {
 
 interface GameRateProp {
   rate: GameRating;
+  onRatesChanged?: () => void;
 }
 
-function GameRateSingle({ rate }: GameRateProp) {
+function GameRateSingle({ rate, onRatesChanged }: GameRateProp) {
   const { i18n } = useTranslation();
   const locale = i18n.language;
   const [author, setAuthor] = useState<UserProfile | null>(null);
@@ -74,6 +76,7 @@ function GameRateSingle({ rate }: GameRateProp) {
             gameId={rate.gameId}
             bIsEditing={true}
             rates={[rate]}
+            onRatesChanged={onRatesChanged}
           />
         </CardFooter>
       </Card>

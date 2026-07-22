@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { getStaticPaths, makeStaticProperties } from "@/lib/get-static";
 import { Container, Flex, ScrollArea } from "@radix-ui/themes";
 import { observer } from "mobx-react-lite";
@@ -90,6 +90,19 @@ const LibraryPage = observer(function () {
       }
     });
   }
+
+  const refreshRates = useCallback(() => {
+    if (selectedGameId != null) {
+      const requestId = ++ratingRequestId.current;
+      getGameRatesById(window.bitmapApi, selectedGameId.toString()).then(
+        (payload) => {
+          if (requestId === ratingRequestId.current) {
+            setLibraryViewedGameRating(payload ?? []);
+          }
+        },
+      );
+    }
+  }, [selectedGameId]);
 
   function selectGameFromLibrary(newGameId: number) {
     setGameDetail(newGameId);
@@ -275,6 +288,7 @@ const LibraryPage = observer(function () {
                   key={libraryViewedGameInfo.gameId}
                   game={libraryViewedGameInfo}
                   gameRates={libraryViewedGameRating}
+                  onRatesChanged={refreshRates}
                 />
               ) : (
                 gameManagers.length === 0 && (
