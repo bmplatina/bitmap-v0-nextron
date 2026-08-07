@@ -393,6 +393,7 @@ const GameInteractableButtons = observer(function ({
         store.add(manager);
       } else {
         manager.setGameInfo = game;
+        getPlaytime(manager);
       }
       setGameInstallManager(manager);
 
