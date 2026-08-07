@@ -26,6 +26,7 @@ import AppleLogo from "@/public/images/platforms/platformMac.png";
 import Windows10Logo from "@/public/images/platforms/platformWindows10.png";
 import { Card, CardContent } from "../ui/card";
 import { cn, pretendard } from "@/lib/utils";
+import { getGamePlaytime, setGamePlaytime } from "@/lib/games";
 
 interface GameEulaDislogContentProps {
   eulaName: string;
@@ -352,6 +353,32 @@ const GameInteractableButtons = observer(function ({
     }
   }
 
+  async function getPlaytime(gameManager: GameInstallManager) {
+    const token = await window.bitmapApi.getToken();
+    const playtime = await getGamePlaytime(
+      window.bitmapApi,
+      token,
+      gameManager.getGameInfo.gameId,
+    );
+
+    gameManager.setPlaytime = playtime?.playtime || 0;
+    return playtime?.playtime;
+  }
+
+  async function setPlaytime(
+    gameManager: GameInstallManager,
+    newPlaytime: number,
+  ) {
+    const token = await window.bitmapApi.getToken();
+    await setGamePlaytime(
+      window.bitmapApi,
+      token,
+      gameManager.getGameInfo.gameId,
+      newPlaytime,
+    );
+    gameManager.setPlaytime = newPlaytime;
+  }
+
   // Always resolve/create the manager using the incoming game's ID.  This
   // component is reused when the library selection changes, so mutating the
   // current state manager here could otherwise write game B into game A.
@@ -362,6 +389,7 @@ const GameInteractableButtons = observer(function ({
       if (!manager) {
         manager = new GameInstallManager(bIsMac);
         manager.setGameInfo = game;
+        getPlaytime(manager);
         store.add(manager);
       } else {
         manager.setGameInfo = game;

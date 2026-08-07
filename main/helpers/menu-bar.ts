@@ -76,7 +76,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
         {
           label: t.Downloads.manage,
           icon: getIcon("square.and.arrow.down.on.square"),
-          accelerator: "CmdOrCtrl+Alt+N",
+          accelerator: "CmdOrCtrl+J",
           id: "newProject",
           click: (e) => {
             mainWindow.webContents.send("bitmap-downloads");
@@ -86,7 +86,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
         {
           label: t.Downloads.library,
           icon: getIcon("sidebar.left"),
-          accelerator: "CmdOrCtrl+Alt+N",
+          accelerator: "CmdOrCtrl+L",
           click: (e) => {
             mainWindow.webContents.send("bitmap-library");
           },
@@ -112,7 +112,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
               {
                 label: t.Accounts.accountSettings,
                 icon: getIcon("person.circle"),
-                accelerator: "CmdOrCtrl+Alt+N",
+                accelerator: "",
                 click: (e) => {
                   mainWindow.webContents.send("bitmap-account-settings");
                 },
@@ -120,7 +120,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
               {
                 label: t.Accounts.publisherDashboard,
                 icon: getIcon("plus.circle"),
-                accelerator: "CmdOrCtrl+Alt+N",
+                accelerator: "",
                 click: (e) => {
                   mainWindow.webContents.send("bitmap-publisher-dashboard");
                 },
@@ -160,6 +160,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
         {
           label: t.AppMenu.about,
           icon: getIcon("info.circle"),
+          accelerator: "CmdOrCtrl+I",
           click: (e) => {
             mainWindow.webContents.send("bitmap-about");
           },
@@ -168,6 +169,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
         {
           label: t.AppMenu.preferences,
           icon: getIcon("gear"),
+          accelerator: "CmdOrCtrl+, ",
           click: (e) => {
             mainWindow.webContents.send("bitmap-settings");
           },
@@ -182,6 +184,7 @@ function createMenu(mainWindow: BrowserWindow): MenuItemConstructorOptions[] {
         {
           label: t.AppMenu.quit,
           icon: getIcon("xmark.app"),
+          accelerator: "CmdOrCtrl+Q",
           click: (e) => {
             app.exit(0);
           },
